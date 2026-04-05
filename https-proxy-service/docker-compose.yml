@@ -1,0 +1,16 @@
+services:
+  https-proxy:
+    image: nginx:alpine
+    container_name: https-proxy
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./nginx.conf:/etc/nginx/conf.d/default.conf:ro
+      - ./certs:/etc/nginx/certs:ro
+    networks:
+      - dmz-network
+
+networks:
+  dmz-network:
+    external: true
