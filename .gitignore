@@ -1,9 +1,0 @@
-# Ignorer les certificats et clés privées générés localement
-certs/*.key
-certs/*.crt
-certs/*.pem
-
-# Optionnel : ignorer tout le contenu du dossier certs 
-# mais garder le dossier lui-même dans Git via un fichier .gitkeep
-certs/*
-!certs/.gitkeep
