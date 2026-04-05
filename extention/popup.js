@@ -11,7 +11,7 @@ const verdictCard = document.getElementById("verdictCard");
 const verdictLabel = document.getElementById("verdictLabel");
 const verdictMeta = document.getElementById("verdictMeta");
 
-const API_ENDPOINT = "http://localhost:8080/api/detect";
+const API_ENDPOINT = "http://anonymous2:8080/api/detect";
 const API_TOKEN = "";
 let activeHighlightedTabId = null;
 const popupSessionPort = chrome.runtime.connect({ name: "popup-session" });

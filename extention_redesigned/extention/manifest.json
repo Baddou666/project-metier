@@ -1,0 +1,21 @@
+{
+  "manifest_version": 3,
+  "name": "Page Content Checker",
+  "version": "1.0.0",
+  "description": "Recupere le contenu d'une page HTML et verifie aussi un texte saisi manuellement.",
+  "permissions": [
+    "activeTab",
+    "scripting",
+    "tabs"
+  ],
+  "host_permissions": [
+    "<all_urls>"
+  ],
+  "background": {
+    "service_worker": "background.js"
+  },
+  "action": {
+    "default_title": "Verifier le contenu",
+    "default_popup": "popup.html"
+  }
+}
