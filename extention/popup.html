@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="fr">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Verifier le contenu</title>
+    <link rel="stylesheet" href="popup.css" />
+  </head>
+  <body>
+    <main class="app">
+      <section id="mainView" class="view">
+        <section class="hero compact">
+          <div class="hero-grid"></div>
+          <p class="eyebrow">AI Detection Console</p>
+          <h1>Humain ou IA</h1>
+          <p class="subtitle">
+            Analyse rapide d'une page actuelle ou d'un texte colle.
+          </p>
+          <button id="checkPageButton" class="primary wide">Verifier page actuelle</button>
+        </section>
+
+        <section class="panel compact-panel">
+          <p class="section-kicker">Texte manuel</p>
+          <h2>Verifier un texte</h2>
+          <p class="section-copy">
+            Collez votre contenu ci-dessous puis lancez l'analyse.
+          </p>
+
+          <label class="label" for="manualText">Texte a verifier</label>
+          <textarea
+            id="manualText"
+            placeholder="Collez ou ecrivez votre texte ici..."
+            rows="6"
+          ></textarea>
+          <button id="checkTextButton" class="secondary wide">Verifier texte</button>
+        </section>
+      </section>
+
+      <section id="resultView" class="view hidden">
+        <section class="result-card result-screen">
+          <div class="result-header">
+            <h2>Resultat d'analyse</h2>
+            <button id="backButton" class="ghost" type="button">Retour</button>
+          </div>
+
+          <p id="status" class="status">Pret a analyser.</p>
+          <div id="verdictCard" class="verdict-card hidden">
+            <div class="verdict-kicker">Verdict</div>
+            <div id="verdictLabel" class="verdict-label">En attente</div>
+            <div id="verdictMeta" class="verdict-meta"></div>
+          </div>
+          <pre id="result" class="result">Le contenu apparaitra ici.</pre>
+          <button id="copyResultButton" class="ghost wide copy-button" type="button">
+            Copier le resultat
+          </button>
+        </section>
+      </section>
+    </main>
+
+    <script src="popup.js"></script>
+  </body>
+</html>
