@@ -56,13 +56,13 @@ sh init-certs.sh
 
 \### 🪟 Sur Windows (via PowerShell)
 
-Si vous n'utilisez pas Git Bash, ouvrez PowerShell dans le dossier du projet et exécutez :
+Si vous n'utilisez pas Git Bash, ouvrez PowerShell dans le dossier du projet et exécutez (vous devez installer necessairement openssl):
 
 ```powershell
 
 if (!(Test-Path -Path "certs")) { New-Item -ItemType Directory -Path "certs" }
 
-\& "C:\\Program Files\\Git\\usr\\bin\\openssl.exe" req -x509 -nodes -days 365 -newkey rsa:2048 -keyout ./certs/selfsigned.key -out ./certs/selfsigned.crt -subj "/C=MA/L=Local/O=DevTeam/CN=localhost"
+\& "C:\\Chemin\\Vers\\binaire\\openssl.exe" req -x509 -nodes -days 365 -newkey rsa:2048 -keyout ./certs/selfsigned.key -out ./certs/selfsigned.crt -subj "/C=MA/L=Local/O=DevTeam/CN=localhost"
 
 ```
 
