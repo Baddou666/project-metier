@@ -2,6 +2,7 @@ package aidetector.apigateway.services;
 
 import aidetector.apigateway.model.TokenPayload;
 import aidetector.apigateway.model.TokenRequest;
+import org.springframework.stereotype.Component;
 
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;

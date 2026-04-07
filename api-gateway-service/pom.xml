@@ -41,6 +41,11 @@
 
         <dependency>
             <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-data-redis</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-security-test</artifactId>
             <scope>test</scope>
         </dependency>
@@ -49,6 +54,8 @@
             <artifactId>spring-boot-starter-webmvc-test</artifactId>
             <scope>test</scope>
         </dependency>
+
+
 
         <!-- JWT -->
         <dependency>
@@ -69,26 +76,8 @@
             <scope>runtime</scope>
         </dependency>
 
-        <!-- Bucket4j core — JDK 17+ -->
-        <dependency>
-            <groupId>com.bucket4j</groupId>
-            <artifactId>bucket4j_jdk17-core</artifactId>
-            <version>8.17.0</version>
-        </dependency>
 
-        <!-- Bucket4j Redis commun -->
-        <dependency>
-            <groupId>com.bucket4j</groupId>
-            <artifactId>bucket4j_jdk17-redis-common</artifactId>
-            <version>8.17.0</version>
-        </dependency>
 
-        <!-- Bucket4j Lettuce (le client Redis qu'on utilise) -->
-        <dependency>
-            <groupId>com.bucket4j</groupId>
-            <artifactId>bucket4j_jdk17-lettuce</artifactId>
-            <version>8.17.0</version>
-        </dependency>
 
         <!-- Lombok -->
         <dependency>

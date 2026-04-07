@@ -1,6 +1,7 @@
 package aidetector.apigateway.services;
 
 import aidetector.apigateway.config.JwtProperties;
+import aidetector.apigateway.config.RateLimitingConfig;
 import aidetector.apigateway.exceptions.TokenPayloadVerificationFailed;
 import aidetector.apigateway.model.TokenPayload;
 import io.jsonwebtoken.JwtException;
@@ -17,21 +18,21 @@ import java.util.Date;
 public class TokenJwtService implements TokenJwtManager {
     private final SecretKey jwtSecretKey;
     private final int expireInSec;
+    private final RateLimitingConfig rateLimitingConfig;
 
-
-    public TokenJwtService(JwtProperties jwtProperties){
+    public TokenJwtService(JwtProperties jwtProperties, RateLimitingConfig rateLimitingConfig){
         String tempsec = jwtProperties.getSecretKey();
         if(tempsec == null || tempsec.isBlank() || tempsec.strip().length() < jwtProperties.getMinJwtSecretLength()){
             throw new IllegalArgumentException("the jwt secret should have at least %d characters long !".formatted(jwtProperties.getMinJwtSecretLength()));
         }
         this.jwtSecretKey = Keys.hmacShaKeyFor(tempsec.getBytes(StandardCharsets.UTF_8));
         this.expireInSec = jwtProperties.getExpirationSec();
+        this.rateLimitingConfig = rateLimitingConfig;
     }
 
     //crée un token signé qui contient le hash de l'adresse ip d'un utilisateur
     @Override
     public String generateNewSignedToken(TokenPayload client) throws GeneralSecurityException {
-
         return Jwts.builder()
                 .header().add("typ", "JWT")
                 .and()
@@ -43,7 +44,7 @@ public class TokenJwtService implements TokenJwtManager {
                 .compact();
     }
     @Override
-    public TokenPayload verifyTokenAndGetPayload(String token) throws JwtException, IllegalArgumentException, TokenPayloadVerificationFailed {
+    public TokenPayload verifyTokenAndGetPayload(String token) throws JwtException, IllegalArgumentException {
         return Jwts.parser()
                 .verifyWith(jwtSecretKey)
                 .build()
