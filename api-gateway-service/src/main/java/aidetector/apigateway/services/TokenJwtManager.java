@@ -1,6 +1,5 @@
 package aidetector.apigateway.services;
 
-import aidetector.apigateway.exceptions.TokenPayloadVerificationFailed;
 import aidetector.apigateway.model.TokenPayload;
 import io.jsonwebtoken.JwtException;
 
