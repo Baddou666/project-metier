@@ -1,0 +1,205 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="AutoImportSettings">
+    <option name="autoReloadType" value="SELECTIVE" />
+  </component>
+  <component name="ChangeListManager">
+    <list default="true" id="018caaeb-ad26-47d3-b78a-bd8b3accb052" name="Changes" comment="la logique du service (rate-limitting) est complète mais pas encore testé">
+      <change beforePath="$PROJECT_DIR$/../.idea/.gitignore" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../.idea/api-gateway-service.iml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../.idea/misc.xml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../.idea/modules.xml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../.idea/vcs.xml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../https-proxy-service/.gitignore" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../https-proxy-service/README.md" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../https-proxy-service/docker-compose.yml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../https-proxy-service/install-certs.sh" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../https-proxy-service/nginx.conf" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/.gitattributes" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/.gitignore" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/.mvn/wrapper/maven-wrapper.properties" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/mvnw" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/mvnw.cmd" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/pom.xml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/aidetector/apigateway/ApiGatewayApplication.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/aidetector/apigateway/config/HashConfig.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/aidetector/apigateway/config/JwtProperties.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/aidetector/apigateway/config/RateLimitingConfig.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/aidetector/apigateway/config/RedisConfig.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/aidetector/apigateway/config/SecurityConfig.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/aidetector/apigateway/controller/TokenController.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/aidetector/apigateway/exceptions/RateLimitReachedException.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/aidetector/apigateway/exceptions/TokenNotProvidedException.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/aidetector/apigateway/exceptions/TokenPayloadVerificationFailed.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/aidetector/apigateway/filters/TokenFilter.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/aidetector/apigateway/model/TokenPayload.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/aidetector/apigateway/model/TokenRequest.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/aidetector/apigateway/services/RateLimitingManager.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/aidetector/apigateway/services/RateLimitingService.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/aidetector/apigateway/services/TokenJwtManager.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/aidetector/apigateway/services/TokenJwtService.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/aidetector/apigateway/services/TokenPayloadManager.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/aidetector/apigateway/services/TokenPayloadService.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/aidetector/apigateway/utils/HashUtils.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/resources/application.properties" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/test/java/aidetector/apigateway/ApiGatewayApplicationTests.java" beforeDir="false" />
+    </list>
+    <option name="SHOW_DIALOG" value="false" />
+    <option name="HIGHLIGHT_CONFLICTS" value="true" />
+    <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
+    <option name="LAST_RESOLUTION" value="IGNORE" />
+  </component>
+  <component name="FileTemplateManagerImpl">
+    <option name="RECENT_TEMPLATES">
+      <list>
+        <option value="Interface" />
+        <option value="Exception" />
+        <option value="Class" />
+      </list>
+    </option>
+  </component>
+  <component name="Git.Settings">
+    <option name="RECENT_BRANCH_BY_REPOSITORY">
+      <map>
+        <entry key="$PROJECT_DIR$/.." value="api-gateway-dev" />
+      </map>
+    </option>
+    <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$/../.." />
+    <option name="SET_USER_NAME_GLOBALLY" value="false" />
+  </component>
+  <component name="GitHubPullRequestSearchHistory">{
+  &quot;lastFilter&quot;: {
+    &quot;state&quot;: &quot;OPEN&quot;,
+    &quot;assignee&quot;: &quot;Baddou666&quot;
+  }
+}</component>
+  <component name="GithubPullRequestsUISettings">{
+  &quot;selectedUrlAndAccountId&quot;: {
+    &quot;url&quot;: &quot;https://github.com/Baddou666/project-metier.git&quot;,
+    &quot;accountId&quot;: &quot;dc0b8a09-b6bf-4883-83cf-13009f9f642a&quot;
+  }
+}</component>
+  <component name="MavenImportPreferences">
+    <option name="generalSettings">
+      <MavenGeneralSettings>
+        <option name="mavenHomeTypeForPersistence" value="WRAPPER" />
+      </MavenGeneralSettings>
+    </option>
+  </component>
+  <component name="McpProjectServerCommands">
+    <commands />
+    <urls />
+  </component>
+  <component name="ProblemsViewState">
+    <option name="selectedTabId" value="CurrentFile" />
+  </component>
+  <component name="ProjectColorInfo">{
+  &quot;associatedIndex&quot;: 5
+}</component>
+  <component name="ProjectId" id="3Bx190UtsG6P80pFXtaMprITG3c" />
+  <component name="ProjectViewState">
+    <option name="hideEmptyMiddlePackages" value="true" />
+    <option name="showLibraryContents" value="true" />
+  </component>
+  <component name="PropertiesComponent"><![CDATA[{
+  "keyToString": {
+    "ModuleVcsDetector.initialDetectionPerformed": "true",
+    "RunOnceActivity.MCP Project settings loaded": "true",
+    "RunOnceActivity.ShowReadmeOnStart": "true",
+    "RunOnceActivity.TerminalTabsStorage.copyFrom.TerminalArrangementManager.252": "true",
+    "RunOnceActivity.git.unshallow": "true",
+    "RunOnceActivity.typescript.service.memoryLimit.init": "true",
+    "com.intellij.ml.llm.matterhorn.ej.ui.settings.DefaultModelSelectionForGA.v1": "true",
+    "git-widget-placeholder": "#1 on api-gateway-dev",
+    "ignore.virus.scanning.warn.message": "true",
+    "junie.onboarding.icon.badge.shown": "true",
+    "kotlin-language-version-configured": "true",
+    "last_opened_file_path": "D:/PRJ-METIER/project-metier/api-gateway-service/rate-limiting-service",
+    "node.js.detected.package.eslint": "true",
+    "node.js.detected.package.tslint": "true",
+    "node.js.selected.package.eslint": "(autodetect)",
+    "node.js.selected.package.tslint": "(autodetect)",
+    "nodejs_package_manager_path": "npm",
+    "project.structure.last.edited": "Project",
+    "project.structure.proportion": "0.0",
+    "project.structure.side.proportion": "0.0",
+    "settings.editor.selected.configurable": "project.propVCSSupport.DirectoryMappings",
+    "to.speed.mode.migration.done": "true",
+    "vue.rearranger.settings.migration": "true"
+  }
+}]]></component>
+  <component name="RecentsManager">
+    <key name="CopyClassDialog.RECENTS_KEY">
+      <recent name="aidetector.apigateway.model" />
+    </key>
+  </component>
+  <component name="RunManager">
+    <configuration name="ApiGatewayApplication" type="SpringBootApplicationConfigurationType" factoryName="Spring Boot" nameIsGenerated="true">
+      <module name="rate-limiting-service" />
+      <option name="SPRING_BOOT_MAIN_CLASS" value="aidetector.apigateway.ApiGatewayApplication" />
+      <method v="2">
+        <option name="Make" enabled="true" />
+      </method>
+    </configuration>
+  </component>
+  <component name="SharedIndexes">
+    <attachedChunks>
+      <set>
+        <option value="bundled-jdk-30f59d01ecdd-2fc7cc6b9a17-intellij.indexing.shared.core-IU-253.30387.90" />
+        <option value="bundled-js-predefined-d6986cc7102b-9b0f141eb926-JavaScript-IU-253.30387.90" />
+      </set>
+    </attachedChunks>
+  </component>
+  <component name="TaskManager">
+    <task active="true" id="Default" summary="Default task">
+      <changelist id="018caaeb-ad26-47d3-b78a-bd8b3accb052" name="Changes" comment="" />
+      <created>1775415752241</created>
+      <option name="number" value="Default" />
+      <option name="presentableId" value="Default" />
+      <updated>1775415752241</updated>
+      <workItem from="1775415753990" duration="1520000" />
+      <workItem from="1775417316290" duration="18561000" />
+      <workItem from="1775463229080" duration="19090000" />
+      <workItem from="1775521521478" duration="19000" />
+      <workItem from="1775573115010" duration="6343000" />
+      <workItem from="1775579852894" duration="443000" />
+    </task>
+    <task id="LOCAL-00001" summary="(service non complet encore), ajoute de service pour gestion des tokens pour les utilisateurs non anonymes afin de pouvoir appliquer un rate-limitting&#10;ce qui est fait: &#10;création de deux services pour créaton et vérification de token + création et vérification du payload de token (le payload contient le hash de l'ip source de l'utilisteur)&#10;ce qui doit être fait:&#10;ajout de configuration redis pour avoir une source de donné partagé (utilisé ultérieurement si en va envisager la replications de ce service)&#10;ajout de la logique de filtrage pour commencer par valider le token ou le rejeter.&#10;ajout de la logique de rate limiting pour ne pas dépasser un nombre maximal de requête par utilisateur &#10;le création et la livraison d'un nouveau token vers l'utilisateur doit être intentionnellement lente (voire 0.5s pour un token) afin d'éviter ddos saturant la ram.">
+      <option name="closed" value="true" />
+      <created>1775435592385</created>
+      <option name="number" value="00001" />
+      <option name="presentableId" value="LOCAL-00001" />
+      <option name="project" value="LOCAL" />
+      <updated>1775435592385</updated>
+    </task>
+    <task id="LOCAL-00002" summary="la logique du service (rate-limitting) est complète mais pas encore testé">
+      <option name="closed" value="true" />
+      <created>1775575455010</created>
+      <option name="number" value="00002" />
+      <option name="presentableId" value="LOCAL-00002" />
+      <option name="project" value="LOCAL" />
+      <updated>1775575455010</updated>
+    </task>
+    <task id="LOCAL-00003" summary="la logique du service (rate-limitting) est complète mais pas encore testé">
+      <option name="closed" value="true" />
+      <created>1775575890824</created>
+      <option name="number" value="00003" />
+      <option name="presentableId" value="LOCAL-00003" />
+      <option name="project" value="LOCAL" />
+      <updated>1775575890824</updated>
+    </task>
+    <option name="localTasksCounter" value="4" />
+    <servers />
+  </component>
+  <component name="TypeScriptGeneratedFilesManager">
+    <option name="version" value="3" />
+  </component>
+  <component name="VcsManagerConfiguration">
+    <ignored-roots>
+      <path value="$PROJECT_DIR$/.." />
+    </ignored-roots>
+    <MESSAGE value="(service non complet encore), ajoute de service pour gestion des tokens pour les utilisateurs non anonymes afin de pouvoir appliquer un rate-limitting&#10;ce qui est fait: &#10;création de deux services pour créaton et vérification de token + création et vérification du payload de token (le payload contient le hash de l'ip source de l'utilisteur)&#10;ce qui doit être fait:&#10;ajout de configuration redis pour avoir une source de donné partagé (utilisé ultérieurement si en va envisager la replications de ce service)&#10;ajout de la logique de filtrage pour commencer par valider le token ou le rejeter.&#10;ajout de la logique de rate limiting pour ne pas dépasser un nombre maximal de requête par utilisateur &#10;le création et la livraison d'un nouveau token vers l'utilisateur doit être intentionnellement lente (voire 0.5s pour un token) afin d'éviter ddos saturant la ram." />
+    <MESSAGE value="la logique du service (rate-limitting) est complète mais pas encore testé" />
+    <option name="LAST_COMMIT_MESSAGE" value="la logique du service (rate-limitting) est complète mais pas encore testé" />
+  </component>
+</project>
