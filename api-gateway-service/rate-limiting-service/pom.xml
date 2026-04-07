@@ -9,7 +9,7 @@
         <relativePath/> <!-- lookup parent from repository -->
     </parent>
     <groupId>ai-detector</groupId>
-    <artifactId>api-gateway-service</artifactId>
+    <artifactId>rate-limiting-service</artifactId>
     <version>0.0.1-SNAPSHOT</version>
     <name>api-gateway</name>
     <description>api-gateway</description>
