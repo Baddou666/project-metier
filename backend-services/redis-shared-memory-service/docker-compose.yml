@@ -1,16 +1,10 @@
 services:
-  redis:
+  redis-server:
     image: redis:7-alpine
     container_name: redis-shared-memory
-    # On retire les flags de limitation de mémoire
     command: >
       redis-server 
+      --port ${REDIS_INTERNAL_PORT}
+      --requirepass ${REDIS_PASSWORD}
       --save "" 
       --appendonly no
-    ports:
-      - "${REDIS_PORT}:6379"
-    networks:
-      - redis-ratelimiter-network
-networks:
-  redis-ratelimiter-network:
-    external: true

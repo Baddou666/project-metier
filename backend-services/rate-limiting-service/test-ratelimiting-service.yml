@@ -1,0 +1,17 @@
+include:
+  - path: ./docker-compose.yml
+  - path: ../redis-shared-memory-service/docker-compose.yml
+services:
+  rate-limiting-service:
+    ports:
+    - ${RATE_LIMIT_SERVICE_EXTERNAL_PORT}:${RATE_LIMIT_SERVICE_INTERNAL_PORT}
+    networks:
+      - intnet
+    depends_on:
+      - redis-server 
+  redis-server:
+    networks:
+      - intnet
+networks:
+  intnet:
+    driver: bridge

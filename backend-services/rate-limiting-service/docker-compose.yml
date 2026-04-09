@@ -1,0 +1,14 @@
+services:
+  # Votre application Spring Boot
+  rate-limiting-service:
+    image: rate-limiter:latest
+    container_name: rate-limiting-service
+    environment:
+      - REDIS_HOST=${REDIS_HOST}
+      - REDIS_PORT=${REDIS_INTERNAL_PORT}
+      - JWT_SECRET_KEY=${JWT_SECRET_KEY}
+      - HASH_SALT=${HASH_SALT}
+      - REDIS_PASSWORD=${REDIS_PASSWORD}
+      - RATE_LIMIT_SERVICE_INTERNAL_PORT=${RATE_LIMIT_SERVICE_INTERNAL_PORT}
+    volumes:
+      - ./config:/workspace/config

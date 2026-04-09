@@ -7,3 +7,5 @@ certs/*.pem
 # mais garder le dossier lui-même dans Git via un fichier .gitkeep
 certs/*
 !certs/.gitkeep
+
+.env
