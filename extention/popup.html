@@ -24,6 +24,22 @@
           </div>
         </header>
 
+        <!-- Authentication Error Banner -->
+        <div id="authErrorBanner" class="auth-error-banner hidden">
+          <div class="auth-error-content">
+            <div class="auth-error-icon">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+            </div>
+            <div class="auth-error-text">
+              <strong id="authErrorTitle">Erreur de connexion</strong>
+              <p id="authErrorMessage">Impossible de joindre le serveur.</p>
+            </div>
+          </div>
+          <button id="authRetryButton" class="btn-refresh-icon" type="button" title="Rafraîchir">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M23 4v6h-6"/><path d="M1 20v-6h6"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36M20.49 15a9 9 0 0 1-14.85 3.36"/></svg>
+          </button>
+        </div>
+
         <!-- Tabs -->
         <div class="tabs" role="tablist">
           <button class="tab active" id="tabPageBtn" role="tab" aria-selected="true" data-tab="page">
