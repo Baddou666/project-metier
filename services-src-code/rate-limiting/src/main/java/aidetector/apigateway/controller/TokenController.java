@@ -8,7 +8,10 @@ import aidetector.apigateway.model.TokenRequest;
 import aidetector.apigateway.services.RateLimitingManager;
 import aidetector.apigateway.services.TokenJwtManager;
 import aidetector.apigateway.services.TokenPayloadManager;
+import aidetector.apigateway.utils.LogContext;
 import jakarta.servlet.http.HttpServletRequest;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -23,6 +26,8 @@ import java.util.concurrent.TimeUnit;
 @RestController
 @RequestMapping("/api/token")
 public class TokenController {
+
+    private static final Logger logger = LoggerFactory.getLogger(TokenController.class);
 
     private final TokenJwtManager tokenJwtManager;
     private final TokenPayloadManager tokenPayloadManager;
@@ -43,24 +48,50 @@ public class TokenController {
 
     @PostMapping("/get")
     public Object createNewToken(HttpServletRequest req, AnonymousIdentification auth) throws NoSuchAlgorithmException, InvalidKeyException {
-
-        if(auth != null && auth.getPrincipal() != null){
-            return ResponseEntity.ok(Map.of("status","bad request","message","you have already a valide token"));
-        }
         String srcIp = req.getHeader(proxyHeaderConfig.getSourceIpHeader());
-        TokenPayload payload = tokenPayloadManager.createNewUser(new TokenRequest(srcIp));
-        return CompletableFuture.supplyAsync(() -> {
-            try {
-                rateLimitingManager.addToken(srcIp);
-                return ResponseEntity.ok(Map.of("status","accepted","token",tokenJwtManager.generateNewSignedToken(payload)));
-            } catch (GeneralSecurityException e) {
-                return ResponseEntity.internalServerError().build();
+        LogContext.setEventContext(LogContext.EVENT_TOKEN_REQUEST, srcIp, null);
+
+        try {
+            if (auth != null && auth.getPrincipal() != null) {
+                LogContext.addDetail(LogContext.STATUS, "DENIED_EXISTING_TOKEN");
+                logger.info("Token request denied: User already has valid token");
+                return ResponseEntity.ok(Map.of("status", "bad request", "message", "you have already a valide token"));
             }
-        },
-                CompletableFuture.delayedExecutor(rateLimitingConfig.getTokenGenerationDelayMs(), TimeUnit.MILLISECONDS));
+
+            TokenPayload payload = tokenPayloadManager.createNewUser(new TokenRequest(srcIp));
+            LogContext.addDetail(LogContext.USER_ID, payload.getUserId());
+
+            return CompletableFuture.supplyAsync(() -> {
+                try {
+                    rateLimitingManager.addToken(srcIp);
+                    Long tokenCount = rateLimitingManager.getTokenPerIp(srcIp);
+                    LogContext.addDetail(LogContext.TOKEN_COUNT, tokenCount);
+                    logger.info("Token counter incremented");
+
+                    String token = tokenJwtManager.generateNewSignedToken(payload);
+                    LogContext.addDetail(LogContext.STATUS, "SUCCESS");
+                    logger.info("Token generated successfully");
+                    return ResponseEntity.ok(Map.of("status", "accepted", "token", token));
+                } catch (GeneralSecurityException e) {
+                    LogContext.addDetail(LogContext.STATUS, "ERROR");
+                    LogContext.addDetail(LogContext.EXCEPTION_MSG, e.getMessage());
+                    logger.error("Token generation failed", e);
+                    return ResponseEntity.internalServerError().build();
+                }
+            }, CompletableFuture.delayedExecutor(rateLimitingConfig.getTokenGenerationDelayMs(), TimeUnit.MILLISECONDS));
+        } finally {
+            LogContext.clearTemporary();
+        }
     }
+
     @GetMapping("/test")
-    public String testAccess(){
-        return "Ok";
+    public String testAccess() {
+        LogContext.setEventContext("HEALTH_CHECK", null, null);
+        try {
+            logger.info("Health check endpoint called");
+            return "Ok";
+        } finally {
+            LogContext.clear();
+        }
     }
 }

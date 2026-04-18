@@ -12,3 +12,4 @@ services:
       - RATE_LIMIT_SERVICE_INTERNAL_PORT=${RATE_LIMIT_SERVICE_INTERNAL_PORT}
     volumes:
       - ./config:/workspace/config
+      - ./logs:/workspace/logs

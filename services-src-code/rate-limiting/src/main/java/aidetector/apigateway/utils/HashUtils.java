@@ -1,6 +1,8 @@
 package aidetector.apigateway.utils;
 
 import aidetector.apigateway.config.HashConfig;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -16,6 +18,8 @@ import java.util.Base64;
 @Component
 public class HashUtils {
 
+    private static final Logger logger = LoggerFactory.getLogger(HashUtils.class);
+
     private final Mac hashAlgo;
     private final String hashSalt;
 
@@ -27,6 +31,7 @@ public class HashUtils {
         if(this.hashSalt.length() < hashConfig.getMinSaltLength() || this.hashSalt.isBlank()){
             throw new IllegalArgumentException("the hash salt must be provided and must be at least 16 character long !");
         }
+        logger.info("HashUtils initialized");
     }
 
     /**
@@ -35,20 +40,26 @@ public class HashUtils {
      * @return le hash sha256 de src
      */
     public String hashString(String src) throws NoSuchAlgorithmException, InvalidKeyException {
-
+        LogContext.addDetail(LogContext.EVENT_TYPE, LogContext.EVENT_HASH_COMPUTE);
         SecretKeySpec secretKeySpec = new SecretKeySpec(this.hashSalt.getBytes(StandardCharsets.UTF_8),hashAlgo.getAlgorithm());
 
             hashAlgo.init(secretKeySpec);
             byte[] hashTab = hashAlgo.doFinal(src.getBytes(StandardCharsets.UTF_8));
-            return Base64.getEncoder().encodeToString(hashTab);
+            String hash = Base64.getEncoder().encodeToString(hashTab);
+            logger.debug("Hash generated successfully");
+            return hash;
     }
     public Boolean verifyHash(String data, String expectedHash){
-
+        LogContext.addDetail(LogContext.EVENT_TYPE, LogContext.EVENT_HASH_VERIFY);
         try {
             String actualHash = hashString(data);
-            return MessageDigest.isEqual(actualHash.getBytes(StandardCharsets.UTF_8), expectedHash.getBytes(StandardCharsets.UTF_8));
+            Boolean verified = MessageDigest.isEqual(actualHash.getBytes(StandardCharsets.UTF_8), expectedHash.getBytes(StandardCharsets.UTF_8));
+            logger.debug("Hash verification result: {}", verified);
+            return verified;
         }
         catch (GeneralSecurityException e) {
+            LogContext.addDetail(LogContext.EXCEPTION_MSG, e.getMessage());
+            logger.error("Hash verification failed");
             return false;
         }
     }

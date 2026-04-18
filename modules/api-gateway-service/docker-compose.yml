@@ -12,6 +12,7 @@ services:
     depends_on:
       - rate-limiting-service
   rate-limiting-service:
+    image: ghcr.io/baddou666/projet-metier/test/rate-limiter:latest
     container_name: ${PROXY_TARGET_HOST}
     networks:
         - proxy-ratelimiter-net

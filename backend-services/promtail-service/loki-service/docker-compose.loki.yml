@@ -1,0 +1,108 @@
+version: '3.8'
+
+services:
+  # Service de rate limiting
+  rate-limiter:
+    build:
+      context: ./services-src-code/rate-limiting
+      dockerfile: Dockerfile
+    image: rate-limiter:latest
+    ports:
+      - "8080:8080"
+    environment:
+      REDIS_HOST: redis
+      REDIS_PORT: 6379
+      REDIS_PASSWORD: "your-redis-password"
+      JWT_SECRET_KEY: "your-jwt-secret-key-minimum-32-characters-long"
+      HASH_SALT: "your-hash-salt-minimum-16-characters"
+      ENVIRONMENT: "prod"
+    volumes:
+      - rate-limiter-logs:/app/logs
+    depends_on:
+      - redis
+    networks:
+      - monitoring
+    labels:
+      app: rate-limiter
+
+  # Redis pour les compteurs de rate limiting
+  redis:
+    image: redis:7-alpine
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis-data:/data
+    command: redis-server --requirepass your-redis-password
+    networks:
+      - monitoring
+
+  # Loki - Agrégateur de logs
+  loki:
+    image: grafana/loki:2.9.0
+    ports:
+      - "3100:3100"
+    volumes:
+      - ./loki-config.yml:/etc/loki/local-config.yml
+      - loki-data:/loki
+    command: -config.file=/etc/loki/local-config.yml
+    networks:
+      - monitoring
+    environment:
+      LOKI_CONFIG: /etc/loki/local-config.yml
+
+  # Promtail - Agent de collecte de logs
+  promtail:
+    image: grafana/promtail:2.9.0
+    volumes:
+      - rate-limiter-logs:/logs:ro
+      - ./promtail-config.yml:/etc/promtail/config.yml
+      - /var/lib/docker/containers:/var/lib/docker/containers:ro
+      - /var/run/docker.sock:/var/run/docker.sock
+    ports:
+      - "9080:9080"
+    command: -config.file=/etc/promtail/config.yml
+    depends_on:
+      - loki
+    networks:
+      - monitoring
+
+  # Grafana - Dashboard de visualisation
+  grafana:
+    image: grafana/grafana:latest
+    ports:
+      - "3000:3000"
+    environment:
+      GF_SECURITY_ADMIN_PASSWORD: "admin"
+      GF_SERVER_ROOT_URL: "http://grafana:3000"
+      GF_INSTALL_PLUGINS: "grafana-piechart-panel"
+    volumes:
+      - grafana-data:/var/lib/grafana
+      - ./grafana-provisioning:/etc/grafana/provisioning
+    depends_on:
+      - loki
+    networks:
+      - monitoring
+
+  # Prometheus (optionnel) pour les métriques
+  prometheus:
+    image: prom/prometheus:latest
+    ports:
+      - "9090:9090"
+    volumes:
+      - ./prometheus.yml:/etc/prometheus/prometheus.yml
+      - prometheus-data:/prometheus
+    command:
+      - '--config.file=/etc/prometheus/prometheus.yml'
+    networks:
+      - monitoring
+
+networks:
+  monitoring:
+    driver: bridge
+
+volumes:
+  redis-data:
+  rate-limiter-logs:
+  loki-data:
+  grafana-data:
+  prometheus-data:

@@ -2,9 +2,12 @@ package aidetector.apigateway.services;
 
 import aidetector.apigateway.config.JwtProperties;
 import aidetector.apigateway.model.TokenPayload;
+import aidetector.apigateway.utils.LogContext;
 import io.jsonwebtoken.JwtException;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.security.Keys;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 import tools.jackson.databind.ObjectMapper;
 
@@ -14,6 +17,9 @@ import java.util.Date;
 
 @Service
 public class TokenJwtService implements TokenJwtManager {
+
+    private static final Logger logger = LoggerFactory.getLogger(TokenJwtService.class);
+
     private final SecretKey jwtSecretKey;
     private final int expireInSec;
 
@@ -24,13 +30,13 @@ public class TokenJwtService implements TokenJwtManager {
         }
         this.jwtSecretKey = Keys.hmacShaKeyFor(tempsec.getBytes(StandardCharsets.UTF_8));
         this.expireInSec = jwtProperties.getExpirationSec();
+        logger.info("[JWT] JWT service initialized with expiration: {} seconds", expireInSec);
     }
 
-    //crée un token signé qui contient le hash de l'adresse ip d'un utilisateur
     @Override
     public String generateNewSignedToken(TokenPayload client){
-
-        return Jwts.builder()
+        LogContext.setEventContext(LogContext.EVENT_TOKEN_GENERATED, null, client.getUserId());
+        String token = Jwts.builder()
                 .header().add("typ", "JWT")
                 .and()
                 .subject("rate-limite")
@@ -39,10 +45,12 @@ public class TokenJwtService implements TokenJwtManager {
                 .expiration(new Date(System.currentTimeMillis() + (long) expireInSec * 1000))
                 .signWith(jwtSecretKey)
                 .compact();
+        logger.info("Token generated successfully");
+        return token;
     }
     @Override
     public TokenPayload verifyTokenAndGetPayload(String token) throws JwtException, IllegalArgumentException {
-
+        LogContext.setEventContext(LogContext.EVENT_TOKEN_VERIFIED, null, null);
         Object payload = Jwts.parser()
                 .verifyWith(jwtSecretKey)
                 .build()
@@ -50,9 +58,9 @@ public class TokenJwtService implements TokenJwtManager {
                 .getPayload()
                 .get("userInfo");
         ObjectMapper mapper = new ObjectMapper();
-        return mapper.convertValue(payload,TokenPayload.class);
+        TokenPayload tokenPayload = mapper.convertValue(payload,TokenPayload.class);
+        LogContext.addDetail(LogContext.USER_ID, tokenPayload.getUserId());
+        logger.info("Token verified successfully");
+        return tokenPayload;
     }
-
-
-
 }
