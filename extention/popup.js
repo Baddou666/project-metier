@@ -815,7 +815,7 @@ async function detectWithBackend(sourceType, items, pageUrl, isRetry = false) {
   }
 
   // Gestion des erreurs d'authentification : 400 ou 401
-  if (!isRetry && (response.status === 400 || response.status === 401)) {
+  if (!isRetry && (response.status === 400 || response.status === 401 || response.status === 403)) {
     console.log(`[API] Erreur ${response.status} - Tentative de rafraîchissement du token et retry...`);
     try {
       await refreshAuthToken();
