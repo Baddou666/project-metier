@@ -3,13 +3,16 @@ include:
   - path: ../redis-shared-memory-service/docker-compose.yml
 services:
   rate-limiting-service:
+    image: ghcr.io/baddou666/projet-metier/test/rate-limiter:latest
+    container_name: rate-limiting-service-test
     ports:
     - ${RATE_LIMIT_SERVICE_EXTERNAL_PORT}:${RATE_LIMIT_SERVICE_INTERNAL_PORT}
     networks:
       - intnet
     depends_on:
-      - redis-server 
+      - redis-server
   redis-server:
+    container_name: redis-shared-memory-test
     networks:
       - intnet
 networks:

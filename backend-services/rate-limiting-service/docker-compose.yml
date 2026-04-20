@@ -1,7 +1,7 @@
 services:
   # Votre application Spring Boot
   rate-limiting-service:
-    image: ghcr.io/baddou666/rate-limiter:latest
+    image: ghcr.io/baddou666/projet-metier/final/rate-limiter:latest
     container_name: rate-limiting-service
     environment:
       - REDIS_HOST=${REDIS_HOST}
@@ -10,6 +10,8 @@ services:
       - HASH_SALT=${HASH_SALT}
       - REDIS_PASSWORD=${REDIS_PASSWORD}
       - RATE_LIMIT_SERVICE_INTERNAL_PORT=${RATE_LIMIT_SERVICE_INTERNAL_PORT}
+      - NEXT_SERVICE_BASEURL=${DATA_PREPROCESSOR_SERVICE_BASEURL}
+      - NEXT_SERVICE_PORT=${DATA_PREPROCESSOR_SERVICE_PORT}
     volumes:
       - ./config:/workspace/config
       - ./logs:/workspace/logs

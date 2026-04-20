@@ -21,8 +21,11 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 @AllArgsConstructor
 public class SecurityConfig {
     public static final String newTokenPath="/api/token/get";
+    public static final String healthPath="/api/health";
+    public static final String verifyTokenPath="/api/token/verify";
     private static final String[] AUTH_WHITELIST = {
-            newTokenPath
+            newTokenPath,
+            healthPath
     };
 
     @Bean

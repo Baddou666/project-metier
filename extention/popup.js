@@ -45,7 +45,7 @@ const authErrorMessage  = document.getElementById("authErrorMessage");
 const authRetryButton   = document.getElementById("authRetryButton");
 
 /* ─── Config ─────────────────────────────────────────────────── */
-const API_DOMAINE = "https://localhost"
+const API_DOMAINE = "http://localhost"
 const API_ENDPOINT = `${API_DOMAINE}/api/detect`;
 const API_TOKEN_ENDPOINT = `${API_DOMAINE}/api/token/get`;
 const TOKEN_RETRY_INTERVAL_MS = 2000;

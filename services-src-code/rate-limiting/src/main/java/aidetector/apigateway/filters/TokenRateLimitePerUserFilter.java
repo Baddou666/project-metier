@@ -60,9 +60,11 @@ public class TokenRateLimitePerUserFilter extends OncePerRequestFilter {
                 throw new TokenPayloadVerificationFailed("vérification du contexte échoué");
             logger.info("Payload context verified");
 
-            rateLimitingManager.addAttempt(payload.getUserId());
-            if(rateLimitingManager.isRateLimitReached(payload.getUserId()))
-                throw new RateLimitReachedException("Beaucoup de requête, merci de réessayer dans quelques instants ");
+            if (!aidetector.apigateway.config.SecurityConfig.verifyTokenPath.equals(req.getRequestURI())) {
+                rateLimitingManager.addAttempt(payload.getUserId());
+                if(rateLimitingManager.isRateLimitReached(payload.getUserId()))
+                    throw new RateLimitReachedException("Beaucoup de requête, merci de réessayer dans quelques instants ");
+            }
 
             logger.info("Rate limit check passed, setting authentication");
             SecurityContextHolder.getContext().setAuthentication(new AnonymousIdentification(payload));

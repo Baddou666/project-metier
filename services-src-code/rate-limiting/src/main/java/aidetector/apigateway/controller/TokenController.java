@@ -84,14 +84,8 @@ public class TokenController {
         }
     }
 
-    @GetMapping("/test")
-    public String testAccess() {
-        LogContext.setEventContext("HEALTH_CHECK", null, null);
-        try {
-            logger.info("Health check endpoint called");
-            return "Ok";
-        } finally {
-            LogContext.clear();
-        }
+    @GetMapping("/verify")
+    public ResponseEntity<Map<String, String>> verifyToken() {
+        return ResponseEntity.ok(Map.of("status", "valid"));
     }
 }

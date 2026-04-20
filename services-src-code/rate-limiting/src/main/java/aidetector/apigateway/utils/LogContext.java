@@ -23,6 +23,7 @@ public class LogContext {
 
     // Event Types
     public static final String EVENT_TOKEN_REQUEST = "TOKEN_REQUEST";
+    public static final String EVENT_FORWARD_REQUEST = "FORWARD_REQUEST";
     public static final String EVENT_TOKEN_GENERATED = "TOKEN_GENERATED";
     public static final String EVENT_TOKEN_VERIFIED = "TOKEN_VERIFIED";
     public static final String EVENT_TOKEN_VERIFY_FAILED = "TOKEN_VERIFY_FAILED";
