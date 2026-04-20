@@ -3,6 +3,21 @@ echo ======================================================
 echo   GENERATION DE L'IMAGE DOCKER (WINDOWS)
 echo ======================================================
 
+:: Parsing des arguments
+
+:: buildpush, push, build
+set MODE=%1
+
+:: final, test
+set VERSION=%2
+
+
+:: latest, v1.1.0,...
+set TAG=%3
+
+:: Défauts
+if "%TAG%"=="" set TAG=latest
+
 :: Vérification de Docker
 docker --version >nul 2>&1
 if %errorlevel% neq 0 (
@@ -11,22 +26,29 @@ if %errorlevel% neq 0 (
     exit /b
 )
 
-:: Demander le mode d'operation
-echo.
-echo ======================================================
-echo   CHOIX DU MODE D'OPERATION
-echo ======================================================
-echo Que voulez-vous faire ?
-echo 1. Build et push
-echo 2. Seulement build
-echo 3. Seulement push
-echo.
-set /p mode="Entrez 1, 2 ou 3 : "
+:: Demander le mode d'operation si pas fourni
+if "%MODE%"=="" (
+    echo.
+    echo ======================================================
+    echo   CHOIX DU MODE D'OPERATION
+    echo ======================================================
+    echo Que voulez-vous faire ?
+    echo 1. Build et push
+    echo 2. Seulement build
+    echo 3. Seulement push
+    echo.
+    set /p mode="Entrez 1, 2 ou 3 : "
+) else (
+    set mode=%MODE%
+)
 
-if "%mode%"=="1" goto build_and_push
-if "%mode%"=="2" goto only_build
-if "%mode%"=="3" goto only_push
-echo [ERREUR] Choix invalide.
+if "%mode%"=="1" set mode=buildpush
+if "%mode%"=="2" set mode=build
+if "%mode%"=="3" set mode=push
+if "%mode%"=="buildpush" goto build_and_push
+if "%mode%"=="build" goto only_build
+if "%mode%"=="push" goto only_push
+echo [ERREUR] Mode invalide(%mode%). Utilisez build, push ou buildpush.
 pause
 exit /b
 
@@ -77,16 +99,26 @@ echo Image rate-limiter trouvee localement.
 goto choose_version
 
 :choose_version
-:: Demander le choix de version
-echo.
-echo ======================================================
-echo   CHOIX DE LA VERSION A POUSSER
-echo ======================================================
-echo Choisissez la version :
-echo 1. Test (ghcr.io/baddou666/projet-metier/test/rate-limiter)
-echo 2. Final (ghcr.io/baddou666/projet-metier/final/rate-limiter)
-echo.
-set /p choice="Entrez 1 pour Test, 2 pour Final : "
+:: Utiliser les arguments ou demander
+
+if "%VERSION%"=="" (
+    :: Demander le choix de version
+    echo.
+    echo ======================================================
+    echo   CHOIX DE LA VERSION A POUSSER:
+    echo ======================================================
+    echo Choisissez la version :
+    echo 1. Test "ghcr.io/baddou666/projet-metier/test/rate-limiter"
+    echo 2. Final "ghcr.io/baddou666/projet-metier/final/rate-limiter"
+    echo.
+    set /p choice="Entrez 1 pour Test, 2 pour Final : "
+) else (
+    if "%VERSION%"=="test" set choice=1
+    if "%VERSION%"=="final" set choice=2
+    call :check_choice
+    )
+
+
 
 if "%choice%"=="1" (
     set BASE_TAG=ghcr.io/baddou666/projet-metier/test/rate-limiter
@@ -99,9 +131,13 @@ if "%choice%"=="1" (
     echo Version Final selectionnee par defaut.
 )
 
-echo.
-set /p tag="Entrez le tag de version (latest par defaut) : "
-if "%tag%"=="" set tag=latest
+if "%3"=="" (
+    echo.
+    set /p tag="Entrez le tag de version (latest par defaut) : "
+    if "%tag%"=="" set tag=latest
+) else (
+    set tag=%TAG%
+)
 set IMAGE_TAG=%BASE_TAG%:%tag%
 
 :: Vérification de la clé API
@@ -133,3 +169,11 @@ echo ======================================================
 echo   TERMINE : L'image a ete poussee vers %IMAGE_TAG%
 echo ======================================================
 pause
+
+:check_choice
+if "%choice%"=="" (
+    echo [ERREUR] Version invalide:'%VERSION%'. Utilisez test ou final.
+    pause
+    exit /b
+)
+goto :EOF

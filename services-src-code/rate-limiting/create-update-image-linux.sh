@@ -4,6 +4,19 @@ echo "======================================================"
 echo "  GENERATION DE L'IMAGE DOCKER (LINUX/MAC)"
 echo "======================================================"
 
+# Parsing des arguments
+MODE=$1
+VERSION=$2
+TAG=$3
+
+# Défauts
+WAS_TAG_PROVIDED=false
+if [ -n "$3" ]; then
+    WAS_TAG_PROVIDED=true
+else
+    TAG="latest"
+fi
+
 # Vérification de Docker
 if ! command -v docker &> /dev/null
 then
@@ -11,29 +24,41 @@ then
     exit 1
 fi
 
-# Demander le mode d'opération
-echo ""
-echo "======================================================"
-echo "  CHOIX DU MODE D'OPERATION"
-echo "======================================================"
-echo "Que voulez-vous faire ?"
-echo "1. Build et push"
-echo "2. Seulement build"
-echo "3. Seulement push"
-echo ""
-read -p "Entrez 1, 2 ou 3 : " mode
+# Demander le mode d'opération si pas fourni
+if [ -z "$MODE" ]; then
+    echo ""
+    echo "======================================================"
+    echo "  CHOIX DU MODE D'OPERATION"
+    echo "======================================================"
+    echo "Que voulez-vous faire ?"
+    echo "1. Build et push"
+    echo "2. Seulement build"
+    echo "3. Seulement push"
+    echo ""
+    read -p "Entrez 1, 2 ou 3 : " mode
+else
+    mode=$MODE
+fi
 
 if [ "$mode" == "1" ]; then
+    mode="buildpush"
+elif [ "$mode" == "2" ]; then
+    mode="build"
+elif [ "$mode" == "3" ]; then
+    mode="push"
+fi
+
+if [ "$mode" == "buildpush" ]; then
     DO_BUILD=true
     DO_PUSH=true
-elif [ "$mode" == "2" ]; then
+elif [ "$mode" == "build" ]; then
     DO_BUILD=true
     DO_PUSH=false
-elif [ "$mode" == "3" ]; then
+elif [ "$mode" == "push" ]; then
     DO_BUILD=false
     DO_PUSH=true
 else
-    echo "[ERREUR] Choix invalide."
+    echo "[ERREUR] Mode invalide. Utilisez build, push ou buildpush."
     exit 1
 fi
 
@@ -66,15 +91,27 @@ if [ "$DO_PUSH" == "true" ]; then
         echo "Image rate-limiter trouvée localement."
     fi
 
-    # Demander le choix de version
-    echo "======================================================"
-    echo "  CHOIX DE LA VERSION A POUSSER"
-    echo "======================================================"
-    echo "Choisissez la version :"
-    echo "1. Test (ghcr.io/baddou666/projet-metier/test/rate-limiter)"
-    echo "2. Final (ghcr.io/baddou666/projet-metier/final/rate-limiter)"
-    echo ""
-    read -p "Entrez 1 pour Test, 2 pour Final : " choice
+    # Utiliser les arguments ou demander
+    if [ -z "$VERSION" ]; then
+        # Demander le choix de version
+        echo "======================================================"
+        echo "  CHOIX DE LA VERSION A POUSSER"
+        echo "======================================================"
+        echo "Choisissez la version :"
+        echo "1. Test (ghcr.io/baddou666/projet-metier/test/rate-limiter)"
+        echo "2. Final (ghcr.io/baddou666/projet-metier/final/rate-limiter)"
+        echo ""
+        read -p "Entrez 1 pour Test, 2 pour Final : " choice
+    else
+        if [ "$VERSION" == "test" ]; then
+            choice="1"
+        elif [ "$VERSION" == "final" ]; then
+            choice="2"
+        else
+            echo "[ERREUR] Version invalide. Utilisez test ou final."
+            exit 1
+        fi
+    fi
 
     if [ "$choice" == "1" ]; then
         BASE_TAG="ghcr.io/baddou666/projet-metier/test/rate-limiter"
@@ -87,10 +124,14 @@ if [ "$DO_PUSH" == "true" ]; then
         echo "Version Final sélectionnée par défaut."
     fi
 
-    echo ""
-    read -p "Entrez le tag de version (latest par défaut) : " tag
-    if [ -z "$tag" ]; then
-        tag="latest"
+    if [ "$WAS_TAG_PROVIDED" == "false" ]; then
+        echo ""
+        read -p "Entrez le tag de version (latest par défaut) : " tag
+        if [ -z "$tag" ]; then
+            tag="latest"
+        fi
+    else
+        tag="$TAG"
     fi
     IMAGE_TAG="$BASE_TAG:$tag"
 
