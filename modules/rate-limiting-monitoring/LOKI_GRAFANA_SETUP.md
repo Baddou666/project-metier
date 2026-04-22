@@ -54,7 +54,7 @@ Tous les logs sont émis en JSON structuré via l'encoder Logstash avec les cham
 
 ### 1. Installation de Loki avec Promtail
 
-Créez un fichier Docker Compose pour Loki + Promtail :
+Créez un fichier Docker Compose pour Loki + Promtail (sans Grafana) :
 
 ```yaml
 version: '3.8'
@@ -79,19 +79,37 @@ services:
     depends_on:
       - loki
 
+networks:
+  monitoring:
+    name: monitoring-network
+    driver: bridge
+```
+
+Créez ensuite un second fichier Docker Compose dédié à Grafana :
+
+```yaml
+version: '3.8'
+
+services:
   grafana:
     image: grafana/grafana:latest
     ports:
       - "3000:3000"
     environment:
+      - GF_SECURITY_ADMIN_USER=admin
       - GF_SECURITY_ADMIN_PASSWORD=admin
     volumes:
-      - grafana-storage:/var/lib/grafana
-    depends_on:
-      - loki
+      - grafana-data:/var/lib/grafana
+    networks:
+      - monitoring
+
+networks:
+  monitoring:
+    name: monitoring-network
+    driver: bridge
 
 volumes:
-  grafana-storage:
+  grafana-data:
 ```
 
 ### 2. Configuration Promtail (promtail-config.yml)
