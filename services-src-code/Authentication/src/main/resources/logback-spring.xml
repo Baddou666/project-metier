@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <configuration>
-    <springProperty name="app.name" source="spring.application.name" defaultValue="rate-limiter"/>
+    <springProperty name="app.name" source="spring.application.name" defaultValue="token-manager"/>
     <springProperty name="app.version" source="app.version" defaultValue="1.0.0"/>
     <property name="LOGS_DIR" value="logs"/>
 
@@ -20,9 +20,9 @@
 
     <!-- Appender fichier pour logs JSON structurés (destiné à Loki) -->
     <appender name="FILE_JSON" class="ch.qos.logback.core.rolling.RollingFileAppender">
-        <file>${LOGS_DIR}/rate-limiter.log</file>
+        <file>${LOGS_DIR}/token-manager.log</file>
         <encoder class="net.logstash.logback.encoder.LogstashEncoder">
-            <customFields>{"app":"${app.name}","version":"${app.version}","environment":"${ENVIRONMENT:local}","service":"rate-limiter-service"}</customFields>
+            <customFields>{"app":"${app.name}","version":"${app.version}","environment":"${ENVIRONMENT:local}","service":"token-manager-service"}</customFields>
             <fieldNames>
                 <timestamp>timestamp</timestamp>
                 <level>level</level>
@@ -35,7 +35,7 @@
         </encoder>
         <!-- Rotation par taille et date -->
         <rollingPolicy class="ch.qos.logback.core.rolling.SizeAndTimeBasedRollingPolicy">
-            <fileNamePattern>${LOGS_DIR}/rate-limiter-%d{yyyy-MM-dd}.%i.log.gz</fileNamePattern>
+            <fileNamePattern>${LOGS_DIR}/token-manager-%d{yyyy-MM-dd}.%i.log.gz</fileNamePattern>
             <maxFileSize>100MB</maxFileSize>
             <maxHistory>30</maxHistory>
             <totalSizeCap>3GB</totalSizeCap>

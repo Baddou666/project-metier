@@ -8,7 +8,6 @@ import org.slf4j.LoggerFactory;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Service;
 
-import java.net.InetAddress;
 import java.time.Duration;
 
 @Service
@@ -31,21 +30,23 @@ public class RateLimitingService implements RateLimitingManager {
         return "token-count:" + srcIp;
     }
     @Override
-    public void incrementKeyValue(String attemptsKey){
+    public Long incrementKeyValue(String attemptsKey){
         String userRedisKey = redisAttemptsKey(attemptsKey);
         Long userAttempts = stringRedisTemplate.opsForValue().increment(userRedisKey);
-        LogContext.setEventContext(LogContext.EVENT_RATE_LIMIT_CHECK, null, attemptsKey);
+        LogContext.setEventContext(LogContext.EVENT_ATTEMPTS_COUNT_MODIFIED, null, attemptsKey);
         LogContext.addDetail(LogContext.REDIS_KEY, userRedisKey);
         LogContext.addDetail(LogContext.COUNTER_VALUE, userAttempts);
         logger.debug("Attempt added to counter");
         if(userAttempts!= null){
             if(userAttempts == 1)
-                stringRedisTemplate.expire(userRedisKey, Duration.ofSeconds(rateLimitingConfig.getWindowSizePerToken()));
+                stringRedisTemplate.expire(userRedisKey,
+                        Duration.ofSeconds(rateLimitingConfig.getWindowSizePerToken()));
         }
+        return userAttempts;
     }
     @Override
     public void verifyAttemptsLimit(String attemptsKey) throws RateLimitReachedException{
-        Long attempts = getKeyValue(attemptsKey);
+        Long attempts = getLiterralKeyValue(redisAttemptsKey(attemptsKey));
         boolean reached = attempts > rateLimitingConfig.getMaxAttemptsPerToken();
         LogContext.addDetail(LogContext.ATTEMPTS, attempts);
         LogContext.addDetail(LogContext.RATE_LIMIT, rateLimitingConfig.getMaxAttemptsPerToken());
@@ -58,8 +59,11 @@ public class RateLimitingService implements RateLimitingManager {
         }
     }
     @Override
-    public Long getKeyValue(String attemptsKey){
-        String stringAttempts = stringRedisTemplate.opsForValue().get(redisAttemptsKey(attemptsKey));
+    public Long getAttempsCountPerToken(String key){
+        return getLiterralKeyValue(redisAttemptsKey(key));
+    }
+    private Long getLiterralKeyValue(String attemptsKey){
+        String stringAttempts = stringRedisTemplate.opsForValue().get(attemptsKey);
         long attempts = 0L;
         if(stringAttempts != null && !stringAttempts.isBlank())
             attempts = Long.parseLong(stringAttempts);
@@ -81,7 +85,7 @@ public class RateLimitingService implements RateLimitingManager {
 
     @Override
     public Boolean isMaxTokenPerIpReached(String srcIp){
-        Long attempts = getKeyValue(srcIp);
+        Long attempts = getLiterralKeyValue(redisTokensKey(srcIp));
         Boolean reached = attempts >= rateLimitingConfig.getMaxTokenPerIp();
         LogContext.setEventContext(LogContext.EVENT_RATE_LIMIT_CHECK, srcIp, null);
         LogContext.addDetail(LogContext.TOKEN_COUNT, attempts);
@@ -103,4 +107,6 @@ public class RateLimitingService implements RateLimitingManager {
             attempts = Long.parseLong(stringAttempts);
         return attempts;
     }
+
+
 }

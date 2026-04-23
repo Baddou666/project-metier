@@ -2,11 +2,14 @@ package aidetector.authentication.model;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;
+import lombok.Getter;
+import lombok.Setter;
 
-@Data
+@Getter
+@Setter
 @AllArgsConstructor
-public class ApiError {
+public class AuthApiResponse {
     private int status;
     private String message;
-    private long timestamp;
+    private String token;
 }

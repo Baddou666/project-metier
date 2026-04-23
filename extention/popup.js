@@ -47,7 +47,7 @@ const authRetryButton   = document.getElementById("authRetryButton");
 /* ─── Config ─────────────────────────────────────────────────── */
 const API_DOMAINE = "https://localhost"
 const API_ENDPOINT = `${API_DOMAINE}/api/detect`;
-const API_TOKEN_ENDPOINT = `${API_DOMAINE}/api/token/get`;
+const API_ANONYM_TOKEN_ENDPOINT = `${API_DOMAINE}/api/anonym-token/get`;
 const TOKEN_RETRY_INTERVAL_MS = 2000;
 const TOKEN_REQUEST_THROTTLE_MS = 2000;
 const TOKEN_MAX_RETRIES = 5;
@@ -192,7 +192,7 @@ async function fetchAuthToken() {
   lastTokenRequestTime = Date.now();
 
   try {
-    const response = await fetch(API_TOKEN_ENDPOINT, {
+    const response = await fetch(API_ANONYM_TOKEN_ENDPOINT, {
       method: "POST",
       headers: { "Content-Type": "application/json" }
       // Body vide comme demandé
@@ -250,7 +250,7 @@ async function fetchAuthToken() {
       throw err;
     }
 
-    throw new Error(`Impossible de joindre le serveur (${API_TOKEN_ENDPOINT}). Vérifiez que le backend est démarré.`);
+    throw new Error(`Impossible de joindre le serveur (${API_ANONYM_TOKEN_ENDPOINT}). Vérifiez que le backend est démarré.`);
   }
 }
 

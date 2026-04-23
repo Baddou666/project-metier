@@ -1,12 +1,14 @@
 package aidetector.authentication.services;
 
-import aidetector.authentication.model.TokenPayload;
-import aidetector.authentication.model.TokenRequest;
+import aidetector.authentication.model.AnonymousTokenPayload;
+import aidetector.authentication.model.AnonymousTokenRequest;
 import aidetector.authentication.utils.LogContext;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
+import java.net.InetAddress;
+import java.net.UnknownHostException;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
 import java.util.UUID;
@@ -16,32 +18,31 @@ public class TokenPayloadService implements TokenPayloadManager {
 
     private static final Logger logger = LoggerFactory.getLogger(TokenPayloadService.class);
 
-    private final HashUtils hashUtils;
-
-    public TokenPayloadService(HashUtils hashUtils) {
-        this.hashUtils = hashUtils;
-    }
-
     @Override
-    public TokenPayload createNewUser(TokenRequest reqToken) throws InvalidKeyException, NoSuchAlgorithmException{
+    public AnonymousTokenPayload createNewAnonymTokenPayload(AnonymousTokenRequest reqToken) throws InvalidKeyException, NoSuchAlgorithmException{
         String userId = UUID.randomUUID().toString();
-        String hashedIp = hashUtils.hashString(reqToken.getSrcIp());
-        LogContext.setEventContext(LogContext.EVENT_TOKEN_REQUEST, reqToken.getSrcIp(), userId);
-        logger.info("New user payload created");
-        return new TokenPayload(userId, hashedIp);
+        String userIp = reqToken.getSrcIp();
+        return new AnonymousTokenPayload(userId, userIp);
     }
 
     @Override
-    public Boolean verifyPayloadContext(TokenPayload payload, TokenRequest request){
+    public Boolean verifyPayloadContext(AnonymousTokenPayload payload, AnonymousTokenRequest request) {
         LogContext.setEventContext(LogContext.EVENT_PAYLOAD_CONTEXT_VERIFY, request.getSrcIp(), payload.getUserId());
-        Boolean verified = hashUtils.verifyHash(request.getSrcIp(), payload.getHashedIp());
-        LogContext.addDetail(LogContext.STATUS, verified ? "SUCCESS" : "FAILED");
-        if (verified) {
-            logger.info("Payload context verified");
-        } else {
-            logger.warn("Payload context verification failed");
+
+        try {
+            InetAddress payloadIp = InetAddress.getByName(payload.getUserIp());
+            InetAddress requestIp = InetAddress.getByName(request.getSrcIp());
+            Boolean verified = payloadIp.equals(requestIp);
+            LogContext.addDetail(LogContext.STATUS, verified ? "SUCCESS" : "FAILED");
+            if (verified) {
+                logger.info("Payload context verified");
+            } else {
+                logger.warn("Payload context verification failed");
+            }
+            return verified;
+        }catch (UnknownHostException e){
+            return false;
         }
-        return verified;
     }
 
 }

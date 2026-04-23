@@ -21,12 +21,16 @@ public class LogContext {
     public static final String ATTEMPTS = "attempts";
     public static final String EXCEPTION_MSG = "exception_message";
     public static final String TOKEN_SIGNATURE = "token_signature";
+    public static final String PUBLIC_KEY_ID = "public_key_id";
 
     // Event Types
 
     public static final String EVENT_TOKEN_CHECK = "EVENT_TOKEN_CHECK";
     public static final String EVENT_RATE_LIMIT_CHECK = "RATE_LIMIT_CHECK";
+    public static final String EVENT_ATTEMPTS_COUNT_MODIFIED = "ATTEMPTS_COUNT_MODIFIED";
     public static final String EVENT_IP_VALIDATION = "IP_VALIDATION";
+    public static final String EVENT_TOKEN_COUNT_MODIFIED = "TOKEN_COUNT_MODIFIED";
+    public static final String EVENT_PUBLIC_KEY_RETREIVAL = "PUBLIC_KEY_RETREIVAL";
 
     /**
      * Initialise le contexte MDC pour un événement donné

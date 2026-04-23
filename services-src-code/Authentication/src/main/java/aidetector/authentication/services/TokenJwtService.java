@@ -1,18 +1,21 @@
 package aidetector.authentication.services;
 
-import aidetector.authentication.model.TokenPayload;
+import aidetector.authentication.model.AnonymousTokenPayload;
+import aidetector.authentication.utils.CryptoUtils;
 import aidetector.authentication.utils.LogContext;
 import aidetector.authentication.config.JwtProperties;
+import com.nimbusds.jose.*;
+import com.nimbusds.jose.jwk.JWK;
 import io.jsonwebtoken.JwtException;
 import io.jsonwebtoken.Jwts;
-import io.jsonwebtoken.security.Keys;
+import io.jsonwebtoken.security.SignatureAlgorithm;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 import tools.jackson.databind.ObjectMapper;
 
-import javax.crypto.SecretKey;
-import java.nio.charset.StandardCharsets;
+import java.security.PrivateKey;
+import java.security.PublicKey;
 import java.util.Date;
 
 @Service
@@ -20,47 +23,51 @@ public class TokenJwtService implements TokenJwtManager {
 
     private static final Logger logger = LoggerFactory.getLogger(TokenJwtService.class);
 
-    private final SecretKey jwtSecretKey;
+    private final PrivateKey privateKey;
+    private final PublicKey publicKey;
+    private final JWK jwkPublicKeyWithKeyId;
+    private final SignatureAlgorithm signAlg;
     private final int expireInSec;
 
-    public TokenJwtService(JwtProperties jwtProperties){
-        String tempsec = jwtProperties.getSecretKey();
-        if(tempsec == null || tempsec.isBlank() || tempsec.strip().length() < jwtProperties.getMinJwtSecretLength()){
-            throw new IllegalArgumentException("the jwt secret should have at least %d characters long !".formatted(jwtProperties.getMinJwtSecretLength()));
-        }
-        this.jwtSecretKey = Keys.hmacShaKeyFor(tempsec.getBytes(StandardCharsets.UTF_8));
+    public TokenJwtService(JwtProperties jwtProperties, CryptoUtils cryptoUtils) throws Exception{
+
+        JWK jwkPrivateKey = JWK.parseFromPEMEncodedObjects(jwtProperties.getPrivatePemFileContent());
+        this.jwkPublicKeyWithKeyId = cryptoUtils.createJwkKeyid(jwkPrivateKey.toPublicJWK());
+        this.privateKey = cryptoUtils.extractPrivateKeyFromPem(jwkPrivateKey);
+        this.publicKey = cryptoUtils.getPublicKey(jwkPublicKeyWithKeyId);
         this.expireInSec = jwtProperties.getExpirationSec();
+        signAlg = cryptoUtils.getSigAlgo(jwkPrivateKey);
         logger.info("[JWT] JWT service initialized with expiration: {} seconds", expireInSec);
     }
 
     @Override
-    public String generateNewSignedToken(TokenPayload client){
+    public String generateNewSignedToken(AnonymousTokenPayload client){
         LogContext.setEventContext(LogContext.EVENT_TOKEN_GENERATED, null, client.getUserId());
         String token = Jwts.builder()
-                .header().add("typ", "JWT")
+                .header()
+                .keyId(jwkPublicKeyWithKeyId.getKeyID())
                 .and()
-                .subject("rate-limite")
                 .claim("userInfo", client)
                 .issuedAt(new Date(System.currentTimeMillis()))
                 .expiration(new Date(System.currentTimeMillis() + (long) expireInSec * 1000))
-                .signWith(jwtSecretKey)
+                .signWith(privateKey,signAlg)
                 .compact();
         logger.info("Token generated successfully");
         return token;
     }
-    @Override
-    public TokenPayload verifyTokenAndGetPayload(String token) throws JwtException, IllegalArgumentException {
-        LogContext.setEventContext(LogContext.EVENT_TOKEN_VERIFIED, null, null);
+    //@Override
+    public AnonymousTokenPayload verifyTokenAndGetPayload(String token) throws JwtException, IllegalArgumentException {
         Object payload = Jwts.parser()
-                .verifyWith(jwtSecretKey)
+                .verifyWith(publicKey)
                 .build()
                 .parseSignedClaims(token)
                 .getPayload()
                 .get("userInfo");
         ObjectMapper mapper = new ObjectMapper();
-        TokenPayload tokenPayload = mapper.convertValue(payload,TokenPayload.class);
-        LogContext.addDetail(LogContext.USER_ID, tokenPayload.getUserId());
-        logger.info("Token verified successfully");
-        return tokenPayload;
+        return mapper.convertValue(payload, AnonymousTokenPayload.class);
+    }
+    @Override
+    public JWK getJwkPublicKeyWithId(){
+        return this.jwkPublicKeyWithKeyId;
     }
 }

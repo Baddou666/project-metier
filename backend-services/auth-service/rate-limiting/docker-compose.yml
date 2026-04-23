@@ -6,12 +6,10 @@ services:
     environment:
       - REDIS_HOST=${REDIS_HOST}
       - REDIS_PORT=${REDIS_INTERNAL_PORT}
-      - JWT_SECRET_KEY=${JWT_SECRET_KEY}
-      - HASH_SALT=${HASH_SALT}
       - REDIS_PASSWORD=${REDIS_PASSWORD}
-      - RATE_LIMIT_SERVICE_INTERNAL_PORT=${RATE_LIMIT_SERVICE_INTERNAL_PORT}
-      - NEXT_SERVICE_BASEURL=${DATA_PREPROCESSOR_SERVICE_BASEURL}
-      - NEXT_SERVICE_PORT=${DATA_PREPROCESSOR_SERVICE_PORT}
+      - JWKS_SRC_URL=${JWKS_SRC_URL}
+    expose:
+      - 8080
     volumes:
       - ./config:/workspace/config
       - ./logs:/workspace/logs

@@ -4,5 +4,5 @@ import lombok.Data;
 
 @Data
 public class IpCheckRequest {
-    private String ipv4;
+    private String srcIp;
 }

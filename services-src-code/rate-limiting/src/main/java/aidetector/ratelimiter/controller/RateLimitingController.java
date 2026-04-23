@@ -9,42 +9,47 @@ import aidetector.ratelimiter.model.IpCheckRequest;
 import aidetector.ratelimiter.model.RateLimiterResponse;
 import aidetector.ratelimiter.model.TokenAttemptsRequest;
 import aidetector.ratelimiter.services.RateLimitingManager;
+import aidetector.ratelimiter.utils.JwksLoader;
 import aidetector.ratelimiter.utils.LogContext;
+import io.jsonwebtoken.JwsHeader;
+import io.jsonwebtoken.JwtException;
+import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.lang.Strings;
 import jakarta.servlet.http.HttpServletResponse;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.ResponseEntity;
 import org.apache.commons.codec.digest.DigestUtils;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.net.InetAddress;
+import java.security.PublicKey;
 
-@RestController("/api/rate-limiter")
+@RestController
+@RequestMapping("/api/rate-limiter")
 public class RateLimitingController {
 
     private static final Logger logger = LoggerFactory.getLogger(RateLimitingController.class);
     private final RateLimitingManager rateLimitingManager;
     private final RateLimitingConfig rateLimitingConfig;
+    private final JwksLoader jwksLoader;
 
     public RateLimitingController(RateLimitingManager rateLimitingManager,
-                                  RateLimitingConfig rateLimitingConfig) {
+                                  RateLimitingConfig rateLimitingConfig, JwksLoader jwksLoader) {
         this.rateLimitingManager = rateLimitingManager;
         this.rateLimitingConfig = rateLimitingConfig;
+        this.jwksLoader = jwksLoader;
     }
 
 
     @GetMapping("/verify-ip-max-tokens")
     public ResponseEntity<?> verifyIpTokensNumber(@RequestBody IpCheckRequest ip){
 
-        LogContext.setEventContext(LogContext.EVENT_IP_VALIDATION,ip.getIpv4(),null);
+        LogContext.setEventContext(LogContext.EVENT_IP_VALIDATION,ip.getSrcIp(),null);
         try {
-            InetAddress ipObj = InetAddress.getByName(ip.getIpv4());
-            ip.setIpv4(ipObj.getHostAddress());
-            if (ip.getIpv4() == null) throw new InvalidIpException("provided null ip");
+            InetAddress ipObj = InetAddress.getByName(ip.getSrcIp());
+            ip.setSrcIp(ipObj.getHostAddress());
+            if (ip.getSrcIp() == null) throw new InvalidIpException("provided null ip");
             logger.info("ip verification succeeded");
         }
         catch(Exception e) {
@@ -54,9 +59,9 @@ public class RateLimitingController {
         finally {
             LogContext.clear();
         }
-        if(rateLimitingManager.isMaxTokenPerIpReached(ip.getIpv4()))
+        if(rateLimitingManager.isMaxTokenPerIpReached(ip.getSrcIp()))
             return ResponseEntity.status(HttpServletResponse.SC_FORBIDDEN).body(new RateLimiterResponse(true,"max allowed token reached !"));
-        return ResponseEntity.accepted().body(new RateLimiterResponse(false,"%s has %d/%d, resets every %d seconds".formatted(ip.getIpv4(),rateLimitingManager.getIpTokensCount(ip.getIpv4()),rateLimitingConfig.getMaxTokenPerIp(),rateLimitingConfig.getWindowSizePerIp())));
+        return ResponseEntity.accepted().body(new RateLimiterResponse(false,"%s has %d/%d, resets every %d seconds".formatted(ip.getSrcIp(),rateLimitingManager.getIpTokensCount(ip.getSrcIp()),rateLimitingConfig.getMaxTokenPerIp(),rateLimitingConfig.getWindowSizePerIp())));
     }
 
 
@@ -67,7 +72,7 @@ public class RateLimitingController {
 
         LogContext.setEventContext(LogContext.EVENT_TOKEN_CHECK,attemptsRequest.getUserIp(),attemptsRequest.getUserId());
         if(attemptsRequest.getToken()==null || !Strings.hasText(attemptsRequest.getToken())) {
-            logger.debug("No token present");
+            logger.warn("No token present");
             LogContext.clear();
             return ResponseEntity.badRequest().body(new RateLimiterResponse(null,"No token present"));
         }
@@ -84,7 +89,7 @@ public class RateLimitingController {
                     new RateLimiterResponse(false,
                             "%s(attempts: %d/%d, resets every %d seconds)".formatted(
                                     attemptsRequest.getUserId(),
-                                    rateLimitingManager.getKeyValue(tokenKey),
+                                    rateLimitingManager.getAttempsCountPerToken(tokenKey),
                                     rateLimitingConfig.getMaxAttemptsPerToken(),
                                     rateLimitingConfig.getWindowSizePerToken())));
 
@@ -106,11 +111,8 @@ public class RateLimitingController {
     }
     @PostMapping("/add-verify-token-attempt")
     public ResponseEntity<?> addTokenAttempt(@RequestBody TokenAttemptsRequest attemptsRequest){
-        LogContext.setEventContext(LogContext.ATTEMPTS,attemptsRequest.getUserIp(),attemptsRequest.getUserId());
-
         if(attemptsRequest.getToken() != null){
             rateLimitingManager.incrementKeyValue(hashToken(attemptsRequest.getToken()));
-            logger.info("incremented token attempts");
             LogContext.clear();
         }
         return verifyTokenAttempts(attemptsRequest);
@@ -119,14 +121,44 @@ public class RateLimitingController {
     public ResponseEntity<?> addIpToken(@RequestBody IpCheckRequest ipObj){
         ResponseEntity<?> res = verifyIpTokensNumber(ipObj);
         if (res.getStatusCode().is2xxSuccessful())
-            rateLimitingManager.addTokenToIp(ipObj.getIpv4());
+            rateLimitingManager.addTokenToIp(ipObj.getSrcIp());
         return res;
     }
 
-    private void verifyTokenSignature(String token) {
-        throw new InvalidTokenSignatureException("i did not implement the token verification yet");
-    }
 
+    public void verifyTokenSignature(String token) {
+
+        try {
+            Jwts.parser()
+                    .keyLocator(header -> {
+                        String kid = ((JwsHeader) header).getKeyId();
+
+                        LogContext.setEventContext(LogContext.EVENT_PUBLIC_KEY_RETREIVAL,null,null);
+                        try {
+                            PublicKey pub = jwksLoader.getPublicKeyByKid(kid);
+                            LogContext.addDetail(LogContext.STATUS,"SUCCESS");
+                            LogContext.addDetail(LogContext.PUBLIC_KEY_ID,kid);
+                            logger.info("retrieved public key");
+                            return pub;
+                        } catch (Exception e) {
+                            LogContext.addDetail(LogContext.STATUS,"FAILED");
+                            LogContext.addDetail(LogContext.EXCEPTION_MSG,e.getMessage());
+                            logger.error("cannot retrieve the public key !");
+                            LogContext.clear();
+                            throw new RuntimeException("cannot retrieve the public key !", e);
+                        }
+                    })
+                    .build()
+                    .parseSignedClaims(token);
+            logger.info("token vérified successfully");
+
+        } catch (JwtException e) {
+            LogContext.addDetail(LogContext.EXCEPTION_MSG,e.getMessage());
+            logger.warn("token signature verification failed");
+            LogContext.clear();
+            throw new InvalidTokenSignatureException("signature vérification failed");
+        }
+    }
     private String hashToken(String token)
     {
         return DigestUtils.sha256Hex(token);

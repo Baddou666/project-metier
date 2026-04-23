@@ -1,12 +1,16 @@
 package aidetector.authentication.services;
 
-import aidetector.authentication.model.TokenPayload;
-import aidetector.authentication.model.TokenRequest;
+import aidetector.authentication.model.AnonymousTokenPayload;
+import aidetector.authentication.model.AnonymousTokenRequest;
 
+import java.net.UnknownHostException;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
 
 public interface TokenPayloadManager {
-    public TokenPayload createNewUser(TokenRequest reqToken) throws InvalidKeyException, NoSuchAlgorithmException;
-    public Boolean verifyPayloadContext(TokenPayload payload, TokenRequest request);
+    AnonymousTokenPayload createNewAnonymTokenPayload(AnonymousTokenRequest reqToken)
+            throws InvalidKeyException,
+            NoSuchAlgorithmException;
+    Boolean verifyPayloadContext(AnonymousTokenPayload payload, AnonymousTokenRequest request)
+            throws UnknownHostException;
 }

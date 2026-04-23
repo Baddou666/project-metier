@@ -13,26 +13,15 @@ public class LogContext {
     public static final String USER_ID = "user_id";
     public static final String STATUS = "status";
     public static final String MESSAGE_DETAIL = "detail";
-    public static final String REDIS_KEY = "redis_key";
-    public static final String COUNTER_VALUE = "counter_value";
-    public static final String LIMIT_REACHED = "limit_reached";
-    public static final String RATE_LIMIT = "rate_limit";
-    public static final String TOKEN_COUNT = "token_count";
-    public static final String ATTEMPTS = "attempts";
     public static final String EXCEPTION_MSG = "exception_message";
+    public static final String MALFORMED_IP = "malformed_ip";
 
     // Event Types
-    public static final String EVENT_TOKEN_REQUEST = "TOKEN_REQUEST";
-    public static final String EVENT_FORWARD_REQUEST = "FORWARD_REQUEST";
+    public static final String EVENT_TOKEN_GENERATION_PERMISSION = "TOKEN_GENERATION_PERMISSION";
     public static final String EVENT_TOKEN_GENERATED = "TOKEN_GENERATED";
-    public static final String EVENT_TOKEN_VERIFIED = "TOKEN_VERIFIED";
-    public static final String EVENT_TOKEN_VERIFY_FAILED = "TOKEN_VERIFY_FAILED";
-    public static final String EVENT_RATE_LIMIT_CHECK = "RATE_LIMIT_CHECK";
-    public static final String EVENT_RATE_LIMIT_REACHED = "RATE_LIMIT_REACHED";
     public static final String EVENT_IP_VALIDATION = "IP_VALIDATION";
     public static final String EVENT_PAYLOAD_CONTEXT_VERIFY = "PAYLOAD_CONTEXT_VERIFY";
-    public static final String EVENT_HASH_COMPUTE = "HASH_COMPUTE";
-    public static final String EVENT_HASH_VERIFY = "HASH_VERIFY";
+    public static final String EVENT_KEY_PAIR_VALIDATION = "KEY_PAIR_VALIDATION";
 
     /**
      * Initialise le contexte MDC pour un événement donné
@@ -62,8 +51,6 @@ public class LogContext {
      */
     public static void clearTemporary() {
         MDC.remove(MESSAGE_DETAIL);
-        MDC.remove(REDIS_KEY);
-        MDC.remove(COUNTER_VALUE);
         MDC.remove(EXCEPTION_MSG);
     }
 }
