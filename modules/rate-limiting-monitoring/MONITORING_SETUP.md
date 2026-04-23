@@ -28,7 +28,9 @@ Le service **rate-limiter** a été configuré pour générer des **logs JSON st
    - `loki-config.yml` : Configuration Loki
    - `promtail-config.yml` : Pipeline de collecte/parsing JSON
    - `prometheus.yml` : Scrape optionnel des métriques
-   - `docker-compose.loki.yml` : Stack Loki + Promtail + Grafana
+   - `modules/rate-limiting-monitoring/docker-compose.yml` : Compose d'assemblage du module monitoring
+   - `backend-services/loki-service/docker-compose.loki.yml` : Services Loki + Promtail + Prometheus
+   - `backend-services/grafana-service/docker-compose.grafana.yml` : Service Grafana dédié
 
 6. **Documentation**
    - `LOKI_GRAFANA_SETUP.md` : Guide complet d'intégration
@@ -57,11 +59,11 @@ cd services-src-code/rate-limiting
 ./mvnw clean package -DskipTests
 ```
 
-### 2. Démarrer la Stack (Loki + Promtail + Grafana + Rate Limiter)
+### 2. Démarrer la Stack Monitoring (Loki + Promtail + Prometheus + Grafana)
 
 ```bash
 # À la racine du projet
-docker-compose -f docker-compose.loki.yml up -d
+docker compose -f modules/rate-limiting-monitoring/docker-compose.yml up -d
 ```
 
 ### 3. Vérifier le Démarrage
