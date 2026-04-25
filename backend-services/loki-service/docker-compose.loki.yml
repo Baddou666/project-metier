@@ -1,5 +1,3 @@
-version: '3.8'
-
 services:
   # Loki - Agrégateur de logs
   loki:
@@ -22,8 +20,7 @@ services:
       - ../rate-limiting-service/logs:/logs:ro
       - ../token-manager/logs:/token-manager-logs:ro
       - ../promtail-service/promtail-config.yml:/etc/promtail/config.yml
-      - /var/lib/docker/containers:/var/lib/docker/containers:ro
-      - /var/run/docker.sock:/var/run/docker.sock
+      - promtail-positions:/var/lib/promtail
     ports:
       - "9080:9080"
     command: -config.file=/etc/promtail/config.yml
@@ -53,3 +50,4 @@ networks:
 volumes:
   loki-data:
   prometheus-data:
+  promtail-positions:
