@@ -48,6 +48,7 @@ public class RateLimitingService implements RateLimitingManager {
         LogContext.addDetail(LogContext.ATTEMPTS, attempts);
         LogContext.addDetail(LogContext.RATE_LIMIT, rateLimitingConfig.getMaxAttemptsPerToken());
         LogContext.addDetail(LogContext.LIMIT_REACHED, reached);
+        LogContext.addDetail(LogContext.STATUS, reached ? "RATE_LIMIT_REACHED" : "ALLOWED");
         if (reached) {
             logger.warn("Rate limit reached for user");
             throw new RateLimitReachedException("Rate limit reached for user");

@@ -41,7 +41,8 @@ public class TokenJwtService implements TokenJwtManager {
 
     @Override
     public String generateNewSignedToken(AnonymousTokenPayload client){
-        LogContext.setEventContext(LogContext.EVENT_TOKEN_GENERATED, null, client.getUserId());
+        LogContext.setEventContext(LogContext.EVENT_TOKEN_GENERATED, client.getUserIp(), client.getUserId());
+        LogContext.addDetail(LogContext.STATUS, "SUCCESS");
         String token = Jwts.builder()
                 .header()
                 .keyId(jwkPublicKeyWithKeyId.getKeyID())

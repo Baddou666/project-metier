@@ -71,7 +71,7 @@ public class AnonymousTokenController {
             throws NoSuchAlgorithmException, InvalidKeyException {
         if (!gatewayAuthSharedSecret.equals(request.getHeader(gatewayAuthHeaderName))) {
             int status = HttpStatus.FORBIDDEN.value();
-            LogContext.setEventContext(LogContext.EVENT_IP_VALIDATION, null, null);
+            LogContext.setEventContext(LogContext.EVENT_GATEWAY_AUTH, null, null);
             LogContext.addDetail(LogContext.STATUS, "FAILED");
             LogContext.addDetail(LogContext.EXCEPTION_MSG, "request rejected: invalid gateway signature");
             logger.warn("request rejected: invalid gateway signature");

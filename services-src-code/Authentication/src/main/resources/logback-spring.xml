@@ -36,7 +36,7 @@
     </appender>
 
     <!-- Logger spécifique pour API Gateway (tous les logs métier) -->
-    <logger name="aidetector.apigateway" level="DEBUG" additivity="false">
+    <logger name="aidetector.authentication" level="DEBUG" additivity="false">
         <appender-ref ref="FILE_JSON"/>
         <appender-ref ref="CONSOLE"/>
     </logger>

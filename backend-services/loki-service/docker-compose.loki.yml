@@ -20,6 +20,7 @@ services:
     image: grafana/promtail:2.9.0
     volumes:
       - ../rate-limiting-service/logs:/logs:ro
+      - ../token-manager/logs:/token-manager-logs:ro
       - ../promtail-service/promtail-config.yml:/etc/promtail/config.yml
       - /var/lib/docker/containers:/var/lib/docker/containers:ro
       - /var/run/docker.sock:/var/run/docker.sock

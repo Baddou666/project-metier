@@ -25,6 +25,7 @@ public class LogContext {
     public static final String EVENT_TOKEN_GENERATION_PERMISSION = "TOKEN_GENERATION_PERMISSION";
     public static final String EVENT_TOKEN_GENERATED = "TOKEN_GENERATED";
     public static final String EVENT_IP_VALIDATION = "IP_VALIDATION";
+    public static final String EVENT_GATEWAY_AUTH = "GATEWAY_AUTH";
     public static final String EVENT_PAYLOAD_CONTEXT_VERIFY = "PAYLOAD_CONTEXT_VERIFY";
     public static final String EVENT_KEY_PAIR_VALIDATION = "KEY_PAIR_VALIDATION";
     public static final String EVENT_TOKEN_COUNT_MODIFIED = "TOKEN_COUNT_MODIFIED";

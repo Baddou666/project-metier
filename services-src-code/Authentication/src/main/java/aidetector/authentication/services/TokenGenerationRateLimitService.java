@@ -51,6 +51,7 @@ public class TokenGenerationRateLimitService implements TokenGenerationRateLimit
         LogContext.addDetail(LogContext.TOKEN_COUNT, attempts);
         LogContext.addDetail(LogContext.RATE_LIMIT, tokenGenerationRateLimitConfig.getMaxTokenPerIp());
         LogContext.addDetail(LogContext.LIMIT_REACHED, reached);
+        LogContext.addDetail(LogContext.STATUS, reached ? "RATE_LIMIT_REACHED" : "ALLOWED");
         if (reached) {
             logger.warn("Token limit reached for IP");
         } else {

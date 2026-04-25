@@ -41,6 +41,9 @@ public class TokenPayloadService implements TokenPayloadManager {
             }
             return verified;
         }catch (UnknownHostException e){
+            LogContext.addDetail(LogContext.STATUS, "ERROR");
+            LogContext.addDetail(LogContext.EXCEPTION_MSG, e.getMessage());
+            logger.warn("Payload context verification failed: invalid IP payload or request");
             return false;
         }
     }
