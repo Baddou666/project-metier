@@ -96,7 +96,7 @@
             "uid": "loki"
           },
           "editorMode": "code",
-          "expr": "sum(count_over_time({service=\"token-manager-service\", event_type=\"GATEWAY_AUTH\", status=\"FAILED\"} [15m]))",
+          "expr": "sum(count_over_time({service=\"token-manager-service\", event_type=\"GATEWAY_AUTH\", status=\"FAILED\"} [$__range]))",
           "legendFormat": "gateway_auth_failed",
           "queryType": "instant",
           "refId": "A"
@@ -159,7 +159,7 @@
             "uid": "loki"
           },
           "editorMode": "code",
-          "expr": "sum(count_over_time({service=~\"rate-limiter-service|token-manager-service\", event_type=\"IP_VALIDATION\", status=\"FAILED\"} [15m]))",
+          "expr": "sum(count_over_time({service=~\"rate-limiter-service|token-manager-service\", event_type=\"IP_VALIDATION\", status=\"FAILED\"} [$__range]))",
           "legendFormat": "ip_validation_failed",
           "queryType": "instant",
           "refId": "A"
@@ -226,7 +226,7 @@
             "uid": "loki"
           },
           "editorMode": "code",
-          "expr": "sum(count_over_time({service=~\"rate-limiter-service|token-manager-service\", limit_reached=\"true\"} [15m]))",
+          "expr": "sum(count_over_time({service=~\"rate-limiter-service|token-manager-service\", limit_reached=\"true\"} [$__range]))",
           "legendFormat": "rate_limit_hits",
           "queryType": "instant",
           "refId": "A"
@@ -289,7 +289,7 @@
             "uid": "loki"
           },
           "editorMode": "code",
-          "expr": "sum(count_over_time({service=\"rate-limiter-service\", event_type=\"PUBLIC_KEY_RETREIVAL\", status=\"FAILED\"} [15m]))",
+          "expr": "sum(count_over_time({service=\"rate-limiter-service\", event_type=\"PUBLIC_KEY_RETREIVAL\", status=\"FAILED\"} [$__range]))",
           "legendFormat": "jwks_failures",
           "queryType": "instant",
           "refId": "A"
@@ -352,7 +352,7 @@
             "uid": "loki"
           },
           "editorMode": "code",
-          "expr": "sum(count_over_time({service=\"token-manager-service\", event_type=\"TOKEN_GENERATION_PERMISSION\", status=\"RATE_LIMIT_REACHED\"} [15m]))",
+          "expr": "sum(count_over_time({service=\"token-manager-service\", event_type=\"TOKEN_GENERATION_PERMISSION\", status=\"RATE_LIMIT_REACHED\"} [$__range]))",
           "legendFormat": "token_generation_blocked",
           "queryType": "instant",
           "refId": "A"
@@ -415,7 +415,7 @@
             "uid": "loki"
           },
           "editorMode": "code",
-          "expr": "sum(count_over_time({service=~\"rate-limiter-service|token-manager-service\", level=\"ERROR\"} [15m]))",
+          "expr": "sum(count_over_time({service=~\"rate-limiter-service|token-manager-service\", level=\"ERROR\"} [$__range]))",
           "legendFormat": "errors",
           "queryType": "instant",
           "refId": "A"
@@ -686,7 +686,7 @@
             "uid": "loki"
           },
           "editorMode": "code",
-          "expr": "topk(10, sum by (source_ip) (count_over_time({service=~\"rate-limiter-service|token-manager-service\", limit_reached=\"true\", source_ip=~\".+\"} [1h])))",
+          "expr": "topk(10, sum by (source_ip) (count_over_time({service=~\"rate-limiter-service|token-manager-service\", limit_reached=\"true\"} | json source_ip=\"context.source_ip\" | source_ip=~\".+\" [1h])))",
           "legendFormat": "{{source_ip}}",
           "queryType": "instant",
           "refId": "A"
@@ -742,7 +742,7 @@
             "uid": "loki"
           },
           "editorMode": "code",
-          "expr": "topk(10, sum by (user_id) (count_over_time({service=~\"rate-limiter-service|token-manager-service\", status=~\"FAILED|RATE_LIMIT_REACHED\", user_id=~\".+\"} [1h])))",
+          "expr": "topk(10, sum by (user_id) (count_over_time({service=~\"rate-limiter-service|token-manager-service\", status=~\"FAILED|RATE_LIMIT_REACHED\"} | json user_id=\"context.user_id\" | user_id=~\".+\" [1h])))",
           "legendFormat": "{{user_id}}",
           "queryType": "instant",
           "refId": "A"
@@ -849,7 +849,7 @@
             "uid": "loki"
           },
           "editorMode": "code",
-          "expr": "{service=~\"rate-limiter-service|token-manager-service\", level=~\"WARN|ERROR\"} | json | line_format \"[{{.service}}] [{{.level}}] [{{.event_type}}] [status={{.status}}] [ip={{.source_ip}}] [user={{.user_id}}] {{.message}}\"",
+          "expr": "{service=~\"rate-limiter-service|token-manager-service\", level=~\"WARN|ERROR\"} | json service=\"service\", level=\"level\", event_type=\"context.event_type\", status=\"context.status\", source_ip=\"context.source_ip\", user_id=\"context.user_id\", message=\"message\" | line_format \"[{{.service}}] [{{.level}}] [{{.event_type}}] [status={{.status}}] [ip={{.source_ip}}] [user={{.user_id}}] {{.message}}\"",
           "queryType": "range",
           "refId": "A"
         }
@@ -870,7 +870,7 @@
     "list": []
   },
   "time": {
-    "from": "now-24h",
+    "from": "now/d",
     "to": "now"
   },
   "timepicker": {},
