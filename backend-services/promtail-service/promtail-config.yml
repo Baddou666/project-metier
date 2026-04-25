@@ -47,12 +47,28 @@ scrape_configs:
             token_count: context.token_count
 
       - labels:
+          timestamp:
+          logger:
+          message:
+          thread:
           service:
+          version:
+          environment:
           event_type:
+          source_ip:
+          user_id:
           status:
           level:
           route_id:
+          counter_value:
+          rate_limit:
+          redis_key:
+          detail:
+          exception_message:
+          attempts:
+          token_count:
           app:
+          limit_reached:
 
   - job_name: token-manager
     static_configs:
@@ -88,8 +104,24 @@ scrape_configs:
             token_count: context.token_count
 
       - labels:
+          timestamp:
+          logger:
+          message:
+          thread:
           service:
+          version:
+          environment:
           event_type:
+          source_ip:
+          user_id:
           status:
           level:
+          counter_value:
+          rate_limit:
+          redis_key:
+          detail:
+          exception_message:
+          malformed_ip:
+          token_count:
           app:
+          limit_reached:
