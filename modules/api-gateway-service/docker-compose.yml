@@ -1,0 +1,47 @@
+include:
+  - path: ../../backend-services/https-proxy-service/docker-compose.yml
+  - path: ../../backend-services/rate-limiting-service/docker-compose.yml
+  - path: ../../backend-services/redis-shared-memory-service/docker-compose.yml
+  - path: ../../backend-services/token-manager/docker-compose.yml
+services:
+  https-proxy:
+    networks:
+      - proxy-ratelimiter-net
+    ports:
+    # Publication du port 80 en mode host pour voir l'IP réelle
+    - target: 80
+      published: 80
+      protocol: tcp
+      mode: host
+    # Publication du port 443 en mode host pour voir l'IP réelle
+    - target: 443
+      published: 443
+      protocol: tcp
+      mode: host
+    depends_on:
+      - rate-limiting-service
+  rate-limiting-service:
+    networks:
+        - proxy-ratelimiter-net
+        - redis-net
+    depends_on:
+      - redis-server
+    
+  token-manager-service:
+    networks:
+      - redis-net
+    depends_on:
+      - redis-server
+
+  redis-server:
+    container_name: ${REDIS_HOST}
+    networks:
+        - redis-net
+    
+networks:
+  proxy-ratelimiter-net:
+    driver: bridge
+    name: proxy-ratelimiter-net
+  redis-net:
+    driver: bridge
+    name: redis-net

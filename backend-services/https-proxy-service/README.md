@@ -1,68 +1,40 @@
-\# 🔒 Configuration HTTPS Proxy (Nginx)
+# HTTPS Proxy Service
 
+Ce dossier contient le proxy Nginx frontal.
 
+## Preparation
 
-Ce dépôt contient une configuration de proxy inverse sécurisée par SSL. Pour respecter les bonnes pratiques de sécurité, les certificats ne sont pas inclus dans le dépôt.
+1. Copier `.env.example` vers `.env`
+2. Generer les certificats locaux attendus par la configuration Nginx
 
+## Generation des certificats
 
+Sous Linux ou Git Bash :
 
-Chaque membre de l'équipe doit générer ses propres certificats localement avant de lancer les conteneurs.
-
-
-
-\---
-
-
-
-\## 1. Génération des certificats
-
-
-
-Le script `init-certs.sh` automatise la création du dossier `certs/` et la génération des fichiers `.key` et `.crt`.
-
-
-
-\### 🐧 Sur Linux
-
-Ouvrez un terminal à la racine du projet et exécutez :
-
-```bash
-
-chmod +x init-certs.sh
-
-./init-certs.sh
-
+```sh
+sh install-certs.sh
 ```
 
+Si vous utilisez une autre methode, assurez-vous d'obtenir les fichiers SSL attendus dans `certs/`.
 
+## Variables importantes
 
-\### 🪟 Sur Windows (via Git Bash)
+- `PROXY_TARGET_HOST`
+- `PROXY_TARGET_PORT`
 
-Si vous avez installé Git, c'est la méthode recommandée :
+Elles doivent pointer vers le service `rate-limiting-service`.
 
-1\. Faites un \*\*clic droit\*\* dans le dossier du projet.
+## Lancement
 
-2\. Choisissez \*\*"Git Bash Here"\*\*.
-
-3\. Dans le terminal qui s'ouvre, exécutez :
-
-```bash
-
-sh init-certs.sh
-
+```sh
+docker compose up -d
+docker compose logs -f https-proxy
 ```
 
+## Test rapide
 
+Une fois la stack complete demarree :
 
-\### 🪟 Sur Windows (via PowerShell)
-
-Si vous n'utilisez pas Git Bash, ouvrez PowerShell dans le dossier du projet et exécutez (vous devez installer necessairement openssl):
-
-```powershell
-
-if (!(Test-Path -Path "certs")) { New-Item -ItemType Directory -Path "certs" }
-
-\& "C:\\Chemin\\Vers\\binaire\\openssl.exe" req -x509 -nodes -days 365 -newkey rsa:2048 -keyout ./certs/selfsigned.key -out ./certs/selfsigned.crt -subj "/C=MA/L=Local/O=DevTeam/CN=localhost"
-
+```sh
+curl -k https://localhost/api/anonym-token/get -X POST -H "X-Real-IP: 1.1.1.1"
 ```
-

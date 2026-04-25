@@ -1,5 +1,4 @@
 package aidetector.ratelimiter.utils;
-import aidetector.ratelimiter.controller.RateLimitingController;
 import com.nimbusds.jose.KeySourceException;
 import com.nimbusds.jose.jwk.*;
 import com.nimbusds.jose.jwk.source.JWKSource;
@@ -33,7 +32,7 @@ public class JwksLoader {
 
         // 🔥 FAIL FAST : Récupère les clés pour s'assurer que l'URL est joignable au démarrage
         LogContext.setEventContext(LogContext.EVENT_PUBLIC_KEY_RETREIVAL,null,null);
-        for(int i = 0; i < 10 ;i++) {
+        for(int i = 0; i < 20 ;i++) {
             try{
                 logger.info("attempting to retrieve the public key from the auth server");
                 JWKSelector selector = new JWKSelector(new JWKMatcher.Builder().build());
@@ -45,7 +44,7 @@ public class JwksLoader {
                 LogContext.clearTemporary();
                 if(i == 9)
                     throw new KeySourceException(e);
-                Thread.sleep(2000);
+                Thread.sleep(5000);
             }
         }
         LogContext.addDetail(LogContext.STATUS,"SUCCESS");

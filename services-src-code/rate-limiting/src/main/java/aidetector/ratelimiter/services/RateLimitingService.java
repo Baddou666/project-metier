@@ -26,9 +26,6 @@ public class RateLimitingService implements RateLimitingManager {
     private String redisAttemptsKey(String attemptsKey){
         return "attempts:" + attemptsKey;
     }
-    private String redisTokensKey(String srcIp){
-        return "token-count:" + srcIp;
-    }
     @Override
     public Long incrementKeyValue(String attemptsKey){
         String userRedisKey = redisAttemptsKey(attemptsKey);
@@ -62,6 +59,7 @@ public class RateLimitingService implements RateLimitingManager {
     public Long getAttempsCountPerToken(String key){
         return getLiterralKeyValue(redisAttemptsKey(key));
     }
+
     private Long getLiterralKeyValue(String attemptsKey){
         String stringAttempts = stringRedisTemplate.opsForValue().get(attemptsKey);
         long attempts = 0L;
@@ -69,44 +67,4 @@ public class RateLimitingService implements RateLimitingManager {
             attempts = Long.parseLong(stringAttempts);
         return attempts;
     }
-    @Override
-    public void addTokenToIp(String srcIp){
-        String tokenRedisKey = redisTokensKey(srcIp);
-        Long ipAttempts = stringRedisTemplate.opsForValue().increment(tokenRedisKey);
-        LogContext.setEventContext(LogContext.EVENT_RATE_LIMIT_CHECK, srcIp, null);
-        LogContext.addDetail(LogContext.REDIS_KEY, tokenRedisKey);
-        LogContext.addDetail(LogContext.COUNTER_VALUE, ipAttempts);
-        logger.debug("token count incremented");
-        if(ipAttempts!= null){
-            if(ipAttempts == 1)
-                stringRedisTemplate.expire(tokenRedisKey, Duration.ofSeconds(rateLimitingConfig.getWindowSizePerIp()));
-        }
-    }
-
-    @Override
-    public Boolean isMaxTokenPerIpReached(String srcIp){
-        Long attempts = getLiterralKeyValue(redisTokensKey(srcIp));
-        Boolean reached = attempts >= rateLimitingConfig.getMaxTokenPerIp();
-        LogContext.setEventContext(LogContext.EVENT_RATE_LIMIT_CHECK, srcIp, null);
-        LogContext.addDetail(LogContext.TOKEN_COUNT, attempts);
-        LogContext.addDetail(LogContext.RATE_LIMIT, rateLimitingConfig.getMaxTokenPerIp());
-        LogContext.addDetail(LogContext.LIMIT_REACHED, reached);
-        if (reached) {
-            logger.warn("Token limit reached for IP");
-        } else {
-            logger.debug("Token limit check passed");
-        }
-        return reached;
-    }
-
-    @Override
-    public Long getIpTokensCount(String ip){
-        String stringAttempts = stringRedisTemplate.opsForValue().get(redisTokensKey(ip));
-        long attempts = 0L;
-        if(stringAttempts != null && !stringAttempts.isBlank())
-            attempts = Long.parseLong(stringAttempts);
-        return attempts;
-    }
-
-
 }

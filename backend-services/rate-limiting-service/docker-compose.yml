@@ -1,0 +1,26 @@
+services:
+  # Votre application Spring Boot
+  rate-limiting-service:
+    image: ghcr.io/baddou666/projet-metier/final/rate-limiter:latest
+    container_name: rate-limiting-service
+    environment:
+      - REDIS_HOST=${REDIS_HOST}
+      - REDIS_PORT=${REDIS_INTERNAL_PORT}
+      - REDIS_PASSWORD=${REDIS_PASSWORD}
+      - TOKEN_ROUTE_ID=${TOKEN_ROUTE_ID}
+      - REAL_IP_HEADER=${REAL_IP_HEADER}
+      - FORWARDED_CLIENT_IP_HEADER=${FORWARDED_CLIENT_IP_HEADER}
+      - TRUSTED_FORWARDED_HEADERS=${TRUSTED_FORWARDED_HEADERS}
+      - TOKEN_MANAGER_SERVICE_URI=${TOKEN_MANAGER_SERVICE_URI}
+      - AI_DETECTOR_SERVICE_URI=${AI_DETECTOR_SERVICE_URI}
+      - JWKS_SRC_URL=${JWKS_SRC_URL}
+      - AUTH_GATEWAY_SHARED_SECRET_HEADER=${AUTH_GATEWAY_SHARED_SECRET_HEADER}
+      - AUTH_GATEWAY_SHARED_SECRET=${AUTH_GATEWAY_SHARED_SECRET}
+    depends_on:
+      - redis-server
+      - token-manager-service
+    expose:
+      - 8080
+    volumes:
+      - ./config:/workspace/config
+      - ./logs:/workspace/logs

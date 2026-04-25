@@ -15,6 +15,11 @@ public class LogContext {
     public static final String MESSAGE_DETAIL = "detail";
     public static final String EXCEPTION_MSG = "exception_message";
     public static final String MALFORMED_IP = "malformed_ip";
+    public static final String REDIS_KEY = "redis_key";
+    public static final String COUNTER_VALUE = "counter_value";
+    public static final String LIMIT_REACHED = "limit_reached";
+    public static final String RATE_LIMIT = "rate_limit";
+    public static final String TOKEN_COUNT = "token_count";
 
     // Event Types
     public static final String EVENT_TOKEN_GENERATION_PERMISSION = "TOKEN_GENERATION_PERMISSION";
@@ -22,6 +27,7 @@ public class LogContext {
     public static final String EVENT_IP_VALIDATION = "IP_VALIDATION";
     public static final String EVENT_PAYLOAD_CONTEXT_VERIFY = "PAYLOAD_CONTEXT_VERIFY";
     public static final String EVENT_KEY_PAIR_VALIDATION = "KEY_PAIR_VALIDATION";
+    public static final String EVENT_TOKEN_COUNT_MODIFIED = "TOKEN_COUNT_MODIFIED";
 
     /**
      * Initialise le contexte MDC pour un événement donné

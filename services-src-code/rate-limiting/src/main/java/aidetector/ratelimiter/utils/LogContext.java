@@ -22,6 +22,9 @@ public class LogContext {
     public static final String EXCEPTION_MSG = "exception_message";
     public static final String TOKEN_SIGNATURE = "token_signature";
     public static final String PUBLIC_KEY_ID = "public_key_id";
+    public static final String TARGET_URI = "target_uri";
+    public static final String ROUTE_ID = "route_id";
+    public static final String MALFORMED_IP = "MALFORMED_IP";
 
     // Event Types
 
@@ -31,6 +34,7 @@ public class LogContext {
     public static final String EVENT_IP_VALIDATION = "IP_VALIDATION";
     public static final String EVENT_TOKEN_COUNT_MODIFIED = "TOKEN_COUNT_MODIFIED";
     public static final String EVENT_PUBLIC_KEY_RETREIVAL = "PUBLIC_KEY_RETREIVAL";
+    public static final String EVENT_PROXY_FORWARD = "PROXY_FORWARD";
 
     /**
      * Initialise le contexte MDC pour un événement donné

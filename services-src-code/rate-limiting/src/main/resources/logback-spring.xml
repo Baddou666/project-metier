@@ -6,15 +6,8 @@
 
     <!-- Appender console pour développement (JSON) -->
     <appender name="CONSOLE" class="ch.qos.logback.core.ConsoleAppender">
-        <encoder class="net.logstash.logback.encoder.LogstashEncoder">
-            <customFields>{"app":"${app.name}","version":"${app.version}"}</customFields>
-            <fieldNames>
-                <timestamp>timestamp</timestamp>
-                <level>level</level>
-                <message>message</message>
-                <logger>logger</logger>
-                <thread>thread</thread>
-            </fieldNames>
+        <encoder>
+            <pattern>%d{HH:mm:ss.SSS} %-5level [%thread] %logger{36} - %msg%n</pattern>
         </encoder>
     </appender>
 

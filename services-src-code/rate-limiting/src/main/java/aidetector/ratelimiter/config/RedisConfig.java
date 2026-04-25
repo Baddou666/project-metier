@@ -26,7 +26,7 @@ public class RedisConfig {
         redisConf.setPort(this.redisPort);
         redisConf.setPassword(this.redisPassword);
         LettuceClientConfiguration clientConfig = LettuceClientConfiguration.builder()
-                .commandTimeout(Duration.ofMillis(200))
+                .commandTimeout(Duration.ofMillis(2000))
                 .build();
         return new LettuceConnectionFactory(redisConf, clientConfig);
     }

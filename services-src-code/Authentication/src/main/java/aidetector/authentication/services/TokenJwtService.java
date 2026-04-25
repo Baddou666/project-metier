@@ -3,8 +3,8 @@ package aidetector.authentication.services;
 import aidetector.authentication.model.AnonymousTokenPayload;
 import aidetector.authentication.utils.CryptoUtils;
 import aidetector.authentication.utils.LogContext;
-import aidetector.authentication.config.JwtProperties;
-import com.nimbusds.jose.*;
+import aidetector.authentication.config.AnonymJwtProperties;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.nimbusds.jose.jwk.JWK;
 import io.jsonwebtoken.JwtException;
 import io.jsonwebtoken.Jwts;
@@ -12,7 +12,6 @@ import io.jsonwebtoken.security.SignatureAlgorithm;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
-import tools.jackson.databind.ObjectMapper;
 
 import java.security.PrivateKey;
 import java.security.PublicKey;
@@ -29,7 +28,7 @@ public class TokenJwtService implements TokenJwtManager {
     private final SignatureAlgorithm signAlg;
     private final int expireInSec;
 
-    public TokenJwtService(JwtProperties jwtProperties, CryptoUtils cryptoUtils) throws Exception{
+    public TokenJwtService(AnonymJwtProperties jwtProperties, CryptoUtils cryptoUtils) throws Exception{
 
         JWK jwkPrivateKey = JWK.parseFromPEMEncodedObjects(jwtProperties.getPrivatePemFileContent());
         this.jwkPublicKeyWithKeyId = cryptoUtils.createJwkKeyid(jwkPrivateKey.toPublicJWK());

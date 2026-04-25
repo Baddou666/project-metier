@@ -1,35 +1,40 @@
-# 📦 Guide de Génération Locale de l'Image Docker
+# Rate Limiting Source
 
-> [!NOTE]
-> Ce guide explique comment transformer le code source en une image Docker prête à l'emploi sans passer par un registre externe.
+Code source Spring Boot du gateway/rate limiter.
 
-### 🛠️ Procédure de Build
-Pour générer l'image sur votre machine, utilisez la commande suivante à la racine du projet (ou éxecuter le script qui se trouve à la racine du projet `create-update-image(OS).(bat/sh)` selon votre OS):
+## Prerequis
 
-```bash
-# Pour Windows (PowerShell/CMD)
+- JDK 21
+- Docker Desktop actif pour `spring-boot:build-image`
+
+## Build de l'image locale
+
+Sous Windows :
+
+```sh
 ./mvnw clean spring-boot:build-image -DskipTests
+```
 
-# Pour Linux/Mac
+Sous Linux ou Git Bash :
+
+```sh
 chmod +x mvnw
 ./mvnw clean spring-boot:build-image -DskipTests
 ```
 
----
+L'image produite est `rate-limiter:latest`.
 
-### 🔍 Vérification de l'image
-Une fois le build terminé (cela peut prendre 1 à 2 minutes la première fois), vérifiez la présence de l'image :
+## Test local
 
-```bash
-docker images
+Si Maven fonctionne sur votre machine :
+
+```sh
+./mvnw test
 ```
 
+## Ensuite
 
-### ⚠️ Troubleshooting (Lombok & Build)
-Si le build échoue avec des erreurs de "Symbol not found" (Lombok) :
-1. Assurez-vous d'avoir un **JDK 17+** installé (`java -version`).
-2. Lancez impérativement un `clean` avant le build :
-   ```bash
-   ./mvnw clean spring-boot:build-image -DskipTests
-   ```
-3. Docker Desktop doit être **actif** durant toute l'opération.
+Pour lancer le service dans Docker, revenir vers :
+
+- [backend-services/rate-limiting-service](/d:/PRJ-METIER/project-metier/backend-services/rate-limiting-service/README.md:1)
+- ou [modules/api-gateway-service](/d:/PRJ-METIER/project-metier/modules/api-gateway-service/README.md:1)

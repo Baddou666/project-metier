@@ -46,7 +46,7 @@ const authRetryButton   = document.getElementById("authRetryButton");
 
 /* ─── Config ─────────────────────────────────────────────────── */
 const API_DOMAINE = "https://localhost"
-const API_ENDPOINT = `${API_DOMAINE}/api/detect`;
+const API_ENDPOINT = `${API_DOMAINE}/api/ai-detector/detect`;
 const API_ANONYM_TOKEN_ENDPOINT = `${API_DOMAINE}/api/anonym-token/get`;
 const TOKEN_RETRY_INTERVAL_MS = 2000;
 const TOKEN_REQUEST_THROTTLE_MS = 2000;
@@ -794,10 +794,10 @@ async function detectWithBackend(sourceType, items, pageUrl, isRetry = false) {
     throw new Error("Token d'authentification non disponible. Veuillez rafraîchir la connexion.");
   }
 
-  // Construire les headers avec le Bearer token
+  // Construire les headers avec l'Anonym token
   const headers = { 
     "Content-Type": "application/json",
-    "Authorization": `Bearer ${authToken}`
+    "Authorization": `Anonym ${authToken}`
   };
 
   let response;

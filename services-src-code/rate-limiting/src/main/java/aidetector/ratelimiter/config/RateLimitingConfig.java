@@ -12,7 +12,4 @@ public class RateLimitingConfig {
     private Long maxAttemptsPerToken = 100L;
     private Long windowSizePerToken = 60L;
     private Long tokenGenerationDelayMs = 200L;
-    private Long maxTokenPerIp =  15L;
-    private Long windowSizePerIp = 60L;
-
 }
