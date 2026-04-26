@@ -1,13 +1,13 @@
-package aidetector.datapreprocessor;
+package com.example.dataservice;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 
 @SpringBootApplication
-public class DataPreprocessorApplication {
+public class DataServiceApplication {
 
     public static void main(String[] args) {
-        SpringApplication.run(DataPreprocessorApplication.class, args);
+        SpringApplication.run(DataServiceApplication.class, args);
     }
 
 }
