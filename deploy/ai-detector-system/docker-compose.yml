@@ -1,0 +1,14 @@
+include:
+  - path: ../../modules/api-gateway-service/docker-compose.yml
+  - path: ../../modules/model-manager-service/docker-compose.yml
+services:
+  model-handler-service:
+    networks:
+      - api-model-net
+  rate-limiting-service:
+    networks:
+      - api-model-net
+
+networks:
+  api-model-net:
+    driver: bridge

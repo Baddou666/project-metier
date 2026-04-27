@@ -11,6 +11,6 @@ import lombok.Setter;
 @NoArgsConstructor
 public class PredictionResponse {
     private Long id;
-    private float prediction;
-    private String label;
+    private Boolean isAi;
+    private double score;
 }

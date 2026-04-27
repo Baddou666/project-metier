@@ -679,12 +679,12 @@ async function extractHtmlSegmentsFromTab(tabId) {
       while (walker.nextNode()) {
         const node   = walker.currentNode;
         const parent = node.parentElement;
-        const val    = node.textContent?.replace(/\s+/g, " ").trim();
-        if (!parent || !val || SKIP.has(parent.tagName) || !isVisible(parent)) continue;
+        const text    = node.textContent?.replace(/\s+/g, " ").trim();
+        if (!parent || !text || SKIP.has(parent.tagName) || !isVisible(parent)) continue;
         const id = assignId(parent);
         const cur = map.get(id);
-        if (cur) cur.val = `${cur.val} ${val}`.trim();
-        else map.set(id, { elemId: id, tagName: parent.tagName.toLowerCase(), val });
+        if (cur) cur.text = `${cur.text} ${text}`.trim();
+        else map.set(id, { id: id, text });
       }
 
       return { pageTitle: document.title || "", items: Array.from(map.values()) };
@@ -694,14 +694,14 @@ async function extractHtmlSegmentsFromTab(tabId) {
   return {
     pageTitle: result?.pageTitle || "",
     items: (result?.items || [])
-      .map(i => ({ ...i, val: normalizeWhitespace(i.val || "") }))
-      .filter(i => i.val)
+      .map(i => ({ ...i, text: normalizeWhitespace(i.text || "") }))
+      .filter(i => i.text)
   };
 }
 
 function summarizeItems(sourceType, items) {
   const preview = items.slice(0, 10)
-    .map(i => `#${i.elemId} <${i.tagName || "node"}> ${i.val}`)
+    .map(i => `#${i.id} ${i.text}`)
     .join("\n");
   return [`sourceType: ${sourceType}`, `items: ${items.length}`, "", preview].join("\n");
 }
@@ -781,11 +781,11 @@ async function refreshAuthToken() {
  * En cas d'erreur 400 ou 401, tente de rafraîchir le token et retry une fois
  * @param {string} sourceType - Type de source (html ou text)
  * @param {Array} items - Éléments à analyser
- * @param {string} pageUrl - URL de la page (optionnel)
+ * @param {string} link - URL de la page (optionnel)
  * @param {boolean} isRetry - Indicateur de retry (interne)
  * @returns {Promise} Résultat de la détection
  */
-async function detectWithBackend(sourceType, items, pageUrl, isRetry = false) {
+async function detectWithBackend(sourceType, items, link, isRetry = false) {
   if (!API_ENDPOINT || API_ENDPOINT.includes("your-backend")) {
     throw new Error("Le backend REST n'est pas encore configuré dans le code de l'extension.");
   }
@@ -805,7 +805,7 @@ async function detectWithBackend(sourceType, items, pageUrl, isRetry = false) {
     response = await fetch(API_ENDPOINT, {
       method: "POST",
       headers,
-      body: JSON.stringify({ sourceType, pageUrl: pageUrl || null, items })
+      body: JSON.stringify({ sourceType, link: link || null, items })
     });
   } catch (err) {
     // Network error (DNS, refused connection, CORS, offline…)
@@ -820,7 +820,7 @@ async function detectWithBackend(sourceType, items, pageUrl, isRetry = false) {
     try {
       await refreshAuthToken();
       // Retry la requête une fois avec le nouveau token
-      return detectWithBackend(sourceType, items, pageUrl, true);
+      return detectWithBackend(sourceType, items, link, true);
     } catch (tokenErr) {
       console.error("[API] Impossible de rafraîchir le token:", tokenErr);
       throw new Error("Session expirée. Impossible de renouveler l'authentification.");
@@ -921,7 +921,7 @@ async function applyDetectionResultsToTab(tabId, itemResults) {
       }
 
       results.forEach(r => {
-        const node = document.querySelector(`[${ID_ATTR}="${r.elemId}"]`);
+        const node = document.querySelector(`[${ID_ATTR}="${r.id}"]`);
         if (!node) return;
         node.setAttribute(STATE_ATTR, r.isAi ? "ai" : "human");
         if (r.score != null) node.setAttribute("data-ai-detector-score", String(r.score));
@@ -967,14 +967,14 @@ function syncHighlightedTab(tabId) {
 }
 
 /* ─── Run detection ──────────────────────────────────────────── */
-async function runDetection(sourceType, items, pageUrl, tabId) {
+async function runDetection(sourceType, items, link, tabId) {
   if (!items.length) throw new Error("Aucun contenu lisible n'a été trouvé sur cette page.");
 
   showResultView();
   resetVerdict();
   setStatus("loading", "Envoi vers le backend d'analyse…");
 
-  const detection = await detectWithBackend(sourceType, items, pageUrl);
+  const detection = await detectWithBackend(sourceType, items, link);
 
   if (sourceType === "html" && tabId) {
     await applyDetectionResultsToTab(tabId, detection.itemResults || []);
@@ -1026,7 +1026,7 @@ async function handleCheckText() {
       return;
     }
 
-    await runDetection("text", [{ elemId: 1, val: content, tagName: "manual" }], "", null);
+    await runDetection("text", [{ id: 1, text: content }], "", null);
   } catch (err) {
     const msg = err?.message || String(err);
     showError("Analyse échouée", msg);

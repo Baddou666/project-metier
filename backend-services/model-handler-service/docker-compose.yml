@@ -1,0 +1,14 @@
+
+services:
+  model-handler-service:
+    image:  ghcr.io/baddou666/projet-metier/final/model-handler:latest
+    environment:
+      - JWT_SECRET_KEY=${JWT_SECRET_KEY}
+      - DB_PASSWORD=${POSTGRESDB_PASSWORD}
+      - IS_ANONYM_USER_HEADER=${IS_ANONYM_USER_HEADER}
+      - POSTGRES_DB=${POSTGRES_DB}
+      - POSTGRES_USER=${POSTGRES_USER}
+      - MODEL_URL=${MODEL_URL}
+      - POSTGRES_URL=${POSTGRES_URL}
+    expose:
+      - 8080

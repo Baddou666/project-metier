@@ -1,4 +1,4 @@
-package com.example.dataservice.requests;
+package com.example.dataservice.responses;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -7,9 +7,10 @@ import lombok.Setter;
 
 @Getter
 @Setter
-@NoArgsConstructor
 @AllArgsConstructor
-public class PredictionRequest {
+@NoArgsConstructor
+public class ModelPredictionResponse {
     private Long id;
-    private String text;
+    private float prediction;
+    private String label;
 }

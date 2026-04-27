@@ -1,6 +1,7 @@
 package aidetector.ratelimiter.services;
 
 import aidetector.ratelimiter.config.GatewayRoutingProperties;
+import aidetector.ratelimiter.filters.ProtectedTokenRateLimitFilter;
 import aidetector.ratelimiter.filters.TokenCreationRateLimitFilter;
 import aidetector.ratelimiter.utils.LogContext;
 import jakarta.servlet.http.HttpServletRequest;
@@ -35,6 +36,7 @@ public class ProxyRoutingService {
     private final String gatewayAuthHeaderName;
     private final String gatewayAuthSharedSecret;
     private final Set<String> trustedForwardedHeaders;
+    private final String isAnonymHeader;
 
     public ProxyRoutingService(
             RestClient.Builder restClientBuilder,
@@ -44,10 +46,13 @@ public class ProxyRoutingService {
             String forwardedClientIpHeaderName,
             @Value("${api-gateway-service.security.authentication.gateway-shared-secret-header:X-Gateway-Auth}")
             String gatewayAuthHeaderName,
-            @Value("${api-gateway-service.security.authentication.gateway-shared-secret:internal-gateway-secret}")
+            @Value("${api-gateway-service.security.authentication.gateway-shared-secret}")
             String gatewayAuthSharedSecret,
             @Value("#{'${api-gateway-service.network.trusted-forwarded-headers:X-Real-IP,X-Forwarded-For,X-Forwarded-Proto,X-Forwarded-Host,X-Forwarded-Port,Forwarded}'.split(',')}")
-            List<String> trustedForwardedHeaders
+            List<String> trustedForwardedHeaders,
+            @Value("${api-gateway-service.network.is-anonymous-user-header}")
+            String isAnonymHeader
+
     ) {
         this.restClient = restClientBuilder.build();
         this.tokenRouteId = tokenRouteId;
@@ -59,6 +64,7 @@ public class ProxyRoutingService {
                 .filter(value -> !value.isBlank())
                 .map(value -> value.toLowerCase(Locale.ROOT))
                 .collect(Collectors.toSet());
+        this.isAnonymHeader = isAnonymHeader;
     }
 
     public void forward(HttpServletRequest request,
@@ -141,11 +147,13 @@ public class ProxyRoutingService {
             }
         }
 
+        headers.set(gatewayAuthHeaderName, gatewayAuthSharedSecret);
+
         if (isTokenRoute
                 && request.getAttribute(TokenCreationRateLimitFilter.CLIENT_IP_REQUEST_ATTRIBUTE) instanceof String ip) {
             headers.set(forwardedClientIpHeaderName, ip);
-            headers.set(gatewayAuthHeaderName, gatewayAuthSharedSecret);
         }
+        headers.set(isAnonymHeader,String.valueOf(true)); // ici je doit ajouter le header lui même
 
         if (contentLength >= 0) {
             headers.setContentLength(contentLength);

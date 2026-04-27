@@ -26,7 +26,7 @@ import java.io.IOException;
 public class ProtectedTokenRateLimitFilter extends OncePerRequestFilter {
 
     private static final Logger logger = LoggerFactory.getLogger(ProtectedTokenRateLimitFilter.class);
-
+    public static final String IS_USER_ANONYMOUS_ATTRIBUTE = "is.user.anonym";
     private final RouteResolutionService routeResolutionService;
     private final TokenVerificationService tokenVerificationService;
     private final RateLimitingManager rateLimitingManager;
@@ -75,8 +75,8 @@ public class ProtectedTokenRateLimitFilter extends OncePerRequestFilter {
                         verifiedToken.userId()
                 );
                 rateLimitingManager.verifyAttemptsLimit(verifiedToken.tokenHash());
+                request.setAttribute(IS_USER_ANONYMOUS_ATTRIBUTE,true);
                 filterChain.doFilter(request, response);
-
                 if (response.getStatus() >= 200 && response.getStatus() < 300) {
                     rateLimitingManager.incrementKeyValue(verifiedToken.tokenHash());
                 }

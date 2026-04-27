@@ -1,0 +1,3 @@
+# Keep the model directory in git without versioning trained weights.
+*
+!.gitignore
