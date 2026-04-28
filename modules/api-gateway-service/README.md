@@ -7,6 +7,8 @@ Ce module assemble la stack principale :
 - `token-manager`
 - `redis-shared-memory-service`
 
+Le `rate-limiting-service` est maintenant un Spring Cloud Gateway WebFlux. Le flux anonyme est supporte, le flux utilisateur connecte n'est pas encore implemente au niveau du gateway.
+
 ## Preparation
 
 1. Builder les images locales :
@@ -56,4 +58,5 @@ Attendu :
 
 - `403` sur token : verifier `AUTH_GATEWAY_SHARED_SECRET`
 - `400` sur token : verifier `X-Real-IP`
+- `501` sur une route protegee avec `Authorization: Bearer ...` : flux utilisateur connecte non implemente
 - `5xx` : lire les logs du proxy, du rate limiter et du token manager
