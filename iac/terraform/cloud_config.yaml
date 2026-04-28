@@ -1,0 +1,7 @@
+hostname: cloud-node-01
+manage_etc_hosts: true
+packages:
+  - qemu-guest-agent
+  - curl
+runcmd:
+  - systemctl start qemu-guest-agent

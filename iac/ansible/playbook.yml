@@ -1,0 +1,45 @@
+---
+- name: Configure VM with Docker and Git
+  hosts: proxmox_vms
+  become: yes  # Runs commands with sudo
+  tasks:
+    - name: Update apt repository cache
+      apt:
+        update_cache: yes
+        cache_valid_time: 3600
+
+    - name: Install Git
+      apt:
+        name: git
+        state: present
+
+    - name: Install dependencies for Docker
+      apt:
+        name:
+          - ca-certificates
+          - curl
+          - gnupg
+        state: present
+
+    - name: Download Docker installation script
+      get_url:
+        url: https://get.docker.com
+        dest: /tmp/get-docker.sh
+        mode: '0755'
+
+    - name: Run Docker installation script
+      shell: /tmp/get-docker.sh
+      args:
+        creates: /usr/bin/docker
+
+    - name: Ensure Docker service is started and enabled
+      systemctl:
+        name: docker
+        state: started
+        enabled: yes
+
+    - name: Add mainuser to docker group
+      user:
+        name: mainuser
+        groups: docker
+        append: yes
