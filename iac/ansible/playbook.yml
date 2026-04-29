@@ -7,6 +7,9 @@
   vars:
     docker_users:
       - "{{ ansible_user | default('ubuntu') }}"
+    project_parent_dir: "/home/{{ ansible_user | default('ubuntu') }}/projet-metier"
+    project_repo_url: "https://github.com/Baddou666/project-metier.git"
+    project_repo_dir: "{{ project_parent_dir }}/project-metier"
 
   pre_tasks:
     - name: Wait for SSH to become available
@@ -78,3 +81,19 @@
         groups: docker
         append: true
       loop: "{{ docker_users }}"
+
+    - name: Create project directory
+      file:
+        path: "{{ project_parent_dir }}"
+        state: directory
+        owner: "{{ ansible_user | default('ubuntu') }}"
+        group: "{{ ansible_user | default('ubuntu') }}"
+        mode: '0755'
+
+    - name: Clone project repository
+      git:
+        repo: "{{ project_repo_url }}"
+        dest: "{{ project_repo_dir }}"
+        version: main
+        update: true
+      become_user: "{{ ansible_user | default('ubuntu') }}"
