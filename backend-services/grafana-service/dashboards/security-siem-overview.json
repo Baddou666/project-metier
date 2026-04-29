@@ -1,882 +1,922 @@
 {
-  "annotations": {
-    "list": [
-      {
-        "builtIn": 1,
-        "datasource": {
-          "type": "grafana",
-          "uid": "-- Grafana --"
-        },
-        "enable": true,
-        "hide": true,
-        "iconColor": "rgba(0, 211, 255, 1)",
-        "name": "Annotations & Alerts",
-        "type": "dashboard"
-      }
-    ]
-  },
-  "editable": true,
-  "fiscalYearStartMonth": 0,
-  "graphTooltip": 1,
-  "id": null,
-  "links": [],
-  "liveNow": false,
-  "panels": [
-    {
-      "datasource": {
-        "type": "grafana",
-        "uid": "-- Grafana --"
-      },
-      "gridPos": {
-        "h": 3,
-        "w": 24,
-        "x": 0,
-        "y": 0
-      },
-      "id": 101,
-      "options": {
-        "content": "# Security SIEM Overview\nVue de detection et triage pour les evenements sensibles exposes par le gateway et le token manager.\n\n- Les cartes du haut servent au triage immediat\n- Les courbes montrent les vagues d'activite suspecte\n- Les tableaux et logs du bas servent a identifier les IP ou utilisateurs a investiguer",
-        "mode": "markdown"
-      },
-      "pluginVersion": "13.0.1",
-      "title": "Overview",
-      "type": "text"
-    },
-    {
-      "datasource": {
-        "type": "loki",
-        "uid": "loki"
-      },
-      "fieldConfig": {
-        "defaults": {
-          "color": {
-            "mode": "value"
-          },
-          "thresholds": {
-            "mode": "absolute",
-            "steps": [
-              {
-                "color": "green",
-                "value": null
-              },
-              {
-                "color": "red",
-                "value": 1
-              }
-            ]
-          }
-        },
-        "overrides": []
-      },
-      "gridPos": {
-        "h": 4,
-        "w": 4,
-        "x": 0,
-        "y": 3
-      },
-      "id": 102,
-      "options": {
-        "colorMode": "value",
-        "graphMode": "area",
-        "justifyMode": "auto",
-        "orientation": "auto",
-        "reduceOptions": {
-          "calcs": [
-            "lastNotNull"
-          ],
-          "fields": "",
-          "values": false
-        },
-        "textMode": "auto"
-      },
-      "targets": [
-        {
-          "datasource": {
-            "type": "loki",
-            "uid": "loki"
-          },
-          "editorMode": "code",
-          "expr": "sum(count_over_time({service=\"token-manager-service\", event_type=\"GATEWAY_AUTH\", status=\"FAILED\"} [$__range]))",
-          "legendFormat": "gateway_auth_failed",
-          "queryType": "instant",
-          "refId": "A"
-        }
-      ],
-      "title": "Gateway Auth Failures",
-      "type": "stat"
-    },
-    {
-      "datasource": {
-        "type": "loki",
-        "uid": "loki"
-      },
-      "fieldConfig": {
-        "defaults": {
-          "color": {
-            "mode": "value"
-          },
-          "thresholds": {
-            "mode": "absolute",
-            "steps": [
-              {
-                "color": "green",
-                "value": null
-              },
-              {
-                "color": "red",
-                "value": 1
-              }
-            ]
-          }
-        },
-        "overrides": []
-      },
-      "gridPos": {
-        "h": 4,
-        "w": 4,
-        "x": 4,
-        "y": 3
-      },
-      "id": 103,
-      "options": {
-        "colorMode": "value",
-        "graphMode": "area",
-        "justifyMode": "auto",
-        "orientation": "auto",
-        "reduceOptions": {
-          "calcs": [
-            "lastNotNull"
-          ],
-          "fields": "",
-          "values": false
-        },
-        "textMode": "auto"
-      },
-      "targets": [
-        {
-          "datasource": {
-            "type": "loki",
-            "uid": "loki"
-          },
-          "editorMode": "code",
-          "expr": "sum(count_over_time({service=~\"rate-limiter-service|token-manager-service\", event_type=\"IP_VALIDATION\", status=\"FAILED\"} [$__range]))",
-          "legendFormat": "ip_validation_failed",
-          "queryType": "instant",
-          "refId": "A"
-        }
-      ],
-      "title": "Invalid IP Events",
-      "type": "stat"
-    },
-    {
-      "datasource": {
-        "type": "loki",
-        "uid": "loki"
-      },
-      "fieldConfig": {
-        "defaults": {
-          "color": {
-            "mode": "value"
-          },
-          "thresholds": {
-            "mode": "absolute",
-            "steps": [
-              {
-                "color": "green",
-                "value": null
-              },
-              {
-                "color": "orange",
-                "value": 5
-              },
-              {
-                "color": "red",
-                "value": 20
-              }
-            ]
-          }
-        },
-        "overrides": []
-      },
-      "gridPos": {
-        "h": 4,
-        "w": 4,
-        "x": 8,
-        "y": 3
-      },
-      "id": 104,
-      "options": {
-        "colorMode": "value",
-        "graphMode": "area",
-        "justifyMode": "auto",
-        "orientation": "auto",
-        "reduceOptions": {
-          "calcs": [
-            "lastNotNull"
-          ],
-          "fields": "",
-          "values": false
-        },
-        "textMode": "auto"
-      },
-      "targets": [
-        {
-          "datasource": {
-            "type": "loki",
-            "uid": "loki"
-          },
-          "editorMode": "code",
-          "expr": "sum(count_over_time({service=~\"rate-limiter-service|token-manager-service\", limit_reached=\"true\"} [$__range]))",
-          "legendFormat": "rate_limit_hits",
-          "queryType": "instant",
-          "refId": "A"
-        }
-      ],
-      "title": "Rate Limit Detections",
-      "type": "stat"
-    },
-    {
-      "datasource": {
-        "type": "loki",
-        "uid": "loki"
-      },
-      "fieldConfig": {
-        "defaults": {
-          "color": {
-            "mode": "value"
-          },
-          "thresholds": {
-            "mode": "absolute",
-            "steps": [
-              {
-                "color": "green",
-                "value": null
-              },
-              {
-                "color": "red",
-                "value": 1
-              }
-            ]
-          }
-        },
-        "overrides": []
-      },
-      "gridPos": {
-        "h": 4,
-        "w": 4,
-        "x": 12,
-        "y": 3
-      },
-      "id": 105,
-      "options": {
-        "colorMode": "value",
-        "graphMode": "area",
-        "justifyMode": "auto",
-        "orientation": "auto",
-        "reduceOptions": {
-          "calcs": [
-            "lastNotNull"
-          ],
-          "fields": "",
-          "values": false
-        },
-        "textMode": "auto"
-      },
-      "targets": [
-        {
-          "datasource": {
-            "type": "loki",
-            "uid": "loki"
-          },
-          "editorMode": "code",
-          "expr": "sum(count_over_time({service=\"rate-limiter-service\", event_type=\"PUBLIC_KEY_RETREIVAL\", status=\"FAILED\"} [$__range]))",
-          "legendFormat": "jwks_failures",
-          "queryType": "instant",
-          "refId": "A"
-        }
-      ],
-      "title": "JWKS Retrieval Failures",
-      "type": "stat"
-    },
-    {
-      "datasource": {
-        "type": "loki",
-        "uid": "loki"
-      },
-      "fieldConfig": {
-        "defaults": {
-          "color": {
-            "mode": "value"
-          },
-          "thresholds": {
-            "mode": "absolute",
-            "steps": [
-              {
-                "color": "green",
-                "value": null
-              },
-              {
-                "color": "red",
-                "value": 1
-              }
-            ]
-          }
-        },
-        "overrides": []
-      },
-      "gridPos": {
-        "h": 4,
-        "w": 4,
-        "x": 16,
-        "y": 3
-      },
-      "id": 106,
-      "options": {
-        "colorMode": "value",
-        "graphMode": "area",
-        "justifyMode": "auto",
-        "orientation": "auto",
-        "reduceOptions": {
-          "calcs": [
-            "lastNotNull"
-          ],
-          "fields": "",
-          "values": false
-        },
-        "textMode": "auto"
-      },
-      "targets": [
-        {
-          "datasource": {
-            "type": "loki",
-            "uid": "loki"
-          },
-          "editorMode": "code",
-          "expr": "sum(count_over_time({service=\"token-manager-service\", event_type=\"TOKEN_GENERATION_PERMISSION\", status=\"RATE_LIMIT_REACHED\"} [$__range]))",
-          "legendFormat": "token_generation_blocked",
-          "queryType": "instant",
-          "refId": "A"
-        }
-      ],
-      "title": "Token Issuance Blocked",
-      "type": "stat"
-    },
-    {
-      "datasource": {
-        "type": "loki",
-        "uid": "loki"
-      },
-      "fieldConfig": {
-        "defaults": {
-          "color": {
-            "mode": "value"
-          },
-          "thresholds": {
-            "mode": "absolute",
-            "steps": [
-              {
-                "color": "green",
-                "value": null
-              },
-              {
-                "color": "red",
-                "value": 1
-              }
-            ]
-          }
-        },
-        "overrides": []
-      },
-      "gridPos": {
-        "h": 4,
-        "w": 4,
-        "x": 20,
-        "y": 3
-      },
-      "id": 107,
-      "options": {
-        "colorMode": "value",
-        "graphMode": "area",
-        "justifyMode": "auto",
-        "orientation": "auto",
-        "reduceOptions": {
-          "calcs": [
-            "lastNotNull"
-          ],
-          "fields": "",
-          "values": false
-        },
-        "textMode": "auto"
-      },
-      "targets": [
-        {
-          "datasource": {
-            "type": "loki",
-            "uid": "loki"
-          },
-          "editorMode": "code",
-          "expr": "sum(count_over_time({service=~\"rate-limiter-service|token-manager-service\", level=\"ERROR\"} [$__range]))",
-          "legendFormat": "errors",
-          "queryType": "instant",
-          "refId": "A"
-        }
-      ],
-      "title": "Application Errors",
-      "type": "stat"
-    },
-    {
-      "datasource": {
-        "type": "loki",
-        "uid": "loki"
-      },
-      "fieldConfig": {
-        "defaults": {
-          "color": {
-            "mode": "palette-classic"
-          },
-          "custom": {
-            "axisBorderShow": false,
-            "axisCenteredZero": false,
-            "axisColorMode": "text",
-            "axisPlacement": "auto",
-            "drawStyle": "line",
-            "fillOpacity": 12,
-            "gradientMode": "opacity",
-            "lineInterpolation": "linear",
-            "lineWidth": 2,
-            "pointSize": 4,
-            "scaleDistribution": {
-              "type": "linear"
-            },
-            "showPoints": "never",
-            "spanNulls": false,
-            "stacking": {
-              "group": "A",
-              "mode": "none"
-            },
-            "thresholdsStyle": {
-              "mode": "off"
-            }
-          },
-          "thresholds": {
-            "mode": "absolute",
-            "steps": [
-              {
-                "color": "green",
-                "value": null
-              }
-            ]
-          }
-        },
-        "overrides": []
-      },
-      "gridPos": {
-        "h": 8,
-        "w": 12,
-        "x": 0,
-        "y": 7
-      },
-      "id": 108,
-      "options": {
-        "legend": {
-          "displayMode": "list",
-          "placement": "bottom",
-          "showLegend": true
-        },
-        "tooltip": {
-          "mode": "single",
-          "sort": "none"
-        }
-      },
-      "targets": [
-        {
-          "datasource": {
-            "type": "loki",
-            "uid": "loki"
-          },
-          "editorMode": "code",
-          "expr": "sum(count_over_time({service=\"token-manager-service\", event_type=\"GATEWAY_AUTH\", status=\"FAILED\"} [5m]))",
-          "legendFormat": "gateway_auth_failed",
-          "queryType": "range",
-          "refId": "A"
-        },
-        {
-          "datasource": {
-            "type": "loki",
-            "uid": "loki"
-          },
-          "editorMode": "code",
-          "expr": "sum(count_over_time({service=~\"rate-limiter-service|token-manager-service\", event_type=\"IP_VALIDATION\", status=\"FAILED\"} [5m]))",
-          "legendFormat": "invalid_ip",
-          "queryType": "range",
-          "refId": "B"
-        },
-        {
-          "datasource": {
-            "type": "loki",
-            "uid": "loki"
-          },
-          "editorMode": "code",
-          "expr": "sum(count_over_time({service=~\"rate-limiter-service|token-manager-service\", limit_reached=\"true\"} [5m]))",
-          "legendFormat": "rate_limit_hit",
-          "queryType": "range",
-          "refId": "C"
-        },
-        {
-          "datasource": {
-            "type": "loki",
-            "uid": "loki"
-          },
-          "editorMode": "code",
-          "expr": "sum(count_over_time({service=~\"rate-limiter-service|token-manager-service\", level=\"ERROR\"} [5m]))",
-          "legendFormat": "errors",
-          "queryType": "range",
-          "refId": "D"
-        }
-      ],
-      "title": "Detections Over Time",
-      "type": "timeseries"
-    },
-    {
-      "datasource": {
-        "type": "loki",
-        "uid": "loki"
-      },
-      "fieldConfig": {
-        "defaults": {
-          "color": {
-            "mode": "palette-classic"
-          },
-          "custom": {
-            "axisBorderShow": false,
-            "axisCenteredZero": false,
-            "axisColorMode": "text",
-            "axisPlacement": "auto",
-            "drawStyle": "line",
-            "fillOpacity": 10,
-            "gradientMode": "none",
-            "lineInterpolation": "linear",
-            "lineWidth": 2,
-            "pointSize": 4,
-            "scaleDistribution": {
-              "type": "linear"
-            },
-            "showPoints": "never",
-            "spanNulls": false,
-            "stacking": {
-              "group": "A",
-              "mode": "none"
-            },
-            "thresholdsStyle": {
-              "mode": "off"
-            }
-          },
-          "thresholds": {
-            "mode": "absolute",
-            "steps": [
-              {
-                "color": "green",
-                "value": null
-              }
-            ]
-          }
-        },
-        "overrides": []
-      },
-      "gridPos": {
-        "h": 8,
-        "w": 12,
-        "x": 12,
-        "y": 7
-      },
-      "id": 109,
-      "options": {
-        "legend": {
-          "displayMode": "list",
-          "placement": "bottom",
-          "showLegend": true
-        },
-        "tooltip": {
-          "mode": "single",
-          "sort": "none"
-        }
-      },
-      "targets": [
-        {
-          "datasource": {
-            "type": "loki",
-            "uid": "loki"
-          },
-          "editorMode": "code",
-          "expr": "sum(count_over_time({service=\"token-manager-service\", event_type=\"TOKEN_GENERATED\"} [5m]))",
-          "legendFormat": "tokens_issued",
-          "queryType": "range",
-          "refId": "A"
-        },
-        {
-          "datasource": {
-            "type": "loki",
-            "uid": "loki"
-          },
-          "editorMode": "code",
-          "expr": "sum(count_over_time({service=\"token-manager-service\", event_type=\"TOKEN_GENERATION_PERMISSION\", status=\"RATE_LIMIT_REACHED\"} [5m]))",
-          "legendFormat": "issuance_blocked",
-          "queryType": "range",
-          "refId": "B"
-        },
-        {
-          "datasource": {
-            "type": "loki",
-            "uid": "loki"
-          },
-          "editorMode": "code",
-          "expr": "sum(count_over_time({service=\"rate-limiter-service\", event_type=\"RATE_LIMIT_CHECK\", limit_reached=\"true\"} [5m]))",
-          "legendFormat": "protected_requests_blocked",
-          "queryType": "range",
-          "refId": "C"
-        }
-      ],
-      "title": "Issued vs Blocked",
-      "type": "timeseries"
-    },
-    {
-      "datasource": {
-        "type": "loki",
-        "uid": "loki"
-      },
-      "fieldConfig": {
-        "defaults": {
-          "custom": {
-            "align": "auto",
-            "cellOptions": {
-              "type": "auto"
-            },
-            "inspect": false
-          },
-          "thresholds": {
-            "mode": "absolute",
-            "steps": [
-              {
-                "color": "green",
-                "value": null
-              }
-            ]
-          }
-        },
-        "overrides": []
-      },
-      "gridPos": {
-        "h": 8,
-        "w": 8,
-        "x": 0,
-        "y": 15
-      },
-      "id": 110,
-      "options": {
-        "cellHeight": "sm",
-        "footer": {
-          "show": false
-        },
-        "showHeader": true
-      },
-      "targets": [
-        {
-          "datasource": {
-            "type": "loki",
-            "uid": "loki"
-          },
-          "editorMode": "code",
-          "expr": "topk(10, sum by (source_ip) (count_over_time({service=~\"rate-limiter-service|token-manager-service\", limit_reached=\"true\"} | json source_ip=\"context.source_ip\" | source_ip=~\".+\" [1h])))",
-          "legendFormat": "{{source_ip}}",
-          "queryType": "instant",
-          "refId": "A"
-        }
-      ],
-      "title": "Top Blocked IPs",
-      "type": "table"
-    },
-    {
-      "datasource": {
-        "type": "loki",
-        "uid": "loki"
-      },
-      "fieldConfig": {
-        "defaults": {
-          "custom": {
-            "align": "auto",
-            "cellOptions": {
-              "type": "auto"
-            },
-            "inspect": false
-          },
-          "thresholds": {
-            "mode": "absolute",
-            "steps": [
-              {
-                "color": "green",
-                "value": null
-              }
-            ]
-          }
-        },
-        "overrides": []
-      },
-      "gridPos": {
-        "h": 8,
-        "w": 8,
-        "x": 8,
-        "y": 15
-      },
-      "id": 111,
-      "options": {
-        "cellHeight": "sm",
-        "footer": {
-          "show": false
-        },
-        "showHeader": true
-      },
-      "targets": [
-        {
-          "datasource": {
-            "type": "loki",
-            "uid": "loki"
-          },
-          "editorMode": "code",
-          "expr": "topk(10, sum by (user_id) (count_over_time({service=~\"rate-limiter-service|token-manager-service\", status=~\"FAILED|RATE_LIMIT_REACHED\"} | json user_id=\"context.user_id\" | user_id=~\".+\" [1h])))",
-          "legendFormat": "{{user_id}}",
-          "queryType": "instant",
-          "refId": "A"
-        }
-      ],
-      "title": "Top Impacted User IDs",
-      "type": "table"
-    },
-    {
-      "datasource": {
-        "type": "loki",
-        "uid": "loki"
-      },
-      "fieldConfig": {
-        "defaults": {
-          "color": {
-            "mode": "palette-classic"
-          },
-          "thresholds": {
-            "mode": "absolute",
-            "steps": [
-              {
-                "color": "green",
-                "value": null
-              }
-            ]
-          }
-        },
-        "overrides": []
-      },
-      "gridPos": {
-        "h": 8,
-        "w": 8,
-        "x": 16,
-        "y": 15
-      },
-      "id": 112,
-      "options": {
-        "displayLabels": [
-          "name",
-          "value",
-          "percent"
-        ],
-        "legend": {
-          "displayMode": "table",
-          "placement": "bottom",
-          "showLegend": true
-        },
-        "pieType": "pie",
-        "reduceOptions": {
-          "calcs": [
-            "lastNotNull"
-          ],
-          "fields": "",
-          "values": false
-        },
-        "tooltip": {
-          "mode": "single",
-          "sort": "none"
-        }
-      },
-      "targets": [
-        {
-          "datasource": {
-            "type": "loki",
-            "uid": "loki"
-          },
-          "editorMode": "code",
-          "expr": "sum by (event_type) (count_over_time({service=~\"rate-limiter-service|token-manager-service\", event_type=~\".+\"} [1h]))",
-          "legendFormat": "{{event_type}}",
-          "queryType": "instant",
-          "refId": "A"
-        }
-      ],
-      "title": "Security Event Mix",
-      "type": "piechart"
-    },
-    {
-      "datasource": {
-        "type": "loki",
-        "uid": "loki"
-      },
-      "gridPos": {
-        "h": 10,
-        "w": 24,
-        "x": 0,
-        "y": 23
-      },
-      "id": 113,
-      "options": {
-        "dedupStrategy": "none",
-        "enableLogDetails": true,
-        "prettifyLogMessage": true,
-        "showCommonLabels": false,
-        "showLabels": false,
-        "showTime": true,
-        "sortOrder": "Descending",
-        "wrapLogMessage": true
-      },
-      "targets": [
-        {
-          "datasource": {
-            "type": "loki",
-            "uid": "loki"
-          },
-          "editorMode": "code",
-          "expr": "{service=~\"rate-limiter-service|token-manager-service\", level=~\"WARN|ERROR\"} | json service=\"service\", level=\"level\", event_type=\"context.event_type\", status=\"context.status\", source_ip=\"context.source_ip\", user_id=\"context.user_id\", message=\"message\" | line_format \"[{{.service}}] [{{.level}}] [{{.event_type}}] [status={{.status}}] [ip={{.source_ip}}] [user={{.user_id}}] {{.message}}\"",
-          "queryType": "range",
-          "refId": "A"
-        }
-      ],
-      "title": "High-Signal Security Logs",
-      "type": "logs"
-    }
-  ],
-  "refresh": "30s",
-  "schemaVersion": 41,
-  "style": "dark",
-  "tags": [
-    "siem",
-    "security",
-    "triage"
-  ],
-  "templating": {
-    "list": []
-  },
-  "time": {
-    "from": "now/d",
-    "to": "now"
-  },
-  "timepicker": {},
-  "timezone": "",
-  "title": "Security SIEM Overview",
-  "uid": "security-siem-overview",
-  "version": 1,
-  "weekStart": ""
+    "annotations":  {
+                        "list":  [
+                                     {
+                                         "builtIn":  1,
+                                         "datasource":  {
+                                                            "type":  "grafana",
+                                                            "uid":  "-- Grafana --"
+                                                        },
+                                         "enable":  true,
+                                         "hide":  true,
+                                         "iconColor":  "rgba(0, 211, 255, 1)",
+                                         "name":  "Annotations \u0026 Alerts",
+                                         "type":  "dashboard"
+                                     }
+                                 ]
+                    },
+    "editable":  true,
+    "fiscalYearStartMonth":  0,
+    "graphTooltip":  1,
+    "id":  null,
+    "links":  [
+
+              ],
+    "liveNow":  false,
+    "panels":  [
+                   {
+                       "datasource":  {
+                                          "type":  "grafana",
+                                          "uid":  "-- Grafana --"
+                                      },
+                       "gridPos":  {
+                                       "h":  3,
+                                       "w":  24,
+                                       "x":  0,
+                                       "y":  0
+                                   },
+                       "id":  101,
+                       "options":  {
+                                       "content":  "# Security SIEM Overview\nVue de detection et triage pour les evenements sensibles exposes par le gateway et le token manager.\n\n- Les cartes du haut servent au triage immediat\n- Les courbes montrent les vagues d\u0027activite suspecte\n- Les tableaux et logs du bas servent a identifier les IP ou utilisateurs a investiguer",
+                                       "mode":  "markdown"
+                                   },
+                       "pluginVersion":  "13.0.1",
+                       "title":  "Overview",
+                       "type":  "text"
+                   },
+                   {
+                       "datasource":  {
+                                          "type":  "loki",
+                                          "uid":  "loki"
+                                      },
+                       "fieldConfig":  {
+                                           "defaults":  {
+                                                            "color":  {
+                                                                          "mode":  "value"
+                                                                      },
+                                                            "thresholds":  {
+                                                                               "mode":  "absolute",
+                                                                               "steps":  [
+                                                                                             {
+                                                                                                 "color":  "green",
+                                                                                                 "value":  null
+                                                                                             },
+                                                                                             {
+                                                                                                 "color":  "red",
+                                                                                                 "value":  1
+                                                                                             }
+                                                                                         ]
+                                                                           }
+                                                        },
+                                           "overrides":  [
+
+                                                         ]
+                                       },
+                       "gridPos":  {
+                                       "h":  4,
+                                       "w":  4,
+                                       "x":  0,
+                                       "y":  3
+                                   },
+                       "id":  102,
+                       "options":  {
+                                       "colorMode":  "value",
+                                       "graphMode":  "none",
+                                       "justifyMode":  "auto",
+                                       "orientation":  "auto",
+                                       "reduceOptions":  {
+                                                             "calcs":  [
+                                                                           "lastNotNull"
+                                                                       ],
+                                                             "fields":  "",
+                                                             "values":  false
+                                                         },
+                                       "textMode":  "auto"
+                                   },
+                       "targets":  [
+                                       {
+                                           "datasource":  {
+                                                              "type":  "loki",
+                                                              "uid":  "loki"
+                                                          },
+                                           "editorMode":  "code",
+                                           "expr":  "sum(count_over_time({service=\"token-manager-service\", event_type=\"GATEWAY_AUTH\", status=\"FAILED\"} | json logger=\"logger\" | logger=\"aidetector.authentication.controller.AnonymousTokenController\"[30m]))",
+                                           "legendFormat":  "gateway_auth_failed",
+                                           "queryType":  "instant",
+                                           "refId":  "A"
+                                       }
+                                   ],
+                       "title":  "Gateway Auth Failures",
+                       "type":  "stat",
+                       "relativeTime":  "30m"
+                   },
+                   {
+                       "datasource":  {
+                                          "type":  "loki",
+                                          "uid":  "loki"
+                                      },
+                       "fieldConfig":  {
+                                           "defaults":  {
+                                                            "color":  {
+                                                                          "mode":  "value"
+                                                                      },
+                                                            "thresholds":  {
+                                                                               "mode":  "absolute",
+                                                                               "steps":  [
+                                                                                             {
+                                                                                                 "color":  "green",
+                                                                                                 "value":  null
+                                                                                             },
+                                                                                             {
+                                                                                                 "color":  "red",
+                                                                                                 "value":  1
+                                                                                             }
+                                                                                         ]
+                                                                           }
+                                                        },
+                                           "overrides":  [
+
+                                                         ]
+                                       },
+                       "gridPos":  {
+                                       "h":  4,
+                                       "w":  4,
+                                       "x":  4,
+                                       "y":  3
+                                   },
+                       "id":  103,
+                       "options":  {
+                                       "colorMode":  "value",
+                                       "graphMode":  "none",
+                                       "justifyMode":  "auto",
+                                       "orientation":  "auto",
+                                       "reduceOptions":  {
+                                                             "calcs":  [
+                                                                           "lastNotNull"
+                                                                       ],
+                                                             "fields":  "",
+                                                             "values":  false
+                                                         },
+                                       "textMode":  "auto"
+                                   },
+                       "targets":  [
+                                       {
+                                           "datasource":  {
+                                                              "type":  "loki",
+                                                              "uid":  "loki"
+                                                          },
+                                           "editorMode":  "code",
+                                           "expr":  "sum(count_over_time({service=~\"rate-limiter-service|token-manager-service\", event_type=\"IP_VALIDATION\", status=\"FAILED\"} | json logger=\"logger\" | logger=~\"aidetector\\\\..*\"[30m]))",
+                                           "legendFormat":  "ip_validation_failed",
+                                           "queryType":  "instant",
+                                           "refId":  "A"
+                                       }
+                                   ],
+                       "title":  "Invalid IP Events",
+                       "type":  "stat",
+                       "relativeTime":  "30m"
+                   },
+                   {
+                       "datasource":  {
+                                          "type":  "loki",
+                                          "uid":  "loki"
+                                      },
+                       "fieldConfig":  {
+                                           "defaults":  {
+                                                            "color":  {
+                                                                          "mode":  "value"
+                                                                      },
+                                                            "thresholds":  {
+                                                                               "mode":  "absolute",
+                                                                               "steps":  [
+                                                                                             {
+                                                                                                 "color":  "green",
+                                                                                                 "value":  null
+                                                                                             },
+                                                                                             {
+                                                                                                 "color":  "orange",
+                                                                                                 "value":  5
+                                                                                             },
+                                                                                             {
+                                                                                                 "color":  "red",
+                                                                                                 "value":  20
+                                                                                             }
+                                                                                         ]
+                                                                           }
+                                                        },
+                                           "overrides":  [
+
+                                                         ]
+                                       },
+                       "gridPos":  {
+                                       "h":  4,
+                                       "w":  4,
+                                       "x":  8,
+                                       "y":  3
+                                   },
+                       "id":  104,
+                       "options":  {
+                                       "colorMode":  "value",
+                                       "graphMode":  "none",
+                                       "justifyMode":  "auto",
+                                       "orientation":  "auto",
+                                       "reduceOptions":  {
+                                                             "calcs":  [
+                                                                           "lastNotNull"
+                                                                       ],
+                                                             "fields":  "",
+                                                             "values":  false
+                                                         },
+                                       "textMode":  "auto"
+                                   },
+                       "targets":  [
+                                       {
+                                           "datasource":  {
+                                                              "type":  "loki",
+                                                              "uid":  "loki"
+                                                          },
+                                           "editorMode":  "code",
+                                           "expr":  "sum(count_over_time({service=~\"rate-limiter-service|token-manager-service\", limit_reached=\"true\"} | json logger=\"logger\" | logger=~\"aidetector\\\\..*\"[30m]))",
+                                           "legendFormat":  "rate_limit_hits",
+                                           "queryType":  "instant",
+                                           "refId":  "A"
+                                       }
+                                   ],
+                       "title":  "Rate Limit Detections",
+                       "type":  "stat",
+                       "relativeTime":  "30m"
+                   },
+                   {
+                       "datasource":  {
+                                          "type":  "loki",
+                                          "uid":  "loki"
+                                      },
+                       "fieldConfig":  {
+                                           "defaults":  {
+                                                            "color":  {
+                                                                          "mode":  "value"
+                                                                      },
+                                                            "thresholds":  {
+                                                                               "mode":  "absolute",
+                                                                               "steps":  [
+                                                                                             {
+                                                                                                 "color":  "green",
+                                                                                                 "value":  null
+                                                                                             },
+                                                                                             {
+                                                                                                 "color":  "red",
+                                                                                                 "value":  1
+                                                                                             }
+                                                                                         ]
+                                                                           }
+                                                        },
+                                           "overrides":  [
+
+                                                         ]
+                                       },
+                       "gridPos":  {
+                                       "h":  4,
+                                       "w":  4,
+                                       "x":  12,
+                                       "y":  3
+                                   },
+                       "id":  105,
+                       "options":  {
+                                       "colorMode":  "value",
+                                       "graphMode":  "none",
+                                       "justifyMode":  "auto",
+                                       "orientation":  "auto",
+                                       "reduceOptions":  {
+                                                             "calcs":  [
+                                                                           "lastNotNull"
+                                                                       ],
+                                                             "fields":  "",
+                                                             "values":  false
+                                                         },
+                                       "textMode":  "auto"
+                                   },
+                       "targets":  [
+                                       {
+                                           "datasource":  {
+                                                              "type":  "loki",
+                                                              "uid":  "loki"
+                                                          },
+                                           "editorMode":  "code",
+                                           "expr":  "sum(count_over_time({service=\"rate-limiter-service\", event_type=\"PUBLIC_KEY_RETREIVAL\", status=\"FAILED\"} | json logger=\"logger\" | logger=~\"aidetector\\\\.ratelimiter\\\\..*\"[30m]))",
+                                           "legendFormat":  "jwks_failures",
+                                           "queryType":  "instant",
+                                           "refId":  "A"
+                                       }
+                                   ],
+                       "title":  "JWKS Retrieval Failures",
+                       "type":  "stat",
+                       "relativeTime":  "30m"
+                   },
+                   {
+                       "datasource":  {
+                                          "type":  "loki",
+                                          "uid":  "loki"
+                                      },
+                       "fieldConfig":  {
+                                           "defaults":  {
+                                                            "color":  {
+                                                                          "mode":  "value"
+                                                                      },
+                                                            "thresholds":  {
+                                                                               "mode":  "absolute",
+                                                                               "steps":  [
+                                                                                             {
+                                                                                                 "color":  "green",
+                                                                                                 "value":  null
+                                                                                             },
+                                                                                             {
+                                                                                                 "color":  "red",
+                                                                                                 "value":  1
+                                                                                             }
+                                                                                         ]
+                                                                           }
+                                                        },
+                                           "overrides":  [
+
+                                                         ]
+                                       },
+                       "gridPos":  {
+                                       "h":  4,
+                                       "w":  4,
+                                       "x":  16,
+                                       "y":  3
+                                   },
+                       "id":  106,
+                       "options":  {
+                                       "colorMode":  "value",
+                                       "graphMode":  "none",
+                                       "justifyMode":  "auto",
+                                       "orientation":  "auto",
+                                       "reduceOptions":  {
+                                                             "calcs":  [
+                                                                           "lastNotNull"
+                                                                       ],
+                                                             "fields":  "",
+                                                             "values":  false
+                                                         },
+                                       "textMode":  "auto"
+                                   },
+                       "targets":  [
+                                       {
+                                           "datasource":  {
+                                                              "type":  "loki",
+                                                              "uid":  "loki"
+                                                          },
+                                           "editorMode":  "code",
+                                           "expr":  "sum(count_over_time({service=\"token-manager-service\", event_type=\"TOKEN_GENERATION_PERMISSION\", status=\"RATE_LIMIT_REACHED\"} | json logger=\"logger\" | logger=\"aidetector.authentication.controller.AnonymousTokenController\"[30m]))",
+                                           "legendFormat":  "token_generation_blocked",
+                                           "queryType":  "instant",
+                                           "refId":  "A"
+                                       }
+                                   ],
+                       "title":  "Token Issuance Blocked",
+                       "type":  "stat",
+                       "relativeTime":  "30m"
+                   },
+                   {
+                       "datasource":  {
+                                          "type":  "loki",
+                                          "uid":  "loki"
+                                      },
+                       "fieldConfig":  {
+                                           "defaults":  {
+                                                            "color":  {
+                                                                          "mode":  "value"
+                                                                      },
+                                                            "thresholds":  {
+                                                                               "mode":  "absolute",
+                                                                               "steps":  [
+                                                                                             {
+                                                                                                 "color":  "green",
+                                                                                                 "value":  null
+                                                                                             },
+                                                                                             {
+                                                                                                 "color":  "red",
+                                                                                                 "value":  1
+                                                                                             }
+                                                                                         ]
+                                                                           }
+                                                        },
+                                           "overrides":  [
+
+                                                         ]
+                                       },
+                       "gridPos":  {
+                                       "h":  4,
+                                       "w":  4,
+                                       "x":  20,
+                                       "y":  3
+                                   },
+                       "id":  107,
+                       "options":  {
+                                       "colorMode":  "value",
+                                       "graphMode":  "none",
+                                       "justifyMode":  "auto",
+                                       "orientation":  "auto",
+                                       "reduceOptions":  {
+                                                             "calcs":  [
+                                                                           "lastNotNull"
+                                                                       ],
+                                                             "fields":  "",
+                                                             "values":  false
+                                                         },
+                                       "textMode":  "auto"
+                                   },
+                       "targets":  [
+                                       {
+                                           "datasource":  {
+                                                              "type":  "loki",
+                                                              "uid":  "loki"
+                                                          },
+                                           "editorMode":  "code",
+                                           "expr":  "sum(count_over_time({service=~\"rate-limiter-service|token-manager-service\", level=\"ERROR\"} | json logger=\"logger\" | logger=~\"aidetector\\\\..*\"[30m]))",
+                                           "legendFormat":  "errors",
+                                           "queryType":  "instant",
+                                           "refId":  "A"
+                                       }
+                                   ],
+                       "title":  "Application Errors",
+                       "type":  "stat",
+                       "relativeTime":  "30m"
+                   },
+                   {
+                       "datasource":  {
+                                          "type":  "loki",
+                                          "uid":  "loki"
+                                      },
+                       "fieldConfig":  {
+                                           "defaults":  {
+                                                            "color":  {
+                                                                          "mode":  "palette-classic"
+                                                                      },
+                                                            "custom":  {
+                                                                           "axisBorderShow":  false,
+                                                                           "axisCenteredZero":  false,
+                                                                           "axisColorMode":  "text",
+                                                                           "axisPlacement":  "auto",
+                                                                           "drawStyle":  "line",
+                                                                           "fillOpacity":  12,
+                                                                           "gradientMode":  "opacity",
+                                                                           "lineInterpolation":  "linear",
+                                                                           "lineWidth":  2,
+                                                                           "pointSize":  4,
+                                                                           "scaleDistribution":  {
+                                                                                                     "type":  "linear"
+                                                                                                 },
+                                                                           "showPoints":  "never",
+                                                                           "spanNulls":  false,
+                                                                           "stacking":  {
+                                                                                            "group":  "A",
+                                                                                            "mode":  "none"
+                                                                                        },
+                                                                           "thresholdsStyle":  {
+                                                                                                   "mode":  "off"
+                                                                                               }
+                                                                       },
+                                                            "thresholds":  {
+                                                                               "mode":  "absolute",
+                                                                               "steps":  [
+                                                                                             {
+                                                                                                 "color":  "green",
+                                                                                                 "value":  null
+                                                                                             }
+                                                                                         ]
+                                                                           }
+                                                        },
+                                           "overrides":  [
+
+                                                         ]
+                                       },
+                       "gridPos":  {
+                                       "h":  8,
+                                       "w":  12,
+                                       "x":  0,
+                                       "y":  7
+                                   },
+                       "id":  108,
+                       "options":  {
+                                       "legend":  {
+                                                      "displayMode":  "list",
+                                                      "placement":  "bottom",
+                                                      "showLegend":  true
+                                                  },
+                                       "tooltip":  {
+                                                       "mode":  "single",
+                                                       "sort":  "none"
+                                                   }
+                                   },
+                       "targets":  [
+                                       {
+                                           "datasource":  {
+                                                              "type":  "loki",
+                                                              "uid":  "loki"
+                                                          },
+                                           "editorMode":  "code",
+                                           "expr":  "sum(count_over_time({service=\"token-manager-service\", event_type=\"GATEWAY_AUTH\", status=\"FAILED\"} | json logger=\"logger\" | logger=\"aidetector.authentication.controller.AnonymousTokenController\"[2m]))",
+                                           "legendFormat":  "gateway_auth_failed",
+                                           "queryType":  "range",
+                                           "refId":  "A"
+                                       },
+                                       {
+                                           "datasource":  {
+                                                              "type":  "loki",
+                                                              "uid":  "loki"
+                                                          },
+                                           "editorMode":  "code",
+                                           "expr":  "sum(count_over_time({service=~\"rate-limiter-service|token-manager-service\", event_type=\"IP_VALIDATION\", status=\"FAILED\"} | json logger=\"logger\" | logger=~\"aidetector\\\\..*\"[2m]))",
+                                           "legendFormat":  "invalid_ip",
+                                           "queryType":  "range",
+                                           "refId":  "B"
+                                       },
+                                       {
+                                           "datasource":  {
+                                                              "type":  "loki",
+                                                              "uid":  "loki"
+                                                          },
+                                           "editorMode":  "code",
+                                           "expr":  "sum(count_over_time({service=~\"rate-limiter-service|token-manager-service\", limit_reached=\"true\"} | json logger=\"logger\" | logger=~\"aidetector\\\\..*\"[2m]))",
+                                           "legendFormat":  "rate_limit_hit",
+                                           "queryType":  "range",
+                                           "refId":  "C"
+                                       },
+                                       {
+                                           "datasource":  {
+                                                              "type":  "loki",
+                                                              "uid":  "loki"
+                                                          },
+                                           "editorMode":  "code",
+                                           "expr":  "sum(count_over_time({service=~\"rate-limiter-service|token-manager-service\", level=\"ERROR\"} | json logger=\"logger\" | logger=~\"aidetector\\\\..*\"[2m]))",
+                                           "legendFormat":  "errors",
+                                           "queryType":  "range",
+                                           "refId":  "D"
+                                       }
+                                   ],
+                       "title":  "Detections Over Time",
+                       "type":  "timeseries",
+                       "relativeTime":  "30m"
+                   },
+                   {
+                       "datasource":  {
+                                          "type":  "loki",
+                                          "uid":  "loki"
+                                      },
+                       "fieldConfig":  {
+                                           "defaults":  {
+                                                            "color":  {
+                                                                          "mode":  "palette-classic"
+                                                                      },
+                                                            "custom":  {
+                                                                           "axisBorderShow":  false,
+                                                                           "axisCenteredZero":  false,
+                                                                           "axisColorMode":  "text",
+                                                                           "axisPlacement":  "auto",
+                                                                           "drawStyle":  "line",
+                                                                           "fillOpacity":  10,
+                                                                           "gradientMode":  "none",
+                                                                           "lineInterpolation":  "linear",
+                                                                           "lineWidth":  2,
+                                                                           "pointSize":  4,
+                                                                           "scaleDistribution":  {
+                                                                                                     "type":  "linear"
+                                                                                                 },
+                                                                           "showPoints":  "never",
+                                                                           "spanNulls":  false,
+                                                                           "stacking":  {
+                                                                                            "group":  "A",
+                                                                                            "mode":  "none"
+                                                                                        },
+                                                                           "thresholdsStyle":  {
+                                                                                                   "mode":  "off"
+                                                                                               }
+                                                                       },
+                                                            "thresholds":  {
+                                                                               "mode":  "absolute",
+                                                                               "steps":  [
+                                                                                             {
+                                                                                                 "color":  "green",
+                                                                                                 "value":  null
+                                                                                             }
+                                                                                         ]
+                                                                           }
+                                                        },
+                                           "overrides":  [
+
+                                                         ]
+                                       },
+                       "gridPos":  {
+                                       "h":  8,
+                                       "w":  12,
+                                       "x":  12,
+                                       "y":  7
+                                   },
+                       "id":  109,
+                       "options":  {
+                                       "legend":  {
+                                                      "displayMode":  "list",
+                                                      "placement":  "bottom",
+                                                      "showLegend":  true
+                                                  },
+                                       "tooltip":  {
+                                                       "mode":  "single",
+                                                       "sort":  "none"
+                                                   }
+                                   },
+                       "targets":  [
+                                       {
+                                           "datasource":  {
+                                                              "type":  "loki",
+                                                              "uid":  "loki"
+                                                          },
+                                           "editorMode":  "code",
+                                           "expr":  "sum(count_over_time({service=\"token-manager-service\", event_type=\"TOKEN_GENERATED\"} | json logger=\"logger\" | logger=\"aidetector.authentication.services.TokenJwtService\"[2m]))",
+                                           "legendFormat":  "tokens_issued",
+                                           "queryType":  "range",
+                                           "refId":  "A"
+                                       },
+                                       {
+                                           "datasource":  {
+                                                              "type":  "loki",
+                                                              "uid":  "loki"
+                                                          },
+                                           "editorMode":  "code",
+                                           "expr":  "sum(count_over_time({service=\"token-manager-service\", event_type=\"TOKEN_GENERATION_PERMISSION\", status=\"RATE_LIMIT_REACHED\"} | json logger=\"logger\" | logger=\"aidetector.authentication.controller.AnonymousTokenController\"[2m]))",
+                                           "legendFormat":  "issuance_blocked",
+                                           "queryType":  "range",
+                                           "refId":  "B"
+                                       },
+                                       {
+                                           "datasource":  {
+                                                              "type":  "loki",
+                                                              "uid":  "loki"
+                                                          },
+                                           "editorMode":  "code",
+                                           "expr":  "sum(count_over_time({service=\"rate-limiter-service\", event_type=\"RATE_LIMIT_CHECK\", limit_reached=\"true\"} | json logger=\"logger\" | logger=\"aidetector.ratelimiter.services.RateLimitingService\"[2m]))",
+                                           "legendFormat":  "protected_requests_blocked",
+                                           "queryType":  "range",
+                                           "refId":  "C"
+                                       }
+                                   ],
+                       "title":  "Issued vs Blocked",
+                       "type":  "timeseries",
+                       "relativeTime":  "30m"
+                   },
+                   {
+                       "datasource":  {
+                                          "type":  "loki",
+                                          "uid":  "loki"
+                                      },
+                       "fieldConfig":  {
+                                           "defaults":  {
+                                                            "custom":  {
+                                                                           "align":  "auto",
+                                                                           "cellOptions":  {
+                                                                                               "type":  "auto"
+                                                                                           },
+                                                                           "inspect":  false
+                                                                       },
+                                                            "thresholds":  {
+                                                                               "mode":  "absolute",
+                                                                               "steps":  [
+                                                                                             {
+                                                                                                 "color":  "green",
+                                                                                                 "value":  null
+                                                                                             }
+                                                                                         ]
+                                                                           }
+                                                        },
+                                           "overrides":  [
+
+                                                         ]
+                                       },
+                       "gridPos":  {
+                                       "h":  8,
+                                       "w":  8,
+                                       "x":  0,
+                                       "y":  15
+                                   },
+                       "id":  110,
+                       "options":  {
+                                       "cellHeight":  "sm",
+                                       "footer":  {
+                                                      "show":  false
+                                                  },
+                                       "showHeader":  true
+                                   },
+                       "targets":  [
+                                       {
+                                           "datasource":  {
+                                                              "type":  "loki",
+                                                              "uid":  "loki"
+                                                          },
+                                           "editorMode":  "code",
+                                           "expr":  "topk(10, sum by (source_ip) (count_over_time({service=~\"rate-limiter-service|token-manager-service\", limit_reached=\"true\"} | json logger=\"logger\", source_ip=\"context.source_ip\" | logger=~\"aidetector\\\\..*\" | source_ip=~\".+\"[15m])))",
+                                           "legendFormat":  "{{source_ip}}",
+                                           "queryType":  "instant",
+                                           "refId":  "A"
+                                       }
+                                   ],
+                       "title":  "Top Blocked IPs",
+                       "type":  "table",
+                       "relativeTime":  "30m"
+                   },
+                   {
+                       "datasource":  {
+                                          "type":  "loki",
+                                          "uid":  "loki"
+                                      },
+                       "fieldConfig":  {
+                                           "defaults":  {
+                                                            "custom":  {
+                                                                           "align":  "auto",
+                                                                           "cellOptions":  {
+                                                                                               "type":  "auto"
+                                                                                           },
+                                                                           "inspect":  false
+                                                                       },
+                                                            "thresholds":  {
+                                                                               "mode":  "absolute",
+                                                                               "steps":  [
+                                                                                             {
+                                                                                                 "color":  "green",
+                                                                                                 "value":  null
+                                                                                             }
+                                                                                         ]
+                                                                           }
+                                                        },
+                                           "overrides":  [
+
+                                                         ]
+                                       },
+                       "gridPos":  {
+                                       "h":  8,
+                                       "w":  8,
+                                       "x":  8,
+                                       "y":  15
+                                   },
+                       "id":  111,
+                       "options":  {
+                                       "cellHeight":  "sm",
+                                       "footer":  {
+                                                      "show":  false
+                                                  },
+                                       "showHeader":  true
+                                   },
+                       "targets":  [
+                                       {
+                                           "datasource":  {
+                                                              "type":  "loki",
+                                                              "uid":  "loki"
+                                                          },
+                                           "editorMode":  "code",
+                                           "expr":  "topk(10, sum by (user_id) (count_over_time({service=~\"rate-limiter-service|token-manager-service\", status=~\"FAILED|RATE_LIMIT_REACHED\"} | json logger=\"logger\", user_id=\"context.user_id\" | logger=~\"aidetector\\\\..*\" | user_id=~\".+\"[15m])))",
+                                           "legendFormat":  "{{user_id}}",
+                                           "queryType":  "instant",
+                                           "refId":  "A"
+                                       }
+                                   ],
+                       "title":  "Top Impacted User IDs",
+                       "type":  "table",
+                       "relativeTime":  "30m"
+                   },
+                   {
+                       "datasource":  {
+                                          "type":  "loki",
+                                          "uid":  "loki"
+                                      },
+                       "fieldConfig":  {
+                                           "defaults":  {
+                                                            "color":  {
+                                                                          "mode":  "palette-classic"
+                                                                      },
+                                                            "thresholds":  {
+                                                                               "mode":  "absolute",
+                                                                               "steps":  [
+                                                                                             {
+                                                                                                 "color":  "green",
+                                                                                                 "value":  null
+                                                                                             }
+                                                                                         ]
+                                                                           }
+                                                        },
+                                           "overrides":  [
+
+                                                         ]
+                                       },
+                       "gridPos":  {
+                                       "h":  8,
+                                       "w":  8,
+                                       "x":  16,
+                                       "y":  15
+                                   },
+                       "id":  112,
+                       "options":  {
+                                       "displayLabels":  [
+                                                             "name",
+                                                             "value",
+                                                             "percent"
+                                                         ],
+                                       "legend":  {
+                                                      "displayMode":  "table",
+                                                      "placement":  "bottom",
+                                                      "showLegend":  true
+                                                  },
+                                       "pieType":  "pie",
+                                       "reduceOptions":  {
+                                                             "calcs":  [
+                                                                           "lastNotNull"
+                                                                       ],
+                                                             "fields":  "",
+                                                             "values":  false
+                                                         },
+                                       "tooltip":  {
+                                                       "mode":  "single",
+                                                       "sort":  "none"
+                                                   }
+                                   },
+                       "targets":  [
+                                       {
+                                           "datasource":  {
+                                                              "type":  "loki",
+                                                              "uid":  "loki"
+                                                          },
+                                           "editorMode":  "code",
+                                           "expr":  "sum by (event_type) (count_over_time({service=~\"rate-limiter-service|token-manager-service\", event_type=~\"GATEWAY_AUTH|IP_VALIDATION|RATE_LIMIT_CHECK|EVENT_TOKEN_CHECK|PUBLIC_KEY_RETREIVAL|TOKEN_GENERATION_PERMISSION\"} | json logger=\"logger\" | logger=~\"aidetector\\\\..*\"[15m]))",
+                                           "legendFormat":  "{{event_type}}",
+                                           "queryType":  "instant",
+                                           "refId":  "A"
+                                       }
+                                   ],
+                       "title":  "Security Event Mix",
+                       "type":  "piechart",
+                       "relativeTime":  "30m"
+                   },
+                   {
+                       "datasource":  {
+                                          "type":  "loki",
+                                          "uid":  "loki"
+                                      },
+                       "gridPos":  {
+                                       "h":  10,
+                                       "w":  24,
+                                       "x":  0,
+                                       "y":  23
+                                   },
+                       "id":  113,
+                       "options":  {
+                                       "dedupStrategy":  "none",
+                                       "enableLogDetails":  true,
+                                       "prettifyLogMessage":  true,
+                                       "showCommonLabels":  false,
+                                       "showLabels":  false,
+                                       "showTime":  true,
+                                       "sortOrder":  "Descending",
+                                       "wrapLogMessage":  true
+                                   },
+                       "targets":  [
+                                       {
+                                           "datasource":  {
+                                                              "type":  "loki",
+                                                              "uid":  "loki"
+                                                          },
+                                           "editorMode":  "code",
+                                           "expr":  "{service=~\"rate-limiter-service|token-manager-service\", level=~\"WARN|ERROR\"} | json service=\"service\", logger=\"logger\", level=\"level\", event_type=\"context.event_type\", status=\"context.status\", source_ip=\"context.source_ip\", user_id=\"context.user_id\", message=\"message\" | logger=~\"aidetector\\\\..*\" | line_format \"[{{.service}}] [{{.level}}] [{{.event_type}}] [status={{.status}}] [ip={{.source_ip}}] [user={{.user_id}}] {{.message}}\"",
+                                           "queryType":  "range",
+                                           "refId":  "A"
+                                       }
+                                   ],
+                       "title":  "High-Signal Security Logs",
+                       "type":  "logs",
+                       "relativeTime":  "15m"
+                   }
+               ],
+    "refresh":  "5m",
+    "schemaVersion":  41,
+    "style":  "dark",
+    "tags":  [
+                 "siem",
+                 "security",
+                 "triage"
+             ],
+    "templating":  {
+                       "list":  [
+
+                                ]
+                   },
+    "time":  {
+                 "from":  "now-30m",
+                 "to":  "now"
+             },
+    "timepicker":  {
+
+                   },
+    "timezone":  "",
+    "title":  "Security SIEM Overview",
+    "uid":  "security-siem-overview",
+    "version":  4,
+    "weekStart":  ""
 }

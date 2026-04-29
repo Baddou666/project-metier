@@ -114,7 +114,7 @@ volumes:
 
 ### 2. Configuration Promtail (promtail-config.yml)
 
-Configuration pour collecter les logs du rate-limiter :
+Configuration pour collecter les logs du rate-limiter avec des labels stables uniquement :
 
 ```yaml
 server:
@@ -122,10 +122,12 @@ server:
   grpc_listen_port: 0
 
 positions:
-  filename: /tmp/positions.yaml
+  filename: /var/lib/promtail/positions.yaml
 
 clients:
   - url: http://loki:3100/loki/api/v1/push
+    batchwait: 5s
+    batchsize: 1048576
 
 scrape_configs:
   - job_name: rate-limiter
@@ -134,33 +136,33 @@ scrape_configs:
           - localhost
         labels:
           job: rate-limiter
-          app: rate-limiter
-          __path__: /logs/rate-limiter.log
-    
-    # Parser JSON pour extraire les champs structurés
+          __path__: /logs/rate-limiting/*.log
+
     pipeline_stages:
       - json:
           expressions:
-            timestamp: timestamp
             level: level
-            logger: logger
-            message: message
-            event_type: event_type
-            source_ip: source_ip
-            user_id: user_id
-            status: status
-            counter_value: counter_value
-            rate_limit: rate_limit
-            limit_reached: limit_reached
-      
-      # Ajouter des labels pour la requête Loki
-      - labels:
-          event_type: event_type
-          status: status
-          source_ip: source_ip
-          level: level
-```
+            app: app
+            environment: environment
+            service: service
+            event_type: context.event_type
+            status: context.status
+            route_id: context.route_id
+            limit_reached: context.limit_reached
 
+      # Labels stables uniquement. Garder source_ip, user_id, message,
+      # redis_key, detail et compteurs dans le JSON pour eviter
+      # une cardinalite Loki trop elevee.
+      - labels:
+          level:
+          app:
+          environment:
+          service:
+          event_type:
+          status:
+          route_id:
+          limit_reached:
+```
 ### 3. Configuration Loki (loki-config.yml)
 
 Minimal loki-config.yml :
@@ -171,14 +173,14 @@ auth_enabled: false
 ingester:
   chunk_idle_period: 3m
   max_chunk_age: 6h
-  max_streams_limit_per_user: 0
   chunk_retain_period: 1m
-  max_streams_per_user: 0
 
 limits_config:
   enforce_metric_name: false
   reject_old_samples: true
   reject_old_samples_max_age: 168h
+  max_entries_limit_per_query: 5000
+  max_query_series: 500
 
 schema_config:
   configs:
@@ -354,7 +356,7 @@ volumes:
 
 ### Performance dégradée
 1. Réduisez la fréquence des scrapes Promtail
-2. Ajustez les limites Loki (`max_streams_limit_per_user`)
+2. Limitez les labels Promtail aux champs stables et ajustez les limites Loki (`max_entries_limit_per_query`, `max_query_series`)
 3. Vérifiez l'espace disque pour les chunks Loki
 
 ## Intégration avec Alerting

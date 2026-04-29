@@ -1,0 +1,18 @@
+services:
+  promtail:
+    image: grafana/promtail:2.9.0
+    container_name: promtail
+    expose:
+      - 9080
+    ports:
+      - "9080:9080"
+    volumes:
+      - ../rate-limiting-service/logs:/logs/rate-limiting:ro
+      - ../token-manager/logs:/logs/token-manager:ro
+      - ./promtail-config.yml:/etc/promtail/config.yml:ro
+      - promtail-positions:/var/lib/promtail
+    command: -config.file=/etc/promtail/config.yml
+    restart: unless-stopped
+
+volumes:
+  promtail-positions:

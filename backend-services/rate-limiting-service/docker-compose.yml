@@ -16,9 +16,7 @@ services:
       - JWKS_SRC_URL=${JWKS_SRC_URL}
       - AUTH_GATEWAY_SHARED_SECRET_HEADER=${AUTH_GATEWAY_SHARED_SECRET_HEADER}
       - AUTH_GATEWAY_SHARED_SECRET=${AUTH_GATEWAY_SHARED_SECRET}
-    depends_on:
-      - redis-server
-      - token-manager-service
+      - IS_ANONYM_USER_HEADER=${IS_ANONYM_USER_HEADER}
     expose:
       - 8080
     volumes:

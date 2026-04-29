@@ -1,6 +1,0 @@
-include:
-  - path: ./docker-compose.yml
-services:
-  redis-server:
-    ports:
-      - "${REDIS_EXTERNAL_PORT}:${REDIS_INTERNAL_PORT}"

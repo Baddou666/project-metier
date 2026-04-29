@@ -1,0 +1,28 @@
+include:
+  - path: ../../backend-services/postgre-db-service/docker-compose.yml
+  - path: ../../backend-services/model-handler-service/docker-compose.yml
+  - path: ../../backend-services/transformer-model-service/docker-compose.yml
+services:
+  postgres-service:
+    networks:
+      - postgres-net
+
+  model-handler-service:
+    networks:
+      - models-net
+      - postgres-net
+    depends_on:
+      - postgres-service
+      - transformer-model-service
+  transformer-model-service:
+    networks:
+      - models-net
+
+  
+
+networks:
+  postgres-net:
+    driver: bridge
+  models-net:
+    driver: bridge
+    

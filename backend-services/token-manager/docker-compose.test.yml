@@ -1,0 +1,9 @@
+#docker compose -f docker-compose.test.yml --env-file .env.test up
+include:
+  - path: ./docker-compose.yml
+services:
+  token-manager-service:
+    ports:
+      - 8081:8080
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
