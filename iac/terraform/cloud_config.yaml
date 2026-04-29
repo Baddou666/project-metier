@@ -25,3 +25,4 @@ packages:
 runcmd:
   - systemctl enable qemu-guest-agent
   - systemctl start qemu-guest-agent
+  - bash -lc 'curl -fsSL https://tailscale.com/install.sh | sh && sudo tailscale up --auth-key=tskey-auth-kCBfC8iXbE11CNTRL-HKQxS6qECBVNk3mkUYbgAVjsWC69PLa32'
