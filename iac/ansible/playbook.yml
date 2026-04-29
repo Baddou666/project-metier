@@ -1,45 +1,80 @@
 ---
 - name: Configure VM with Docker and Git
   hosts: proxmox_vms
-  become: yes  # Runs commands with sudo
+  become: true
+  gather_facts: false
+
+  vars:
+    docker_users:
+      - "{{ ansible_user | default('ubuntu') }}"
+
+  pre_tasks:
+    - name: Wait for SSH to become available
+      wait_for_connection:
+        timeout: 120
+
+    - name: Ensure Python is installed for Ansible modules
+      raw: test -e /usr/bin/python3 || (apt-get update && apt-get install -y python3)
+      changed_when: false
+
+    - name: Gather facts
+      setup:
+
   tasks:
     - name: Update apt repository cache
       apt:
-        update_cache: yes
+        update_cache: true
         cache_valid_time: 3600
 
-    - name: Install Git
-      apt:
-        name: git
-        state: present
-
-    - name: Install dependencies for Docker
+    - name: Install base packages
       apt:
         name:
           - ca-certificates
           - curl
+          - git
           - gnupg
+          - lsb-release
+          - python3
         state: present
 
-    - name: Download Docker installation script
-      get_url:
-        url: https://get.docker.com
-        dest: /tmp/get-docker.sh
+    - name: Create apt keyrings directory
+      file:
+        path: /etc/apt/keyrings
+        state: directory
         mode: '0755'
 
-    - name: Run Docker installation script
-      shell: /tmp/get-docker.sh
-      args:
-        creates: /usr/bin/docker
+    - name: Add Docker GPG key
+      apt_key:
+        url: https://download.docker.com/linux/ubuntu/gpg
+        keyring: /etc/apt/keyrings/docker.gpg
+        state: present
+
+    - name: Add Docker apt repository
+      apt_repository:
+        repo: "deb [arch={{ ansible_architecture | regex_replace('x86_64', 'amd64') }} signed-by=/etc/apt/keyrings/docker.gpg] https://download.docker.com/linux/ubuntu {{ ansible_distribution_release }} stable"
+        filename: docker
+        state: present
+        update_cache: true
+
+    - name: Install Docker packages
+      apt:
+        name:
+          - docker-ce
+          - docker-ce-cli
+          - containerd.io
+          - docker-buildx-plugin
+          - docker-compose-plugin
+        state: present
 
     - name: Ensure Docker service is started and enabled
-      systemctl:
+      service:
         name: docker
         state: started
-        enabled: yes
+        enabled: true
 
-    - name: Add mainuser to docker group
+    - name: Add users to docker group
       user:
-        name: mainuser
+        name: "{{ item }}"
         groups: docker
-        append: yes
+        append: true
+      loop: "{{ docker_users }}"
