@@ -645,59 +645,7 @@ async function getActiveTab() {
 }
 
 /* ─── Page extraction ────────────────────────────────────────── */
-async function extractHtmlSegmentsFromTab(tabId) {
-  const [{ result }] = await chrome.scripting.executeScript({
-    target: { tabId },
-    func: () => {
-      const ATTR = "data-ai-detector-id";
-      const SKIP = new Set(["SCRIPT","STYLE","NOSCRIPT","IFRAME","SVG"]);
-      const isVisible = el => {
-        if (!el?.isConnected) return false;
-        const s = window.getComputedStyle(el);
-        return s.display !== "none" && s.visibility !== "hidden";
-      };
-
-      let maxId = 0;
-      document.querySelectorAll(`[${ATTR}]`).forEach(el => {
-        const v = Number(el.getAttribute(ATTR));
-        if (Number.isFinite(v)) maxId = Math.max(maxId, v);
-      });
-      const nextId = () => ++maxId;
-      const assignId = el => {
-        const cur = el.getAttribute(ATTR);
-        if (cur) return Number(cur);
-        const id = nextId();
-        el.setAttribute(ATTR, String(id));
-        return id;
-      };
-
-      const map = new Map();
-      const walker = document.createTreeWalker(
-        document.body || document.documentElement, NodeFilter.SHOW_TEXT
-      );
-
-      while (walker.nextNode()) {
-        const node   = walker.currentNode;
-        const parent = node.parentElement;
-        const text    = node.textContent?.replace(/\s+/g, " ").trim();
-        if (!parent || !text || SKIP.has(parent.tagName) || !isVisible(parent)) continue;
-        const id = assignId(parent);
-        const cur = map.get(id);
-        if (cur) cur.text = `${cur.text} ${text}`.trim();
-        else map.set(id, { id: id, text });
-      }
-
-      return { pageTitle: document.title || "", items: Array.from(map.values()) };
-    }
-  });
-
-  return {
-    pageTitle: result?.pageTitle || "",
-    items: (result?.items || [])
-      .map(i => ({ ...i, text: normalizeWhitespace(i.text || "") }))
-      .filter(i => i.text)
-  };
-}
+const { extractHtmlSegmentsFromTab } = window.AiDetectorPageExtraction;
 
 function summarizeItems(sourceType, items) {
   const preview = items.slice(0, 10)
@@ -707,7 +655,7 @@ function summarizeItems(sourceType, items) {
 }
 
 /* ─── API call ───────────────────────────────────────────────── */
-function normalizeApiResponse(payload, fallbackSourceType) {
+function legacyNormalizeApiResponse(payload, fallbackSourceType) {
   const results = Array.isArray(payload)
     ? payload
     : Array.isArray(payload.results) ? payload.results
@@ -785,7 +733,7 @@ async function refreshAuthToken() {
  * @param {boolean} isRetry - Indicateur de retry (interne)
  * @returns {Promise} Résultat de la détection
  */
-async function detectWithBackend(sourceType, items, link, isRetry = false) {
+async function legacyDetectWithBackend(sourceType, items, link, isRetry = false) {
   if (!API_ENDPOINT || API_ENDPOINT.includes("your-backend")) {
     throw new Error("Le backend REST n'est pas encore configuré dans le code de l'extension.");
   }
@@ -859,11 +807,19 @@ async function detectWithBackend(sourceType, items, link, isRetry = false) {
     throw new Error("La réponse du serveur n'est pas au format JSON valide.");
   }
 
-  return normalizeApiResponse(payload, sourceType);
+  return legacyNormalizeApiResponse(payload, sourceType);
 }
 
 /* ─── Highlight on page ──────────────────────────────────────── */
-async function applyDetectionResultsToTab(tabId, itemResults) {
+async function detectWithBackend(sourceType, items, link, isRetry = false) {
+  return window.AiDetectorApi.detectWithBackend({
+    endpoint: API_ENDPOINT,
+    authToken: () => authToken,
+    refreshAuthToken
+  }, sourceType, items, link, isRetry);
+}
+
+async function legacyApplyDetectionResultsToTab(tabId, itemResults) {
   if (!itemResults.length) return;
 
   await chrome.scripting.executeScript({
@@ -930,7 +886,7 @@ async function applyDetectionResultsToTab(tabId, itemResults) {
   });
 }
 
-async function cleanupTabMarkers(tabId) {
+async function legacyCleanupTabMarkers(tabId) {
   await chrome.scripting.executeScript({
     target: { tabId },
     func: () => {
@@ -940,12 +896,18 @@ async function cleanupTabMarkers(tabId) {
   });
 }
 
-async function sendHeartbeat(tabId) {
+async function legacySendHeartbeat(tabId) {
   await chrome.scripting.executeScript({
     target: { tabId },
     func: () => { window.__aiDetectorHeartbeat = Date.now(); }
   });
 }
+
+const {
+  applyDetectionResultsToTab,
+  cleanupTabMarkers,
+  sendHeartbeat
+} = window.AiDetectorHighlighter;
 
 function stopHeartbeat() {
   if (!heartbeatIntervalId) return;
