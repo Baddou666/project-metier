@@ -101,6 +101,7 @@
         repo: "{{ project_repo_url }}"
         dest: "{{ project_repo_dir }}"
         version: main
+        force: true
         update: true
       become_user: "{{ ansible_user | default('ubuntu') }}"
 
