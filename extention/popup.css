@@ -599,3 +599,122 @@ textarea:focus {
   max-height: 220px;
   background: var(--surface-2);
 }
+
+/* ─── Authentication Error Banner ─────────────────────────── */
+.auth-error-banner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 12px 14px;
+  background: var(--warning-bg);
+  border: 1px solid rgba(245, 158, 11, .2);
+  border-radius: var(--radius-sm);
+  box-shadow: 0 2px 8px rgba(245, 158, 11, .08);
+  transition: opacity var(--transition), transform var(--transition), background var(--transition), border-color var(--transition);
+}
+
+.auth-error-banner.error {
+  background: var(--danger-bg);
+  border-color: rgba(239, 68, 68, .2);
+  box-shadow: 0 2px 8px rgba(239, 68, 68, .08);
+}
+
+.auth-error-banner.loading {
+  background: var(--warning-bg);
+  border-color: rgba(245, 158, 11, .2);
+  box-shadow: 0 2px 8px rgba(245, 158, 11, .08);
+}
+
+.auth-error-banner.hidden {
+  display: none;
+}
+
+.auth-error-content {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  flex: 1;
+}
+
+.auth-error-icon {
+  flex-shrink: 0;
+  color: var(--warning);
+  margin-top: 2px;
+}
+
+.auth-error-banner.error .auth-error-icon {
+  color: var(--danger);
+}
+
+.auth-error-text {
+  flex: 1;
+}
+
+.auth-error-text strong {
+  display: block;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--warning);
+  margin-bottom: 2px;
+}
+
+.auth-error-banner.error .auth-error-text strong {
+  color: var(--danger);
+}
+
+.auth-error-text p {
+  font-size: 12px;
+  color: var(--text-2);
+  margin: 0;
+}
+
+.btn-refresh-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  flex-shrink: 0;
+  background: transparent;
+  border: 1px solid var(--warning);
+  color: var(--warning);
+  border-radius: 6px;
+  cursor: pointer;
+  transition: background var(--transition), color var(--transition), border-color var(--transition);
+}
+
+.btn-refresh-icon:hover:not(:disabled) {
+  background: rgba(245, 158, 11, .1);
+  border-color: #d97706;
+}
+
+.btn-refresh-icon:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.btn-refresh-icon svg {
+  width: 16px;
+  height: 16px;
+  transition: transform 0.8s linear;
+}
+
+.btn-refresh-icon.animating svg {
+  animation: spin-smooth 0.8s linear infinite;
+}
+
+.auth-error-banner.error .btn-refresh-icon {
+  border-color: var(--danger);
+  color: var(--danger);
+}
+
+.auth-error-banner.error .btn-refresh-icon:hover:not(:disabled) {
+  background: rgba(239, 68, 68, .1);
+  border-color: #dc2626;
+}
+
+@keyframes spin-smooth {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}

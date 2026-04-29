@@ -1,0 +1,3 @@
+include:
+  - path: ../../backend-services/loki-service/docker-compose.loki.yml
+  - path: ../../backend-services/grafana-service/docker-compose.grafana.yml

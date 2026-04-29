@@ -1,0 +1,10 @@
+services:
+  https-proxy:
+    image: nginx:alpine
+    container_name: https-proxy
+    environment:
+      - PROXY_TARGET_HOST=${PROXY_TARGET_HOST}
+      - PROXY_TARGET_PORT=${PROXY_TARGET_PORT}
+    volumes:
+      - ./nginx.conf:/etc/nginx/templates/default.conf.template:ro
+      - ./certs:/etc/nginx/certs:ro

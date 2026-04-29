@@ -1,0 +1,68 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<configuration>
+    <springProperty name="app.name" source="spring.application.name" defaultValue="rate-limiter"/>
+    <springProperty name="app.version" source="app.version" defaultValue="1.0.0"/>
+    <property name="LOGS_DIR" value="logs"/>
+
+    <!-- Appender console pour développement (JSON) -->
+    <appender name="CONSOLE" class="ch.qos.logback.core.ConsoleAppender">
+        <encoder>
+            <pattern>%d{HH:mm:ss.SSS} %-5level [%thread] %logger{36} - %msg%n</pattern>
+        </encoder>
+    </appender>
+
+    <!-- Appender fichier pour logs JSON structurés (destiné à Loki) -->
+    <appender name="FILE_JSON" class="ch.qos.logback.core.rolling.RollingFileAppender">
+        <file>${LOGS_DIR}/rate-limiter.log</file>
+        <encoder class="net.logstash.logback.encoder.LogstashEncoder">
+            <customFields>{"app":"${app.name}","version":"${app.version}","environment":"${ENVIRONMENT:local}","service":"rate-limiter-service"}</customFields>
+            <fieldNames>
+                <timestamp>timestamp</timestamp>
+                <level>level</level>
+                <message>message</message>
+                <logger>logger</logger>
+                <thread>thread</thread>
+                <mdc>context</mdc>
+            </fieldNames>
+            <timeZone>UTC</timeZone>
+        </encoder>
+        <!-- Rotation par taille et date -->
+        <rollingPolicy class="ch.qos.logback.core.rolling.SizeAndTimeBasedRollingPolicy">
+            <fileNamePattern>${LOGS_DIR}/rate-limiter-%d{yyyy-MM-dd}.%i.log.gz</fileNamePattern>
+            <maxFileSize>100MB</maxFileSize>
+            <maxHistory>30</maxHistory>
+            <totalSizeCap>3GB</totalSizeCap>
+        </rollingPolicy>
+    </appender>
+
+    <!-- Logger spécifique pour API Gateway (tous les logs métier) -->
+    <logger name="aidetector.ratelimiter" level="DEBUG" additivity="false">
+        <appender-ref ref="FILE_JSON"/>
+        <appender-ref ref="CONSOLE"/>
+    </logger>
+
+    <!-- Logger pour les requêtes HTTP (optionnel) -->
+    <logger name="org.springframework.web" level="INFO" additivity="false">
+        <appender-ref ref="FILE_JSON"/>
+    </logger>
+
+    <!-- Root logger -->
+    <root level="INFO">
+        <appender-ref ref="FILE_JSON"/>
+        <appender-ref ref="CONSOLE"/>
+    </root>
+
+    <!-- Profils Spring -->
+    <springProfile name="prod">
+        <root level="WARN">
+            <appender-ref ref="FILE_JSON"/>
+        </root>
+    </springProfile>
+
+    <springProfile name="dev">
+        <root level="DEBUG">
+            <appender-ref ref="FILE_JSON"/>
+            <appender-ref ref="CONSOLE"/>
+        </root>
+    </springProfile>
+</configuration>
