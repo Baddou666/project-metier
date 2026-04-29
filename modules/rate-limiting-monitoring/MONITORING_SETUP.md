@@ -29,8 +29,10 @@ Le service **rate-limiter** a été configuré pour générer des **logs JSON st
    - `promtail-config.yml` : Pipeline de collecte/parsing JSON
    - `prometheus.yml` : Scrape optionnel des métriques
    - `modules/rate-limiting-monitoring/docker-compose.yml` : Compose d'assemblage du module monitoring
-   - `backend-services/loki-service/docker-compose.loki.yml` : Services Loki + Promtail + Prometheus
-   - `backend-services/grafana-service/docker-compose.grafana.yml` : Service Grafana dédié
+   - `backend-services/loki-service/docker-compose.yml` : Service Loki dédié
+   - `backend-services/promtail-service/docker-compose.yml` : Service Promtail dédié
+   - `backend-services/grafana-service/docker-compose.yml` : Service Grafana dédié
+   - `backend-services/promtail-service/prometheus.yml` : Configuration Prometheus utilisée par le module monitoring
 
 6. **Documentation**
    - `LOKI_GRAFANA_SETUP.md` : Guide complet d'intégration
@@ -183,9 +185,10 @@ curl http://localhost:3100/loki/api/v1/query?query='{app="rate-limiter"}'
 2. Vérifier la pipeline Promtail
 
 ### Loki consomme trop de ressources
-1. Réduire `max_streams_per_user` dans loki-config.yml
-2. Réduire la fréquence Promtail
-3. Augmenter la rétention dans les chunks
+1. Vérifier que seuls les champs stables sont promus en labels Promtail (`service`, `app`, `environment`, `level`, `event_type`, `status`, `route_id`, `limit_reached`)
+2. Garder les champs très variables (`source_ip`, `user_id`, `message`, `thread`, `redis_key`, `detail`, compteurs) dans le JSON et les extraire seulement dans les requêtes ciblées
+3. Réduire la plage temporelle ou la fréquence de refresh des dashboards Grafana
+4. Ajuster les limites de requête dans `backend-services/loki-service/loki-config.yml`
 
 ## Prochaines Étapes
 

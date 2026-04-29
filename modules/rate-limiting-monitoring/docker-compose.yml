@@ -1,3 +1,46 @@
 include:
-  - path: ../../backend-services/loki-service/docker-compose.loki.yml
-  - path: ../../backend-services/grafana-service/docker-compose.grafana.yml
+  - path: ../../backend-services/loki-service/docker-compose.yml
+  - path: ../../backend-services/promtail-service/docker-compose.yml
+  - path: ../../backend-services/grafana-service/docker-compose.yml
+
+services:
+  loki:
+    networks:
+      - monitoring
+
+  promtail:
+    networks:
+      - monitoring
+    depends_on:
+      - loki
+
+  grafana:
+    networks:
+      - monitoring
+    depends_on:
+      - loki
+
+  prometheus:
+    image: prom/prometheus:latest
+    container_name: prometheus
+    ports:
+      - "9090:9090"
+    volumes:
+      - ../../backend-services/promtail-service/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+      - prometheus-data:/prometheus
+    command:
+      - "--config.file=/etc/prometheus/prometheus.yml"
+    networks:
+      - monitoring
+    depends_on:
+      - loki
+      - grafana
+    restart: unless-stopped
+
+networks:
+  monitoring:
+    name: monitoring-network
+    driver: bridge
+
+volumes:
+  prometheus-data:
