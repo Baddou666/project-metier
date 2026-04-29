@@ -10,6 +10,11 @@
     project_parent_dir: "/home/{{ ansible_user | default('ubuntu') }}/projet-metier"
     project_repo_url: "https://github.com/Baddou666/project-metier.git"
     project_repo_dir: "{{ project_parent_dir }}/project-metier"
+    hf_model_repo_url: "https://huggingface.co/Mitsuman/distilbert"
+    hf_model_clone_dir: "{{ project_parent_dir }}/distilbert"
+    hf_model_target_dirs:
+      - "{{ project_repo_dir }}/backend-services/transformer-model-service/model"
+      - "{{ project_repo_dir }}/services-src-code/ai-transformer-model/model"
 
   pre_tasks:
     - name: Wait for SSH to become available
@@ -38,6 +43,7 @@
           - gnupg
           - lsb-release
           - python3
+          - rsync
         state: present
 
     - name: Create apt keyrings directory
@@ -96,4 +102,34 @@
         dest: "{{ project_repo_dir }}"
         version: main
         update: true
+      become_user: "{{ ansible_user | default('ubuntu') }}"
+
+    - name: Clone Hugging Face model repository
+      git:
+        repo: "{{ hf_model_repo_url }}"
+        dest: "{{ hf_model_clone_dir }}"
+        version: main
+        update: true
+        force: true
+      become_user: "{{ ansible_user | default('ubuntu') }}"
+
+    - name: Ensure model target directories exist
+      file:
+        path: "{{ item }}"
+        state: directory
+        owner: "{{ ansible_user | default('ubuntu') }}"
+        group: "{{ ansible_user | default('ubuntu') }}"
+        mode: '0755'
+      loop: "{{ hf_model_target_dirs }}"
+
+    - name: Synchronize downloaded model into project directories
+      command:
+        argv:
+          - rsync
+          - -a
+          - --delete
+          - --exclude=.git
+          - "{{ hf_model_clone_dir }}/"
+          - "{{ item }}/"
+      loop: "{{ hf_model_target_dirs }}"
       become_user: "{{ ansible_user | default('ubuntu') }}"
