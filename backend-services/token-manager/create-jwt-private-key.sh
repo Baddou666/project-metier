@@ -20,6 +20,6 @@ openssl genpkey \
   -pkeyopt rsa_keygen_bits:2048 \
   -out ./certs/jwt-private.pem
 
-chmod 600 ./certs/jwt-private.pem 2>/dev/null || true
+chmod 644 ./certs/jwt-private.pem 2>/dev/null || true
 
 echo "Private key generated at: certs/jwt-private.pem"
