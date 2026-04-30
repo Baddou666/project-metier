@@ -40,6 +40,7 @@
           - ca-certificates
           - curl
           - git
+          - git-lfs
           - gnupg
           - lsb-release
           - python3
@@ -101,8 +102,19 @@
         repo: "{{ project_repo_url }}"
         dest: "{{ project_repo_dir }}"
         version: main
+        force: true
         update: true
       become_user: "{{ ansible_user | default('ubuntu') }}"
+
+    - name: Configure Git LFS for deployment user
+      command:
+        argv:
+          - git
+          - lfs
+          - install
+          - --skip-repo
+      become_user: "{{ ansible_user | default('ubuntu') }}"
+      changed_when: false
 
     - name: Clone Hugging Face model repository
       git:
@@ -111,6 +123,15 @@
         version: main
         update: true
         force: true
+      become_user: "{{ ansible_user | default('ubuntu') }}"
+
+    - name: Download Hugging Face Git LFS model files
+      command:
+        argv:
+          - git
+          - lfs
+          - pull
+        chdir: "{{ hf_model_clone_dir }}"
       become_user: "{{ ansible_user | default('ubuntu') }}"
 
     - name: Ensure model target directories exist
