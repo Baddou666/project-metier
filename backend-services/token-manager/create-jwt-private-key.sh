@@ -10,9 +10,8 @@ if ! command -v openssl >/dev/null 2>&1; then
 fi
 
 if [ -f ./certs/jwt-private.pem ]; then
-  echo "Refusing to overwrite existing key: ./certs/jwt-private.pem" >&2
-  echo "Remove it first if you really want to regenerate it." >&2
-  exit 1
+  echo "already existing key in : ./certs/jwt-private.pem"
+  exit
 fi
 
 openssl genpkey \
