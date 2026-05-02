@@ -370,7 +370,7 @@
                                                               "uid":  "loki"
                                                           },
                                            "editorMode":  "code",
-                                           "expr":  "100 * sum(count_over_time({service=\"rate-limiter-service\", event_type=\"RATE_LIMIT_CHECK\", status=\"ALLOWED\"} | json logger=\"logger\" | logger=\"aidetector.ratelimiter.services.RateLimitingService\"[30m])) / clamp_min(sum(count_over_time({service=\"rate-limiter-service\", event_type=\"RATE_LIMIT_CHECK\"} | json logger=\"logger\" | logger=\"aidetector.ratelimiter.services.RateLimitingService\"[30m])), 1)",
+                                           "expr":  "100 * sum(count_over_time({service=\"rate-limiter-service\", event_type=\"RATE_LIMIT_CHECK\", status=\"ALLOWED\"} | json logger=\"logger\" | logger=\"aidetector.ratelimiter.services.RateLimitingService\"[30m])) / sum(count_over_time({service=\"rate-limiter-service\", event_type=\"RATE_LIMIT_CHECK\"} | json logger=\"logger\" | logger=\"aidetector.ratelimiter.services.RateLimitingService\"[30m]))",
                                            "legendFormat":  "pass_rate",
                                            "queryType":  "instant",
                                            "refId":  "A"
