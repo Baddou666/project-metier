@@ -4,7 +4,12 @@
   become: true
   gather_facts: false
 
+  vars_files:
+    - vault.yml
+
   vars:
+    ghcr_registry: ghcr.io
+    ghcr_username: baddou666
     docker_users:
       - "{{ ansible_user | default('ubuntu') }}"
     project_parent_dir: "/home/{{ ansible_user | default('ubuntu') }}/projet-metier"
@@ -43,6 +48,7 @@
           - git-lfs
           - gnupg
           - lsb-release
+          - openssl
           - python3
           - rsync
         state: present
@@ -89,6 +95,14 @@
         append: true
       loop: "{{ docker_users }}"
 
+    - name: Authenticate Docker to GHCR
+      command: docker login "{{ ghcr_registry }}" --username "{{ ghcr_username }}" --password-stdin
+      args:
+        stdin: "{{ vault_ghcr_api_key }}"
+      become_user: "{{ ansible_user | default('ubuntu') }}"
+      changed_when: false
+      no_log: true
+
     - name: Create project directory
       file:
         path: "{{ project_parent_dir }}"
@@ -104,6 +118,56 @@
         version: main
         force: true
         update: true
+      become_user: "{{ ansible_user | default('ubuntu') }}"
+
+    - name: Render ai-detector environment file
+      template:
+        src: templates/deploy.ai-detector-system.env.j2
+        dest: "{{ project_repo_dir }}/deploy/ai-detector-system/.env"
+        owner: "{{ ansible_user | default('ubuntu') }}"
+        group: "{{ ansible_user | default('ubuntu') }}"
+        mode: '0600'
+      no_log: true
+
+    - name: Ensure service log directories are writable
+      file:
+        path: "{{ project_repo_dir }}/{{ item }}"
+        state: directory
+        mode: '0777'
+      loop:
+        - backend-services/token-manager/logs
+        - backend-services/rate-limiting-service/logs
+
+    - name: Find token manager scripts
+      find:
+        paths: "{{ project_repo_dir }}/backend-services/token-manager"
+        patterns: "*.sh"
+        file_type: file
+      register: token_manager_scripts
+
+    - name: Find HTTPS proxy service scripts
+      find:
+        paths: "{{ project_repo_dir }}/backend-services/https-proxy-service"
+        patterns: "*.sh"
+        file_type: file
+      register: https_proxy_service_scripts
+
+    - name: Run token manager scripts
+      command:
+        argv:
+          - sh
+          - "{{ item.path }}"
+        chdir: "{{ project_repo_dir }}/backend-services/token-manager"
+      loop: "{{ token_manager_scripts.files | sort(attribute='path') }}"
+      become_user: "{{ ansible_user | default('ubuntu') }}"
+
+    - name: Run HTTPS proxy service scripts
+      command:
+        argv:
+          - sh
+          - "{{ item.path }}"
+        chdir: "{{ project_repo_dir }}/backend-services/https-proxy-service"
+      loop: "{{ https_proxy_service_scripts.files | sort(attribute='path') }}"
       become_user: "{{ ansible_user | default('ubuntu') }}"
 
     - name: Configure Git LFS for deployment user

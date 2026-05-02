@@ -45,7 +45,7 @@ const authErrorMessage  = document.getElementById("authErrorMessage");
 const authRetryButton   = document.getElementById("authRetryButton");
 
 /* ─── Config ─────────────────────────────────────────────────── */
-const API_DOMAINE = "https://anonymous2"
+const API_DOMAINE = "https://ubuntu-baddou-projet-metier"
 const API_ENDPOINT = `${API_DOMAINE}/api/ai-detector/detect`;
 const API_ANONYM_TOKEN_ENDPOINT = `${API_DOMAINE}/api/anonym-token/get`;
 const TOKEN_RETRY_INTERVAL_MS = 2000;
