@@ -16,6 +16,7 @@
     dev_project_parent_dir: "/home/{{ ansible_user | default('ubuntu') }}/projet-metier-dev"
     project_repo_url: "https://github.com/Baddou666/project-metier.git"
     project_repo_dir: "{{ dev_project_parent_dir }}/project-metier"
+    dev_deploy_dir: "{{ project_repo_dir }}/deploy/dev"
     hf_model_repo_url: "https://huggingface.co/Mitsuman/distilbert"
     hf_model_clone_dir: "{{ dev_project_parent_dir }}/distilbert"
     hf_model_target_dirs:
@@ -269,4 +270,23 @@
           - "{{ hf_model_clone_dir }}/"
           - "{{ item }}/"
       loop: "{{ hf_model_target_dirs }}"
+      become_user: "{{ ansible_user | default('ubuntu') }}"
+
+    - name: Pull development Docker images
+      command:
+        argv:
+          - docker
+          - compose
+          - pull
+        chdir: "{{ dev_deploy_dir }}"
+      become_user: "{{ ansible_user | default('ubuntu') }}"
+
+    - name: Start development Docker Compose stack
+      command:
+        argv:
+          - docker
+          - compose
+          - up
+          - -d
+        chdir: "{{ dev_deploy_dir }}"
       become_user: "{{ ansible_user | default('ubuntu') }}"

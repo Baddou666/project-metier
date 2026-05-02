@@ -36,7 +36,7 @@ scrape_configs:
 
       - drop:
           source: logger
-          expression: "org\\.springframework\\.cloud\\.gateway\\..*"
+          expression: 'org\.springframework\.cloud\.gateway\..*'
 
       - labels:
           level:
