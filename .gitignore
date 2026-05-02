@@ -1,1 +1,32 @@
-.vscode
+.vscode/
+.idea/
+
+# Local environment files
+**/.env
+**/.env.test
+!**/.env.example
+
+# Terraform local state and variables
+**/.terraform/
+**/.terraform*
+**/*.tfvars
+**/*.tfstate
+**/*.tfstate.*
+
+# Private keys and local certificates
+**/*.key
+**/*.pem
+**/*.p12
+**/*.pfx
+
+# Local logs and build outputs
+**/logs/
+**/*.log
+**/target/
+**/__pycache__/
+
+# Large local model/checkpoint artifacts
+**/*.safetensors
+**/*.pt
+**/*.pth
+**/*.bin
