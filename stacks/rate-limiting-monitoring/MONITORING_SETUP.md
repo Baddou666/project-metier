@@ -27,12 +27,10 @@ Le service **rate-limiter** a été configuré pour générer des **logs JSON st
 5. **Fichiers de Configuration**
    - `loki-config.yml` : Configuration Loki
    - `promtail-config.yml` : Pipeline de collecte/parsing JSON
-   - `prometheus.yml` : Scrape optionnel des métriques
    - `stacks/rate-limiting-monitoring/docker-compose.yml` : Compose d'assemblage du module monitoring
    - `backend-services/loki-service/docker-compose.yml` : Service Loki dédié
    - `backend-services/promtail-service/docker-compose.yml` : Service Promtail dédié
    - `backend-services/grafana-service/docker-compose.yml` : Service Grafana dédié
-   - `backend-services/promtail-service/prometheus.yml` : Configuration Prometheus utilisée par le module monitoring
 
 6. **Documentation**
    - `LOKI_GRAFANA_SETUP.md` : Guide complet d'intégration
@@ -61,11 +59,12 @@ cd services-src-code/rate-limiting
 ./mvnw clean package -DskipTests
 ```
 
-### 2. Démarrer la Stack Monitoring (Loki + Promtail + Prometheus + Grafana)
+### 2. Démarrer la Stack Monitoring (Loki + Promtail + Grafana)
 
 ```bash
 # À la racine du projet
-docker compose -f stacks/rate-limiting-monitoring/docker-compose.yml up -d
+cp stacks/rate-limiting-monitoring/.env.example stacks/rate-limiting-monitoring/.env
+docker compose --env-file stacks/rate-limiting-monitoring/.env -f stacks/rate-limiting-monitoring/docker-compose.yml up -d
 ```
 
 ### 3. Vérifier le Démarrage
@@ -78,9 +77,7 @@ docker logs -f rate-limiter
 curl http://localhost:3100/loki/api/v1/query?query='{app="rate-limiter"}'
 
 # Accéder aux dashboards
-# - Grafana: http://localhost:3000 (admin / admin)
-# - Loki API: http://localhost:3100
-# - Promtail: http://localhost:9080
+# - Grafana: http://localhost:${GRAFANA_PORT}
 ```
 
 ### 4. Créer des Dashboards dans Grafana
@@ -168,10 +165,9 @@ curl http://localhost:3100/loki/api/v1/query?query='{app="rate-limiter"}'
 | Service | URL | Credentials |
 |---------|-----|-------------|
 | Rate Limiter API | http://localhost:8080 | N/A |
-| Grafana | http://localhost:3000 | admin / admin |
-| Loki API | http://localhost:3100 | N/A |
-| Prometheus | http://localhost:9090 | N/A |
-| Promtail | http://localhost:9080 | N/A |
+| Grafana | `http://localhost:${GRAFANA_PORT}` | `${GRAFANA_ADMIN_USER}` / `${GRAFANA_ADMIN_PASSWORD}` |
+| Loki API | Docker network only | N/A |
+| Promtail | Docker network only | N/A |
 
 ## Troubleshooting
 
@@ -194,7 +190,6 @@ curl http://localhost:3100/loki/api/v1/query?query='{app="rate-limiter"}'
 
 - [ ] Configurer les alertes Grafana
 - [ ] Activer l'authentification Loki/Grafana
-- [ ] Intégrer Prometheus pour les métriques
 - [ ] Créer des dashboards personnalisés
 - [ ] Configurer les notifications (Slack, Email)
 - [ ] Tester la charge avec des outils comme JMeter

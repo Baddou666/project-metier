@@ -4,14 +4,15 @@ services:
     container_name: promtail
     expose:
       - 9080
-    ports:
-      - "9080:9080"
+    environment:
+      - PROMTAIL_LOG_LEVEL=${PROMTAIL_LOG_LEVEL}
+      - LOKI_PUSH_URL=${LOKI_PUSH_URL}
     volumes:
       - ../rate-limiting-service/logs:/logs/rate-limiting:ro
       - ../token-manager/logs:/logs/token-manager:ro
       - ./promtail-config.yml:/etc/promtail/config.yml:ro
       - promtail-positions:/var/lib/promtail
-    command: -config.file=/etc/promtail/config.yml
+    command: -config.file=/etc/promtail/config.yml -config.expand-env=true
     restart: unless-stopped
 
 volumes:

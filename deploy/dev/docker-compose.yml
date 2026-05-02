@@ -1,6 +1,8 @@
 include:
   - path: ../../stacks/api-gateway-service/docker-compose.yml
   - path: ../../stacks/model-manager-service/docker-compose.yml
+  - path: ../../stacks/rate-limiting-monitoring/docker-compose.yml
+
 services:
   model-handler-service:
     networks:

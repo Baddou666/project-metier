@@ -4,8 +4,6 @@ services:
     container_name: loki
     expose:
       - 3100
-    ports:
-      - "3100:3100"
     volumes:
       - ./loki-config.yml:/etc/loki/local-config.yml:ro
       - loki-data:/loki

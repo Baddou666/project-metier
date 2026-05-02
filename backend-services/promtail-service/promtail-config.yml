@@ -1,13 +1,13 @@
 server:
   http_listen_port: 9080
   grpc_listen_port: 0
-  log_level: info
+  log_level: ${PROMTAIL_LOG_LEVEL}
 
 positions:
   filename: /var/lib/promtail/positions.yaml
 
 clients:
-  - url: http://loki:3100/loki/api/v1/push
+  - url: ${LOKI_PUSH_URL}
     batchwait: 5s
     batchsize: 1048576
 
