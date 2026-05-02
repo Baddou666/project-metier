@@ -28,7 +28,7 @@ Le service **rate-limiter** a été configuré pour générer des **logs JSON st
    - `loki-config.yml` : Configuration Loki
    - `promtail-config.yml` : Pipeline de collecte/parsing JSON
    - `prometheus.yml` : Scrape optionnel des métriques
-   - `modules/rate-limiting-monitoring/docker-compose.yml` : Compose d'assemblage du module monitoring
+   - `stacks/rate-limiting-monitoring/docker-compose.yml` : Compose d'assemblage du module monitoring
    - `backend-services/loki-service/docker-compose.yml` : Service Loki dédié
    - `backend-services/promtail-service/docker-compose.yml` : Service Promtail dédié
    - `backend-services/grafana-service/docker-compose.yml` : Service Grafana dédié
@@ -65,7 +65,7 @@ cd services-src-code/rate-limiting
 
 ```bash
 # À la racine du projet
-docker compose -f modules/rate-limiting-monitoring/docker-compose.yml up -d
+docker compose -f stacks/rate-limiting-monitoring/docker-compose.yml up -d
 ```
 
 ### 3. Vérifier le Démarrage

@@ -1,6 +1,6 @@
 ---
-- name: Configure VM with Docker and Git
-  hosts: proxmox_vms
+- name: Configure development deployment VM with Docker and Git
+  hosts: dev_vms
   become: true
   gather_facts: false
 
@@ -8,18 +8,18 @@
     - vault.yml
 
   vars:
+    deployment_environment: development
     ghcr_registry: ghcr.io
     ghcr_username: baddou666
     docker_users:
       - "{{ ansible_user | default('ubuntu') }}"
-    project_parent_dir: "/home/{{ ansible_user | default('ubuntu') }}/projet-metier"
+    dev_project_parent_dir: "/home/{{ ansible_user | default('ubuntu') }}/projet-metier-dev"
     project_repo_url: "https://github.com/Baddou666/project-metier.git"
-    project_repo_dir: "{{ project_parent_dir }}/project-metier"
+    project_repo_dir: "{{ dev_project_parent_dir }}/project-metier"
     hf_model_repo_url: "https://huggingface.co/Mitsuman/distilbert"
-    hf_model_clone_dir: "{{ project_parent_dir }}/distilbert"
+    hf_model_clone_dir: "{{ dev_project_parent_dir }}/distilbert"
     hf_model_target_dirs:
       - "{{ project_repo_dir }}/backend-services/transformer-model-service/model"
-      - "{{ project_repo_dir }}/services-src-code/ai-transformer-model/model"
 
   pre_tasks:
     - name: Wait for SSH to become available
@@ -103,27 +103,79 @@
       changed_when: false
       no_log: true
 
-    - name: Create project directory
+    - name: Create development project directory
       file:
-        path: "{{ project_parent_dir }}"
+        path: "{{ dev_project_parent_dir }}"
         state: directory
         owner: "{{ ansible_user | default('ubuntu') }}"
         group: "{{ ansible_user | default('ubuntu') }}"
         mode: '0755'
 
-    - name: Clone project repository
-      git:
-        repo: "{{ project_repo_url }}"
-        dest: "{{ project_repo_dir }}"
-        version: main
-        force: true
-        update: true
+    - name: Check development repository clone
+      stat:
+        path: "{{ project_repo_dir }}/.git"
+      register: project_repo_git_dir
+
+    - name: Clone project repository for development deployment without checkout
+      command:
+        argv:
+          - git
+          - clone
+          - --filter=blob:none
+          - --sparse
+          - --no-checkout
+          - "{{ project_repo_url }}"
+          - "{{ project_repo_dir }}"
+      when: not project_repo_git_dir.stat.exists
       become_user: "{{ ansible_user | default('ubuntu') }}"
 
-    - name: Render ai-detector environment file
+    - name: Fetch development repository updates
+      command:
+        argv:
+          - git
+          - fetch
+          - origin
+          - main
+        chdir: "{{ project_repo_dir }}"
+      become_user: "{{ ansible_user | default('ubuntu') }}"
+
+    - name: Enable development sparse checkout
+      command:
+        argv:
+          - git
+          - sparse-checkout
+          - init
+          - --no-cone
+        chdir: "{{ project_repo_dir }}"
+      become_user: "{{ ansible_user | default('ubuntu') }}"
+
+    - name: Configure development sparse checkout exclusions
+      copy:
+        dest: "{{ project_repo_dir }}/.git/info/sparse-checkout"
+        owner: "{{ ansible_user | default('ubuntu') }}"
+        group: "{{ ansible_user | default('ubuntu') }}"
+        mode: '0644'
+        content: |
+          /*
+          !/iac/
+          !/services-src-code/
+          !/extention/
+
+    - name: Checkout development repository main branch
+      command:
+        argv:
+          - git
+          - checkout
+          - -B
+          - main
+          - origin/main
+        chdir: "{{ project_repo_dir }}"
+      become_user: "{{ ansible_user | default('ubuntu') }}"
+
+    - name: Render development environment file
       template:
-        src: templates/deploy.ai-detector-system.env.j2
-        dest: "{{ project_repo_dir }}/deploy/ai-detector-system/.env"
+        src: templates/deploy.dev.env.j2
+        dest: "{{ project_repo_dir }}/deploy/dev/.env"
         owner: "{{ ansible_user | default('ubuntu') }}"
         group: "{{ ansible_user | default('ubuntu') }}"
         mode: '0600'
