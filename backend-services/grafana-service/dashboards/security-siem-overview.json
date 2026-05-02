@@ -100,7 +100,7 @@
                                                               "uid":  "loki"
                                                           },
                                            "editorMode":  "code",
-                                           "expr":  "sum(count_over_time({service=\"token-manager-service\", event_type=\"GATEWAY_AUTH\", status=\"FAILED\"} | json logger=\"logger\" | logger=\"aidetector.authentication.controller.AnonymousTokenController\"[30m]))",
+                                           "expr":  "sum(count_over_time({service=\"token-manager-service\", event_type=\"GATEWAY_AUTH\", status=\"FAILED\"} | json logger=\"logger\" | logger=\"aidetector.authentication.controller.AnonymousTokenController\"[$__range]))",
                                            "legendFormat":  "gateway_auth_failed",
                                            "queryType":  "instant",
                                            "refId":  "A"
@@ -166,7 +166,7 @@
                                                               "uid":  "loki"
                                                           },
                                            "editorMode":  "code",
-                                           "expr":  "sum(count_over_time({service=~\"rate-limiter-service|token-manager-service\", event_type=\"IP_VALIDATION\", status=\"FAILED\"} | json logger=\"logger\" | logger=~\"aidetector\\\\..*\"[30m]))",
+                                           "expr":  "sum(count_over_time({service=~\"rate-limiter-service|token-manager-service\", event_type=\"IP_VALIDATION\", status=\"FAILED\"} | json logger=\"logger\" | logger=~\"aidetector\\\\..*\"[$__range]))",
                                            "legendFormat":  "ip_validation_failed",
                                            "queryType":  "instant",
                                            "refId":  "A"
@@ -236,7 +236,7 @@
                                                               "uid":  "loki"
                                                           },
                                            "editorMode":  "code",
-                                           "expr":  "sum(count_over_time({service=~\"rate-limiter-service|token-manager-service\", limit_reached=\"true\"} | json logger=\"logger\" | logger=~\"aidetector\\\\..*\"[30m]))",
+                                           "expr":  "sum(count_over_time({service=~\"rate-limiter-service|token-manager-service\", limit_reached=\"true\"} | json logger=\"logger\" | logger=~\"aidetector\\\\..*\"[$__range]))",
                                            "legendFormat":  "rate_limit_hits",
                                            "queryType":  "instant",
                                            "refId":  "A"
@@ -302,7 +302,7 @@
                                                               "uid":  "loki"
                                                           },
                                            "editorMode":  "code",
-                                           "expr":  "sum(count_over_time({service=\"rate-limiter-service\", event_type=\"PUBLIC_KEY_RETREIVAL\", status=\"FAILED\"} | json logger=\"logger\" | logger=~\"aidetector\\\\.ratelimiter\\\\..*\"[30m]))",
+                                           "expr":  "sum(count_over_time({service=\"rate-limiter-service\", event_type=\"PUBLIC_KEY_RETREIVAL\", status=\"FAILED\"} | json logger=\"logger\" | logger=~\"aidetector\\\\.ratelimiter\\\\..*\"[$__range]))",
                                            "legendFormat":  "jwks_failures",
                                            "queryType":  "instant",
                                            "refId":  "A"
@@ -368,7 +368,7 @@
                                                               "uid":  "loki"
                                                           },
                                            "editorMode":  "code",
-                                           "expr":  "sum(count_over_time({service=\"token-manager-service\", event_type=\"TOKEN_GENERATION_PERMISSION\", status=\"RATE_LIMIT_REACHED\"} | json logger=\"logger\" | logger=\"aidetector.authentication.controller.AnonymousTokenController\"[30m]))",
+                                           "expr":  "sum(count_over_time({service=\"token-manager-service\", event_type=\"TOKEN_GENERATION_PERMISSION\", status=\"RATE_LIMIT_REACHED\"} | json logger=\"logger\" | logger=\"aidetector.authentication.controller.AnonymousTokenController\"[$__range]))",
                                            "legendFormat":  "token_generation_blocked",
                                            "queryType":  "instant",
                                            "refId":  "A"
@@ -434,7 +434,7 @@
                                                               "uid":  "loki"
                                                           },
                                            "editorMode":  "code",
-                                           "expr":  "sum(count_over_time({service=~\"rate-limiter-service|token-manager-service\", level=\"ERROR\"} | json logger=\"logger\" | logger=~\"aidetector\\\\..*\"[30m]))",
+                                           "expr":  "sum(count_over_time({service=~\"rate-limiter-service|token-manager-service\", level=\"ERROR\"} | json logger=\"logger\" | logger=~\"aidetector\\\\..*\"[$__range]))",
                                            "legendFormat":  "errors",
                                            "queryType":  "instant",
                                            "refId":  "A"
@@ -517,7 +517,7 @@
                                                               "uid":  "loki"
                                                           },
                                            "editorMode":  "code",
-                                           "expr":  "sum(count_over_time({service=\"token-manager-service\", event_type=\"GATEWAY_AUTH\", status=\"FAILED\"} | json logger=\"logger\" | logger=\"aidetector.authentication.controller.AnonymousTokenController\"[2m]))",
+                                           "expr":  "sum(count_over_time({service=\"token-manager-service\", event_type=\"GATEWAY_AUTH\", status=\"FAILED\"} | json logger=\"logger\" | logger=\"aidetector.authentication.controller.AnonymousTokenController\"[$__interval]))",
                                            "legendFormat":  "gateway_auth_failed",
                                            "queryType":  "range",
                                            "refId":  "A"
@@ -528,7 +528,7 @@
                                                               "uid":  "loki"
                                                           },
                                            "editorMode":  "code",
-                                           "expr":  "sum(count_over_time({service=~\"rate-limiter-service|token-manager-service\", event_type=\"IP_VALIDATION\", status=\"FAILED\"} | json logger=\"logger\" | logger=~\"aidetector\\\\..*\"[2m]))",
+                                           "expr":  "sum(count_over_time({service=~\"rate-limiter-service|token-manager-service\", event_type=\"IP_VALIDATION\", status=\"FAILED\"} | json logger=\"logger\" | logger=~\"aidetector\\\\..*\"[$__interval]))",
                                            "legendFormat":  "invalid_ip",
                                            "queryType":  "range",
                                            "refId":  "B"
@@ -539,7 +539,7 @@
                                                               "uid":  "loki"
                                                           },
                                            "editorMode":  "code",
-                                           "expr":  "sum(count_over_time({service=~\"rate-limiter-service|token-manager-service\", limit_reached=\"true\"} | json logger=\"logger\" | logger=~\"aidetector\\\\..*\"[2m]))",
+                                           "expr":  "sum(count_over_time({service=~\"rate-limiter-service|token-manager-service\", limit_reached=\"true\"} | json logger=\"logger\" | logger=~\"aidetector\\\\..*\"[$__interval]))",
                                            "legendFormat":  "rate_limit_hit",
                                            "queryType":  "range",
                                            "refId":  "C"
@@ -550,7 +550,7 @@
                                                               "uid":  "loki"
                                                           },
                                            "editorMode":  "code",
-                                           "expr":  "sum(count_over_time({service=~\"rate-limiter-service|token-manager-service\", level=\"ERROR\"} | json logger=\"logger\" | logger=~\"aidetector\\\\..*\"[2m]))",
+                                           "expr":  "sum(count_over_time({service=~\"rate-limiter-service|token-manager-service\", level=\"ERROR\"} | json logger=\"logger\" | logger=~\"aidetector\\\\..*\"[$__interval]))",
                                            "legendFormat":  "errors",
                                            "queryType":  "range",
                                            "refId":  "D"
@@ -633,7 +633,7 @@
                                                               "uid":  "loki"
                                                           },
                                            "editorMode":  "code",
-                                           "expr":  "sum(count_over_time({service=\"token-manager-service\", event_type=\"TOKEN_GENERATED\"} | json logger=\"logger\" | logger=\"aidetector.authentication.services.TokenJwtService\"[2m]))",
+                                           "expr":  "sum(count_over_time({service=\"token-manager-service\", event_type=\"TOKEN_GENERATED\"} | json logger=\"logger\" | logger=\"aidetector.authentication.services.TokenJwtService\"[$__interval]))",
                                            "legendFormat":  "tokens_issued",
                                            "queryType":  "range",
                                            "refId":  "A"
@@ -644,7 +644,7 @@
                                                               "uid":  "loki"
                                                           },
                                            "editorMode":  "code",
-                                           "expr":  "sum(count_over_time({service=\"token-manager-service\", event_type=\"TOKEN_GENERATION_PERMISSION\", status=\"RATE_LIMIT_REACHED\"} | json logger=\"logger\" | logger=\"aidetector.authentication.controller.AnonymousTokenController\"[2m]))",
+                                           "expr":  "sum(count_over_time({service=\"token-manager-service\", event_type=\"TOKEN_GENERATION_PERMISSION\", status=\"RATE_LIMIT_REACHED\"} | json logger=\"logger\" | logger=\"aidetector.authentication.controller.AnonymousTokenController\"[$__interval]))",
                                            "legendFormat":  "issuance_blocked",
                                            "queryType":  "range",
                                            "refId":  "B"
@@ -655,7 +655,7 @@
                                                               "uid":  "loki"
                                                           },
                                            "editorMode":  "code",
-                                           "expr":  "sum(count_over_time({service=\"rate-limiter-service\", event_type=\"RATE_LIMIT_CHECK\", limit_reached=\"true\"} | json logger=\"logger\" | logger=\"aidetector.ratelimiter.services.RateLimitingService\"[2m]))",
+                                           "expr":  "sum(count_over_time({service=\"rate-limiter-service\", event_type=\"RATE_LIMIT_CHECK\", limit_reached=\"true\"} | json logger=\"logger\" | logger=\"aidetector.ratelimiter.services.RateLimitingService\"[$__interval]))",
                                            "legendFormat":  "protected_requests_blocked",
                                            "queryType":  "range",
                                            "refId":  "C"
@@ -714,7 +714,7 @@
                                                               "uid":  "loki"
                                                           },
                                            "editorMode":  "code",
-                                           "expr":  "topk(10, sum by (source_ip) (count_over_time({service=~\"rate-limiter-service|token-manager-service\", limit_reached=\"true\"} | json logger=\"logger\", source_ip=\"context.source_ip\" | logger=~\"aidetector\\\\..*\" | source_ip=~\".+\"[15m])))",
+                                           "expr":  "topk(10, sum by (source_ip) (count_over_time({service=~\"rate-limiter-service|token-manager-service\", limit_reached=\"true\"} | json logger=\"logger\", source_ip=\"context.source_ip\" | logger=~\"aidetector\\\\..*\" | source_ip=~\".+\"[$__range])))",
                                            "legendFormat":  "{{source_ip}}",
                                            "queryType":  "instant",
                                            "refId":  "A"
@@ -773,7 +773,7 @@
                                                               "uid":  "loki"
                                                           },
                                            "editorMode":  "code",
-                                           "expr":  "topk(10, sum by (user_id) (count_over_time({service=~\"rate-limiter-service|token-manager-service\", status=~\"FAILED|RATE_LIMIT_REACHED\"} | json logger=\"logger\", user_id=\"context.user_id\" | logger=~\"aidetector\\\\..*\" | user_id=~\".+\"[15m])))",
+                                           "expr":  "topk(10, sum by (user_id) (count_over_time({service=~\"rate-limiter-service|token-manager-service\", status=~\"FAILED|RATE_LIMIT_REACHED\"} | json logger=\"logger\", user_id=\"context.user_id\" | logger=~\"aidetector\\\\..*\" | user_id=~\".+\"[$__range])))",
                                            "legendFormat":  "{{user_id}}",
                                            "queryType":  "instant",
                                            "refId":  "A"
@@ -845,7 +845,7 @@
                                                               "uid":  "loki"
                                                           },
                                            "editorMode":  "code",
-                                           "expr":  "sum by (event_type) (count_over_time({service=~\"rate-limiter-service|token-manager-service\", event_type=~\"GATEWAY_AUTH|IP_VALIDATION|RATE_LIMIT_CHECK|EVENT_TOKEN_CHECK|PUBLIC_KEY_RETREIVAL|TOKEN_GENERATION_PERMISSION\"} | json logger=\"logger\" | logger=~\"aidetector\\\\..*\"[15m]))",
+                                           "expr":  "sum by (event_type) (count_over_time({service=~\"rate-limiter-service|token-manager-service\", event_type=~\"GATEWAY_AUTH|IP_VALIDATION|RATE_LIMIT_CHECK|EVENT_TOKEN_CHECK|PUBLIC_KEY_RETREIVAL|TOKEN_GENERATION_PERMISSION\"} | json logger=\"logger\" | logger=~\"aidetector\\\\..*\"[$__range]))",
                                            "legendFormat":  "{{event_type}}",
                                            "queryType":  "instant",
                                            "refId":  "A"
