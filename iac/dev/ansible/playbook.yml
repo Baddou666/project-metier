@@ -95,6 +95,8 @@
         groups: docker
         append: true
       loop: "{{ docker_users }}"
+    - name: Force reset connection to apply group changes
+      meta: reset_connection
 
     - name: Authenticate Docker to GHCR
       command: docker login "{{ ghcr_registry }}" --username "{{ ghcr_username }}" --password-stdin

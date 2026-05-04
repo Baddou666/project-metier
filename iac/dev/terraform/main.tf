@@ -1,3 +1,20 @@
+data "local_file" "ssh_key" {
+  filename = var.devbox-ssh-pubkey-path
+}
+
+locals {
+  ssh_key_content = sensitive(trimspace(data.local_file.ssh_key.content))
+  ssh_key_valid = can(regex("^ssh-", data.local_file.ssh_key.content))
+}
+
+check "ssh_key_format" {
+  assert {
+    condition     = local.ssh_key_valid
+    error_message = "Invalid SSH public key format"
+  }
+}
+
+
 resource "proxmox_virtual_environment_file" "cloud_config" {
   content_type = "snippets"
   datastore_id = "local"
@@ -6,7 +23,9 @@ resource "proxmox_virtual_environment_file" "cloud_config" {
   source_raw {
     data = templatefile("${path.module}/cloud_config.yml.tpl", {
       tskey_auth = var.tskey-auth,
-      hostname   = var.vm_name
+      hostname   = var.vm_name,
+      devbox_ssh_pubkey = data.local_file.ssh_key.content,
+      other_ssh_keys = var.additionnal-ssh-pubkeys
     })
     file_name = "cloud_config.yaml"
   }

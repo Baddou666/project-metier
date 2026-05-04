@@ -14,6 +14,7 @@ provider "proxmox" {
 
   ssh {
     username = "root"
+    password = var.pmx_root_password
     agent    = true
 
     node {
