@@ -12,7 +12,7 @@ services:
     volumes:
       - ./:/root/host
       - devbox_ssh_keys:/root/.ssh
-    command: bash -c "rm -f /root/.ssh/known* && eval "$(ssh-agent -s)" && bash"
+    command: bash -c "rm -f /root/.ssh/known* && bash"
 
 volumes:
   devbox_ssh_keys:
