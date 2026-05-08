@@ -1,0 +1,12 @@
+proxmox_endpoint = "https://pve.tail2c3ac8.ts.net:8006/api2/json"
+
+vm_name     = "ai-detect-dev"
+target_node = "pve"
+ubuntu_image_file_id = "local:iso/ubuntu-server.img"
+
+api_token  = 
+tskey-auth =
+devbox-ssh-pubkey-path = "/root/.ssh/id_ed25519.pub"
+additionnal-ssh-pubkeys = ["sshpub1","sshpub2"]
+
+pmx_root_password =
