@@ -5,4 +5,4 @@ services:
   model-handler-service:
     image:  ghcr.io/baddou666/projet-metier/test/model-handler:latest
     ports:
-      -8080:8080
+      - 8080:8080

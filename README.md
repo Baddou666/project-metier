@@ -3,7 +3,8 @@
 Ce depot contient deux niveaux de travail :
 
 - `services-src-code/` : le code source Spring Boot a builder localement
-- `backend-services/` et `stacks/` : les stacks Docker pour lancer et tester les services
+- `backend-services/` : les compose unitaires des services Docker
+- `deploy/dev/` : l'assemblage Docker de developpement
 
 ## Prerequis
 
@@ -15,16 +16,16 @@ Ce depot contient deux niveaux de travail :
 ## Demarrage rapide
 
 1. Builder les images locales des services Java utiles.
-2. Prepararer les fichiers `.env` a partir des `.env.example`.
+2. Renseigner les valeurs necessaires dans un fichier env local non versionne, ou utiliser `deploy/dev/.env.example` pour un lancement de base.
 3. Generer la cle RSA du `token-manager`.
-4. Lancer la stack depuis `stacks/api-gateway-service`.
+4. Lancer l'environnement depuis `deploy/dev`.
 5. Tester les endpoints via le proxy HTTP/HTTPS.
 
 ## Ordre recommande
 
 1. Lire [services-src-code/README.md](/d:/PRJ-METIER/project-metier/services-src-code/README.md:1)
 2. Lire [backend-services/README.md](/d:/PRJ-METIER/project-metier/backend-services/README.md:1)
-3. Suivre [stacks/api-gateway-service/README.md](/d:/PRJ-METIER/project-metier/stacks/api-gateway-service/README.md:1)
+3. Suivre [deploy/dev/README.md](/d:/PRJ-METIER/project-metier/deploy/dev/README.md:1)
 
 ## Test minimal
 

@@ -174,7 +174,7 @@ export default function MonitoringDashboard({ onSelectDetection }: MonitoringDas
         {/* Distribution Chart */}
         <div className="glass p-6 shadow-xl shadow-black/20 relative">
           <h3 className="font-sans font-bold text-xs uppercase tracking-[0.2em] text-white/40 mb-8">Repartition des resultats</h3>
-          <div className="h-[250px] w-full flex items-center justify-center">
+          <div className="relative h-[250px] w-full flex items-center justify-center">
              <ResponsiveContainer width="100%" height="100%">
               <PieChart>
                 <Pie
@@ -201,7 +201,7 @@ export default function MonitoringDashboard({ onSelectDetection }: MonitoringDas
                 />
               </PieChart>
              </ResponsiveContainer>
-             <div className="absolute top-[50%] left-[50%] translate-x-[-50%] translate-y-[-10%] flex flex-col items-center justify-center pointer-events-none">
+             <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
                 <span className="text-4xl font-black text-white tracking-tighter">{stats.total}</span>
                 <span className="text-[8px] font-mono text-white/30 uppercase tracking-[0.2em]">Analyses</span>
              </div>

@@ -48,4 +48,4 @@ Le flux des utilisateurs connectes n'est pas encore implemente. Une requete prot
 
 ## Test rapide
 
-Le service n'est pas expose directement dans ce dossier. Le test normal se fait via la stack [stacks/api-gateway-service](/d:/PRJ-METIER/project-metier/stacks/api-gateway-service/README.md:1).
+Le service n'est pas expose directement dans ce dossier. Le test normal se fait via l'environnement [deploy/dev](/d:/PRJ-METIER/project-metier/deploy/dev/README.md:1).
