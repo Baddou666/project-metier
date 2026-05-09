@@ -20,7 +20,7 @@
     hf_model_repo_url: "https://huggingface.co/Mitsuman/distilbert"
     hf_model_clone_dir: "{{ dev_project_parent_dir }}/distilbert"
     hf_model_target_dirs:
-      - "{{ project_repo_dir }}/backend-services/transformer-model-service/model"
+      - "{{ project_repo_dir }}/runtime-services/transformer-model-service/model"
 
   pre_tasks:
     - name: Wait for SSH to become available
@@ -241,19 +241,19 @@
         state: directory
         mode: '0777'
       loop:
-        - backend-services/token-manager/logs
-        - backend-services/rate-limiting-service/logs
+        - runtime-services/token-manager/logs
+        - runtime-services/rate-limiting-service/logs
 
     - name: Find token manager scripts
       find:
-        paths: "{{ project_repo_dir }}/backend-services/token-manager"
+        paths: "{{ project_repo_dir }}/runtime-services/token-manager"
         patterns: "*.sh"
         file_type: file
       register: token_manager_scripts
 
     - name: Find HTTPS proxy service scripts
       find:
-        paths: "{{ project_repo_dir }}/backend-services/https-proxy-service"
+        paths: "{{ project_repo_dir }}/runtime-services/https-proxy-service"
         patterns: "*.sh"
         file_type: file
       register: https_proxy_service_scripts
@@ -263,7 +263,7 @@
         argv:
           - sh
           - "{{ item.path }}"
-        chdir: "{{ project_repo_dir }}/backend-services/token-manager"
+        chdir: "{{ project_repo_dir }}/runtime-services/token-manager"
       loop: "{{ token_manager_scripts.files | sort(attribute='path') }}"
       become_user: "{{ ansible_user | default('ubuntu') }}"
 
@@ -272,7 +272,7 @@
         argv:
           - sh
           - "{{ item.path }}"
-        chdir: "{{ project_repo_dir }}/backend-services/https-proxy-service"
+        chdir: "{{ project_repo_dir }}/runtime-services/https-proxy-service"
       loop: "{{ https_proxy_service_scripts.files | sort(attribute='path') }}"
       become_user: "{{ ansible_user | default('ubuntu') }}"
 

@@ -1,15 +1,15 @@
 include:
-  - path: ../../backend-services/https-proxy-service/docker-compose.yml
-  - path: ../../backend-services/frontend-service/docker-compose.yml
-  - path: ../../backend-services/rate-limiting-service/docker-compose.yml
-  - path: ../../backend-services/redis-shared-memory-service/docker-compose.yml
-  - path: ../../backend-services/token-manager/docker-compose.yml
-  - path: ../../backend-services/postgre-db-service/docker-compose.yml
-  - path: ../../backend-services/model-handler-service/docker-compose.yml
-  - path: ../../backend-services/transformer-model-service/docker-compose.yml
-  - path: ../../backend-services/loki-service/docker-compose.yml
-  - path: ../../backend-services/promtail-service/docker-compose.yml
-  - path: ../../backend-services/grafana-service/docker-compose.yml
+  - path: ../../runtime-services/https-proxy-service/docker-compose.yml
+  - path: ../../runtime-services/frontend-service/docker-compose.yml
+  - path: ../../runtime-services/rate-limiting-service/docker-compose.yml
+  - path: ../../runtime-services/redis-shared-memory-service/docker-compose.yml
+  - path: ../../runtime-services/token-manager/docker-compose.yml
+  - path: ../../runtime-services/postgre-db-service/docker-compose.yml
+  - path: ../../runtime-services/model-handler-service/docker-compose.yml
+  - path: ../../runtime-services/transformer-model-service/docker-compose.yml
+  - path: ../../runtime-services/loki-service/docker-compose.yml
+  - path: ../../runtime-services/promtail-service/docker-compose.yml
+  - path: ../../runtime-services/grafana-service/docker-compose.yml
 
 services:
   https-proxy:

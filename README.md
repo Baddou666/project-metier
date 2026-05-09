@@ -3,7 +3,7 @@
 Ce depot contient deux niveaux de travail :
 
 - `services-src-code/` : le code source Spring Boot a builder localement
-- `backend-services/` : les compose unitaires des services Docker
+- `runtime-services/` : les compose unitaires des services Docker
 - `deploy/dev/` : l'assemblage Docker de developpement
 
 ## Prerequis
@@ -24,7 +24,7 @@ Ce depot contient deux niveaux de travail :
 ## Ordre recommande
 
 1. Lire [services-src-code/README.md](/d:/PRJ-METIER/project-metier/services-src-code/README.md:1)
-2. Lire [backend-services/README.md](/d:/PRJ-METIER/project-metier/backend-services/README.md:1)
+2. Lire [runtime-services/README.md](/d:/PRJ-METIER/project-metier/runtime-services/README.md:1)
 3. Suivre [deploy/dev/README.md](/d:/PRJ-METIER/project-metier/deploy/dev/README.md:1)
 
 ## Test minimal

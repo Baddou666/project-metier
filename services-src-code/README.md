@@ -15,7 +15,7 @@ Ce dossier contient le code source des services Java.
 
 1. Verifier `java -version` avec JDK 21
 2. Builder l'image Docker locale avec Maven Wrapper
-3. Revenir dans les dossiers `backend-services/` ou `modules/` pour lancer les conteneurs
+3. Revenir dans les dossiers `runtime-services/` ou `modules/` pour lancer les conteneurs
 
 ## README par service
 

@@ -41,8 +41,8 @@ Le service consomme au minimum :
 - `AUTH_GATEWAY_SHARED_SECRET_HEADER`
 - `AUTH_GATEWAY_SHARED_SECRET`
 
-La cle privee RSA attendue au runtime Docker se trouve dans `backend-services/token-manager/certs/jwt-private.pem`.
+La cle privee RSA attendue au runtime Docker se trouve dans `runtime-services/token-manager/certs/jwt-private.pem`.
 
 ## Ensuite
 
-Pour lancer le conteneur, voir [backend-services/token-manager/README.md](/d:/PRJ-METIER/project-metier/backend-services/token-manager/README.md:1).
+Pour lancer le conteneur, voir [runtime-services/token-manager/README.md](/d:/PRJ-METIER/project-metier/runtime-services/token-manager/README.md:1).

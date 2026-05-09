@@ -12,8 +12,8 @@ Ce dossier assemble les services Docker de developpement.
 ## Preparation
 
 1. Builder les images locales quand elles ne sont pas disponibles dans le registry.
-2. Generer la cle RSA du `token-manager` depuis `backend-services/token-manager`.
-3. Generer les certificats du proxy HTTPS depuis `backend-services/https-proxy-service`.
+2. Generer la cle RSA du `token-manager` depuis `runtime-services/token-manager`.
+3. Generer les certificats du proxy HTTPS depuis `runtime-services/https-proxy-service`.
 4. Renseigner les valeurs necessaires dans un fichier env local non versionne si les valeurs de `.env.example` ne suffisent pas.
 
 ## Lancement
@@ -56,4 +56,4 @@ Attendu :
 
 Grafana est disponible sur `http://localhost:${GRAFANA_PORT}`. Loki et Promtail sont raccordes au reseau `monitoring-network`.
 
-Les dashboards provisionnes se trouvent dans `backend-services/grafana-service/dashboards`.
+Les dashboards provisionnes se trouvent dans `runtime-services/grafana-service/dashboards`.

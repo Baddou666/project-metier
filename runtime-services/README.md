@@ -1,4 +1,4 @@
-# Backend Services
+# Runtime Services
 
 Ce dossier contient les briques Docker reutilisees par les modules.
 
@@ -17,7 +17,7 @@ Ce dossier contient les briques Docker reutilisees par les modules.
 
 ## Lecture recommandee
 
-- [rate-limiting-service/README.md](/d:/PRJ-METIER/project-metier/backend-services/rate-limiting-service/README.md:1)
-- [token-manager/README.md](/d:/PRJ-METIER/project-metier/backend-services/token-manager/README.md:1)
-- [redis-shared-memory-service/README.md](/d:/PRJ-METIER/project-metier/backend-services/redis-shared-memory-service/README.md:1)
-- [https-proxy-service/README.md](/d:/PRJ-METIER/project-metier/backend-services/https-proxy-service/README.md:1)
+- [rate-limiting-service/README.md](/d:/PRJ-METIER/project-metier/runtime-services/rate-limiting-service/README.md:1)
+- [token-manager/README.md](/d:/PRJ-METIER/project-metier/runtime-services/token-manager/README.md:1)
+- [redis-shared-memory-service/README.md](/d:/PRJ-METIER/project-metier/runtime-services/redis-shared-memory-service/README.md:1)
+- [https-proxy-service/README.md](/d:/PRJ-METIER/project-metier/runtime-services/https-proxy-service/README.md:1)

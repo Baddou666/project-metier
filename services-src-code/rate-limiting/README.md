@@ -58,5 +58,5 @@ Si Maven fonctionne sur votre machine :
 
 Pour lancer le service dans Docker, revenir vers :
 
-- [backend-services/rate-limiting-service](/d:/PRJ-METIER/project-metier/backend-services/rate-limiting-service/README.md:1)
+- [runtime-services/rate-limiting-service](/d:/PRJ-METIER/project-metier/runtime-services/rate-limiting-service/README.md:1)
 - ou [deploy/dev](/d:/PRJ-METIER/project-metier/deploy/dev/README.md:1)
