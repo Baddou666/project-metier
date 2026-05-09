@@ -3,8 +3,10 @@ services:
     image: nginx:alpine
     container_name: https-proxy
     environment:
-      - PROXY_TARGET_HOST=${PROXY_TARGET_HOST}
-      - PROXY_TARGET_PORT=${PROXY_TARGET_PORT}
+      - PROXY_API_HOST=${PROXY_API_HOST}
+      - PROXY_API_PORT=${PROXY_API_PORT}
+      - PROXY_FE_HOST=${PROXY_FE_HOST:-ai-text-detector-frontend}
+      - PROXY_FE_PORT=${PROXY_FE_PORT:-3000}
     volumes:
       - ./nginx.conf:/etc/nginx/templates/default.conf.template:ro
       - ./certs:/etc/nginx/certs:ro

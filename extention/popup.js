@@ -1,4 +1,4 @@
-/* ─── DOM References ─────────────────────────────────────────── */
+﻿/* ─── DOM References ─────────────────────────────────────────── */
 const manualText       = document.getElementById("manualText");
 const checkPageButton  = document.getElementById("checkPageButton");
 const checkTextButton  = document.getElementById("checkTextButton");
@@ -1043,3 +1043,4 @@ if (document.readyState === "loading") {
   // Document already loaded
   initializeApp();
 }
+

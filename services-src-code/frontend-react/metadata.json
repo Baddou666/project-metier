@@ -1,0 +1,6 @@
+{
+  "name": "AI Text Detector",
+  "description": "A cloud-native intelligent system for detecting AI-generated text using advanced NLP and real-time observability.",
+  "requestFramePermissions": [],
+  "majorCapabilities": []
+}

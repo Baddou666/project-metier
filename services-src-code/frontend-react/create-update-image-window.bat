@@ -4,7 +4,7 @@ setlocal
 :: ======================================================
 :: CONFIGURATION
 :: ======================================================
-set "IMAGE_NAME=token-manager"
+set "IMAGE_NAME=ai-text-detector-frontend"
 set "LOCAL_IMAGE=%IMAGE_NAME%:latest"
 set "REGISTRY=ghcr.io"
 set "REGISTRY_USERNAME=baddou666"
@@ -14,8 +14,11 @@ set "FINAL_CHANNEL=final"
 set "DEFAULT_CHANNEL=final"
 set "DEFAULT_TAG=latest"
 set "API_KEY_ENV=GIT_API"
-set "BUILD_COMMAND=call .\mvnw clean spring-boot:build-image -DskipTests"
-set "BUILD_LABEL=Nettoyage et compilation avec Maven Wrapper"
+set "DOCKERFILE=Dockerfile"
+set "BUILD_CONTEXT=."
+set "BUILD_TARGET=production"
+set "BUILD_COMMAND=docker build -f %DOCKERFILE% --target %BUILD_TARGET% -t %LOCAL_IMAGE% %BUILD_CONTEXT%"
+set "BUILD_LABEL=Construction de l'image Docker frontend"
 
 echo ======================================================
 echo   GENERATION DE L'IMAGE DOCKER (WINDOWS)

@@ -3,7 +3,7 @@
 # ======================================================
 # CONFIGURATION
 # ======================================================
-IMAGE_NAME="rate-limiter"
+IMAGE_NAME="transformer-model"
 LOCAL_IMAGE="${IMAGE_NAME}:latest"
 REGISTRY="ghcr.io"
 REGISTRY_USERNAME="baddou666"
@@ -13,9 +13,11 @@ FINAL_CHANNEL="final"
 DEFAULT_CHANNEL="final"
 DEFAULT_TAG="latest"
 API_KEY_ENV="GIT_API"
-PRE_BUILD_COMMAND="chmod +x mvnw"
-BUILD_COMMAND="./mvnw clean spring-boot:build-image -DskipTests"
-BUILD_LABEL="Nettoyage et compilation avec Maven Wrapper"
+DOCKERFILE="Dockerfile"
+BUILD_CONTEXT="."
+PRE_BUILD_COMMAND=""
+BUILD_COMMAND="docker build -f ${DOCKERFILE} -t ${LOCAL_IMAGE} ${BUILD_CONTEXT}"
+BUILD_LABEL="Construction de l'image Docker"
 
 echo "======================================================"
 echo "  GENERATION DE L'IMAGE DOCKER (LINUX/MAC)"

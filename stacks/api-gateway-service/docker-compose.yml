@@ -1,5 +1,6 @@
 include:
   - path: ../../backend-services/https-proxy-service/docker-compose.yml
+  - path: ../../backend-services/frontend-service/docker-compose.yml
   - path: ../../backend-services/rate-limiting-service/docker-compose.yml
   - path: ../../backend-services/redis-shared-memory-service/docker-compose.yml
   - path: ../../backend-services/token-manager/docker-compose.yml
@@ -7,6 +8,7 @@ services:
   https-proxy:
     networks:
       - proxy-ratelimiter-net
+      - proxy-fe-net
     ports:
     # Publication du port 80 en mode host pour voir l'IP réelle
     - target: 80
@@ -19,7 +21,11 @@ services:
       protocol: tcp
       mode: host
     depends_on:
+      - ai-text-detector-frontend
       - rate-limiting-service
+  ai-text-detector-frontend:
+    networks:
+      - proxy-fe-net
   rate-limiting-service:
     networks:
         - proxy-ratelimiter-net
@@ -45,3 +51,6 @@ networks:
   redis-net:
     driver: bridge
     name: redis-net
+  proxy-fe-net:
+    driver: bridge
+    name: proxy-fe-net

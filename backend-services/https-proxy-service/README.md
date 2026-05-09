@@ -19,10 +19,12 @@ Si vous utilisez une autre methode, assurez-vous d'obtenir les fichiers SSL atte
 
 ## Variables importantes
 
-- `PROXY_TARGET_HOST`
-- `PROXY_TARGET_PORT`
+- `PROXY_API_HOST`
+- `PROXY_API_PORT`
 
 Elles doivent pointer vers le service `rate-limiting-service`.
+
+Le frontend est route par defaut vers `ai-text-detector-frontend:3000` via la configuration Docker Compose du proxy.
 
 ## Lancement
 

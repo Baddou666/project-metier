@@ -7,8 +7,3 @@ services:
     #ouvrir deux port pour activer la redirection
       - "80:80"
       - "443:443"
-  test-server:
-    image: kennethreitz/httpbin
-    ports:
-      #ouvrir un port directement du serveur pour comparer
-      - "8000:80"

@@ -3,7 +3,7 @@
 # ======================================================
 # CONFIGURATION
 # ======================================================
-IMAGE_NAME="rate-limiter"
+IMAGE_NAME="token-manager"
 LOCAL_IMAGE="${IMAGE_NAME}:latest"
 REGISTRY="ghcr.io"
 REGISTRY_USERNAME="baddou666"
