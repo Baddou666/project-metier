@@ -4,7 +4,7 @@ include:
 
 services:
   rate-limiting-service:
-    image: ghcr.io/baddou666/projet-metier/test/rate-limiter:v1.1.0
+    image: ghcr.io/baddou666/projet-metier/dev/rate-limiter:test
     ports:
       - 8080:8080
     extra_hosts:

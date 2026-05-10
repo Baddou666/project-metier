@@ -1,6 +1,6 @@
 services:
   transformer-model-service:
-    image: ghcr.io/baddou666/projet-metier/final/transformer-model:latest
+    image: ghcr.io/baddou666/projet-metier/dev/transformer-model:latest
     working_dir: /workspace
     environment:
       - PYTHONUNBUFFERED=${PYTHONUNBUFFERED}

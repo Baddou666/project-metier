@@ -40,7 +40,7 @@ export GIT_API="ghp_xxx"
 Par defaut, le SDK lit `GIT_API`. Le nom peut etre change pour toute l'execution avec `--token-env` :
 
 ```bash
-python build_image.py buildpush --channel final --tag v1.0.0 --token-env MY_GHCR_TOKEN
+python build_image.py buildpush --channel dev --tag v1.0.0 --token-env MY_GHCR_TOKEN
 ```
 
 Ou via une variable de controle :
@@ -70,14 +70,14 @@ Utilisation sans prompt :
 ```bash
 python build_image.py build
 python build_image.py push --channel staging --tag v1.0.0
-python build_image.py buildpush --channel final --tag v1.0.0
-python build_image.py buildpush --channel final --tag v1.0.0 --token-env MY_GHCR_TOKEN
+python build_image.py buildpush --channel dev --tag v1.0.0
+python build_image.py buildpush --channel dev --tag v1.0.0 --token-env MY_GHCR_TOKEN
 ```
 
 Verification sans executer Docker/Maven :
 
 ```bash
-python build_image.py buildpush --channel final --tag v1.0.0 --dry-run
+python build_image.py buildpush --channel dev --tag v1.0.0 --dry-run
 ```
 
 ## Utilisation globale
@@ -87,8 +87,8 @@ Depuis `services-src-code` :
 ```bash
 python build_all_images.py build
 python build_all_images.py buildpush
-python build_all_images.py buildpush --channel final --tag v1.0.0
-python build_all_images.py buildpush --channel final --tag v1.0.0 --token-env MY_GHCR_TOKEN
+python build_all_images.py buildpush --channel dev --tag v1.0.0
+python build_all_images.py buildpush --channel dev --tag v1.0.0 --token-env MY_GHCR_TOKEN
 ```
 
 `build_all_images.py` detecte automatiquement les sous-dossiers qui contiennent un `build_image.py`.

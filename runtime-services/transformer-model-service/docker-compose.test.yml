@@ -3,6 +3,6 @@ include:
   - path: ./docker-compose.yml
 services:
   transformer-model-service:
-    image: ghcr.io/baddou666/projet-metier/test/transformer-model:latest
+    image: ghcr.io/baddou666/projet-metier/dev/transformer-model:test
     ports:
       - 8000:8000

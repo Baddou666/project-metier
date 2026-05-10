@@ -51,7 +51,7 @@ python build_image.py build
 Build and push:
 
 ```bash
-python build_image.py buildpush --channel final --tag v1.0.0
+python build_image.py buildpush --channel dev --tag v1.0.0
 ```
 
 If `--channel` or `--tag` are omitted during push, the script asks for them explicitly.
@@ -59,7 +59,7 @@ If `--channel` or `--tag` are omitted during push, the script asks for them expl
 Dry-run:
 
 ```bash
-python build_image.py buildpush --channel final --tag v1.0.0 --dry-run
+python build_image.py buildpush --channel dev --tag v1.0.0 --dry-run
 ```
 
 The produced local image is:

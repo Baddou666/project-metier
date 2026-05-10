@@ -1,6 +1,6 @@
 services:
   ai-text-detector-frontend:
-    image: ghcr.io/baddou666/projet-metier/final/ai-text-detector-frontend:latest
+    image: ghcr.io/baddou666/projet-metier/dev/ai-text-detector-frontend:latest
     environment:
       - NODE_ENV=${FRONTEND_ENV}
       - API_URL=${BACKEND_API_URL}

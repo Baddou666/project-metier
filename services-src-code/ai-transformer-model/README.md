@@ -21,7 +21,7 @@ python build_image.py build
 Build et push :
 
 ```sh
-python build_image.py buildpush --channel final --tag v1.0.0
+python build_image.py buildpush --channel dev --tag v1.0.0
 ```
 
 Si `--channel` ou `--tag` ne sont pas fournis, le script les demande explicitement.
@@ -29,7 +29,7 @@ Si `--channel` ou `--tag` ne sont pas fournis, le script les demande expliciteme
 Verification sans executer Docker :
 
 ```sh
-python build_image.py buildpush --channel final --tag v1.0.0 --dry-run
+python build_image.py buildpush --channel dev --tag v1.0.0 --dry-run
 ```
 
 Commande Docker equivalente :

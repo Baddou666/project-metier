@@ -3,6 +3,6 @@ include:
   - path: ./docker-compose.yml
 services:
   model-handler-service:
-    image:  ghcr.io/baddou666/projet-metier/test/model-handler:latest
+    image:  ghcr.io/baddou666/projet-metier/dev/model-handler:test
     ports:
       - 8080:8080
