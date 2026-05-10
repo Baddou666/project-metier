@@ -41,8 +41,7 @@ resource "proxmox_virtual_environment_vm" "projet_metier_vm" {
 
     ip_config {
       ipv4 {
-        address = "10.10.50.135/24"
-        gateway = "10.10.50.1"
+        address = "dhcp"
       }
     }
 
