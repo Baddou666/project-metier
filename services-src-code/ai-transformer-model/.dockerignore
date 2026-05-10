@@ -3,3 +3,5 @@ Dockerfile
 .gitignore
 .gitattributes
 .dockerignore
+build_image.py
+README.md

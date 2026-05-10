@@ -7,15 +7,37 @@ Code source du gateway/rate limiter base sur Spring Cloud Gateway WebFlux.
 - JDK 21
 - Docker Desktop actif pour `spring-boot:build-image`
 
+Pour pousser vers GHCR, le script utilise `GIT_API` par defaut. Le nom est configurable avec `--token-env` ou `IMAGE_BUILD_TOKEN_ENV`.
+
 ## Build de l'image locale
 
-Sous Windows :
+Methode recommandee :
+
+```sh
+python build_image.py build
+```
+
+Build et push :
+
+```sh
+python build_image.py buildpush --channel final --tag v1.0.0
+```
+
+Si `--channel` ou `--tag` ne sont pas fournis, le script les demande explicitement.
+
+Verification sans executer Docker/Maven :
+
+```sh
+python build_image.py buildpush --channel final --tag v1.0.0 --dry-run
+```
+
+Commande Maven equivalente sous Windows :
 
 ```sh
 ./mvnw clean spring-boot:build-image -DskipTests
 ```
 
-Sous Linux ou Git Bash :
+Commande Maven equivalente sous Linux ou Git Bash :
 
 ```sh
 chmod +x mvnw

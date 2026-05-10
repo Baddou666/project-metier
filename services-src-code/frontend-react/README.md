@@ -37,3 +37,33 @@ API_URL="http://localhost:8080"
 ```
 
 Firebase and database management are expected to live in your own backend.
+
+## Docker Image Build
+
+The GHCR token environment variable name is configurable globally with `--token-env` or `IMAGE_BUILD_TOKEN_ENV`.
+
+Recommended build command:
+
+```bash
+python build_image.py build
+```
+
+Build and push:
+
+```bash
+python build_image.py buildpush --channel final --tag v1.0.0
+```
+
+If `--channel` or `--tag` are omitted during push, the script asks for them explicitly.
+
+Dry-run:
+
+```bash
+python build_image.py buildpush --channel final --tag v1.0.0 --dry-run
+```
+
+The produced local image is:
+
+```text
+ai-text-detector-frontend:latest
+```
