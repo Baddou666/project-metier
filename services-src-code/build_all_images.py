@@ -58,7 +58,6 @@ def _parse_args(argv: Sequence[str] | None) -> argparse.Namespace:
     )
     parser.add_argument(
         "--channel",
-        choices=("test", "final"),
         default=None,
         help="Canal GHCR cible transmis aux services.",
     )

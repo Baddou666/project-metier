@@ -62,14 +62,14 @@ python build_image.py
 Si aucun argument n'est fourni, le script demande explicitement :
 
 1. `build`, `push` ou `buildpush`
-2. `test` ou `final` si un push est demande
+2. le canal GHCR si un push est demande
 3. le tag si un push est demande
 
 Utilisation sans prompt :
 
 ```bash
 python build_image.py build
-python build_image.py push --channel test --tag v1.0.0
+python build_image.py push --channel staging --tag v1.0.0
 python build_image.py buildpush --channel final --tag v1.0.0
 python build_image.py buildpush --channel final --tag v1.0.0 --token-env MY_GHCR_TOKEN
 ```
@@ -114,7 +114,7 @@ python build_all_images.py build --dry-run
 Les images poussees suivent ce format :
 
 ```text
-ghcr.io/baddou666/projet-metier/<test|final>/<image>:<tag>
+ghcr.io/baddou666/projet-metier/<channel>/<image>:<tag>
 ```
 
 ## Ajouter un service

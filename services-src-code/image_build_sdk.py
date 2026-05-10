@@ -14,13 +14,10 @@ from typing import Sequence
 REGISTRY = "ghcr.io"
 REGISTRY_USERNAME = "baddou666"
 REPOSITORY = "projet-metier"
-TEST_CHANNEL = "test"
-FINAL_CHANNEL = "final"
 DEFAULT_TOKEN_ENV = "GIT_API"
 TOKEN_ENV_OVERRIDE_ENV = "IMAGE_BUILD_TOKEN_ENV"
 
 VALID_ACTIONS = ("build", "push", "buildpush")
-VALID_CHANNELS = (TEST_CHANNEL, FINAL_CHANNEL)
 
 
 @dataclass(frozen=True)
@@ -86,9 +83,8 @@ def _parse_args(argv: Sequence[str] | None) -> argparse.Namespace:
     )
     parser.add_argument(
         "--channel",
-        choices=VALID_CHANNELS,
         default=None,
-        help="Canal GHCR cible. Si absent pendant un push, un choix est demande.",
+        help="Canal GHCR cible. Si absent pendant un push, un texte est demande.",
     )
     parser.add_argument(
         "--tag",
@@ -137,15 +133,10 @@ def _prompt_action() -> str:
 
 def _prompt_channel(image_name: str) -> str:
     while True:
-        print(f"Choisissez la version a pousser pour {image_name}:")
-        print(f"1. Test ({TEST_CHANNEL})")
-        print(f"2. Final ({FINAL_CHANNEL})")
-        choice = input("Entrez 1 pour Test, 2 pour Final : ").strip().lower()
-        if choice == "1" or choice == TEST_CHANNEL:
-            return TEST_CHANNEL
-        if choice == "2" or choice == FINAL_CHANNEL:
-            return FINAL_CHANNEL
-        print("[ERREUR] Version invalide. Utilisez test ou final.")
+        channel = input(f"Entrez le canal GHCR pour {image_name} : ").strip()
+        if channel:
+            return channel
+        print("[ERREUR] Le canal GHCR est obligatoire pour push/buildpush.")
 
 
 def _prompt_tag(image_name: str) -> str:
