@@ -19,5 +19,5 @@ vm_name_prefix = "ai-detect-staging"
 #   manager = { role = "manager", description = "Docker Swarm manager", cores = 2, memory_mb = 4096, disk_gb = 50 }
 #   backend = { role = "backend", description = "Docker Swarm backend worker", cores = 4, memory_mb = 6144, disk_gb = 80 }
 #   ai = { role = "ai", description = "Docker Swarm AI inference worker", cores = 6, memory_mb = 12288, disk_gb = 120 }
-#   data = { role = "data", description = "Docker Swarm data worker", cores = 4, memory_mb = 8192, disk_gb = 120 }
+#   monitoring = { role = "monitoring", description = "Docker Swarm monitoring worker", cores = 4, memory_mb = 8192, disk_gb = 120 }
 # }
