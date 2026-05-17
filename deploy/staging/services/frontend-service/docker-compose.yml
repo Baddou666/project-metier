@@ -1,0 +1,9 @@
+services:
+  ai-text-detector-frontend:
+    image: ghcr.io/baddou666/projet-metier/staging/ai-text-detector-frontend:v1.0.0
+    environment:
+      - NODE_ENV=${FRONTEND_ENV}
+      - API_URL=${BACKEND_API_URL}
+    expose:
+      - "3000"
+    restart: unless-stopped

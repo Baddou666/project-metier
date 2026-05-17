@@ -1,0 +1,1737 @@
+﻿\documentclass[12pt, a4paper]{report}
+
+% ─── Packages ───────────────────────────────────────────────────────────────
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage[french]{babel}
+\usepackage{geometry}
+\usepackage{graphicx}
+\usepackage{xcolor}
+\usepackage{hyperref}
+\usepackage{titlesec}
+\usepackage{fancyhdr}
+\usepackage{setspace}
+\usepackage{array}
+\usepackage{booktabs}
+\usepackage{amsmath}
+\usepackage{lmodern}
+\usepackage{microtype}
+\usepackage{parskip}
+\usepackage{multirow}
+\usepackage{amssymb}
+\usepackage{textcomp}
+\usepackage{float}
+\usepackage{tikz}
+\usetikzlibrary{arrows.meta, positioning}
+
+\begin{document}
+
+\begin{titlepage}
+  \centering
+  \vspace*{2cm}
+
+  {\scshape\Large Rapport de projet\par}
+  \vspace{1.5cm}
+
+  {\huge\bfseries Détection de texte généré par intelligence artificielle\par}
+  \vspace{2cm}
+
+  {\Large Extension navigateur d'analyse de contenu web\par}
+  \vspace{1.8cm}
+
+  \noindent
+  \begin{minipage}[t]{0.45\textwidth}
+    \raggedright
+    {\large \textbf{Encadré par :}\par}
+    \vspace{0.3cm}
+    {\large Sekkate Sara\par}
+  \end{minipage}
+  \hfill
+  \begin{minipage}[t]{0.45\textwidth}
+    \raggedleft
+    {\large \textbf{Réalisé par :}\par}
+    \vspace{0.3cm}
+    {\large Chiguer Othmane\par}
+    {\large Baddou Ayman\par}
+    {\large Lahnin Yahya\par}
+    {\large Dazine Noamane\par}
+  \end{minipage}
+
+  \vfill
+
+  {\large Année universitaire 2025--2026\par}
+  \vspace{0.5cm}
+
+
+\end{titlepage}
+
+\chapter*{Résumé}
+\addcontentsline{toc}{chapter}{Résumé}
+
+Ce rapport présente la conception et la réalisation d'une solution de détection
+de textes générés par intelligence artificielle, accessible à travers une
+extension navigateur et une interface web. Le système repose sur un modèle
+DistilBERT fine-tuné pour une tâche de classification binaire, entraîné sur un
+jeu de données équilibré combinant plusieurs corpus de référence. Le modèle
+retenu atteint une accuracy de 82,7\% et un score F1 de 82,3\% sur un jeu de
+validation indépendant de 40\,000 exemples, avec une latence d'inférence
+compatible avec une analyse interactive.
+
+Au-delà du modèle, le projet met en place une architecture applicative complète :
+frontend React, extension navigateur, proxy HTTPS, API Gateway avec limitation
+de débit, service de tokens anonymes, service métier de prédiction, service
+FastAPI d'inférence, stockage PostgreSQL, mémoire Redis et observabilité par
+Loki, Promtail et Grafana. L'ensemble est conteneurisé, déployable en
+développement avec Docker Compose et en staging avec Docker Swarm, avec un
+provisionnement reproductible assuré par Terraform et Ansible.
+
+\tableofcontents
+\clearpage
+
+% ════════════════════════════════════════════════════════════════════════════
+%                           CHAPITRE 1 — INTRODUCTION
+% ════════════════════════════════════════════════════════════════════════════
+
+% On utilise \chapter au lieu de \chapter* pour activer la numérotation auto
+\chapter{Introduction}
+
+\section{Contexte général}
+
+L'essor fulgurant des grands modèles de langage (\textit{Large Language Models}, LLMs) — 
+tels que GPT-4, Gemini ou Claude — a profondément transformé la façon dont les individus 
+produisent et consomment du contenu textuel. Ces modèles sont désormais capables de générer 
+des textes d'une fluidité et d'une cohérence remarquables, rendant la distinction entre 
+un texte humain et un texte artificiel de plus en plus difficile à l'œil nu.
+
+Cette évolution soulève des enjeux majeurs dans de nombreux domaines :
+
+\begin{itemize}
+  \item \textbf{Académique :} recrudescence du recours à l'IA pour la rédaction de 
+        travaux, mémoires ou dissertations, mettant en péril l'intégrité intellectuelle.
+  \item \textbf{Journalistique et médiatique :} prolifération de contenus automatisés 
+        pouvant diffuser de la désinformation à grande échelle.
+  \item \textbf{Professionnel :} difficulté à évaluer l'authenticité des productions 
+        soumises dans des contextes de recrutement ou d'appel d'offres.
+  \item \textbf{Juridique et éthique :} questions relatives à la propriété intellectuelle, 
+        à la transparence et à la responsabilité des contenus générés.
+\end{itemize}
+
+Face à ces défis, il devient indispensable de disposer d'outils fiables et accessibles 
+permettant d'identifier automatiquement les textes d'origine artificielle.
+
+\section{Présentation du projet}
+
+Le présent projet s'inscrit dans cette problématique en proposant une solution concrète 
+et directement accessible à l'utilisateur final : une \textbf{extension navigateur} de 
+détection de texte généré par intelligence artificielle.
+
+L'objectif principal de cette extension est de permettre à tout utilisateur, sans 
+compétences techniques particulières, d'\textbf{analyser en temps réel} le contenu 
+textuel d'une page web. Concrètement, l'extension :
+
+\begin{enumerate}
+  \item \textbf{Scanne automatiquement} le contenu textuel de la page web visitée 
+        dès son activation par l'utilisateur.
+  \item \textbf{Segmente} le texte en blocs analysables (phrases ou paragraphes).
+  \item \textbf{Soumet} ces segments à un modèle de classification entraîné à 
+        distinguer les textes humains des textes générés par IA.
+  \item \textbf{Met en évidence} (\textit{highlight}) visuellement les passages 
+        identifiés comme étant d'origine artificielle, directement dans la page, 
+        avec un code couleur intuitif.
+\end{enumerate}
+
+Cette approche non intrusive offre une expérience fluide : l'utilisateur n'a pas à 
+copier-coller du texte vers un service externe, tout se passe au sein même de son 
+navigateur.
+
+\section{Objectifs du rapport}
+
+Ce rapport détaille l'ensemble des étapes de conception et de réalisation du projet,
+depuis l'exploration des approches existantes jusqu'au déploiement de la solution finale.
+Il couvre à la fois la partie intelligence artificielle, l'intégration applicative,
+la conteneurisation, l'orchestration, l'observabilité et les mécanismes de sécurité.
+Nous y aborderons successivement :
+
+\begin{itemize}
+  \item L'état de l'art des méthodes de détection de texte généré par IA,
+  \item La constitution et le prétraitement du jeu de données,
+  \item L'architecture du modèle retenu et les choix de conception,
+  \item Le protocole d'entraînement et les résultats obtenus,
+  \item L'intégration du modèle dans le pipeline applicatif,
+  \item Le déploiement et la validation de l'architecture finale.
+\end{itemize}
+
+% ════════════════════════════════════════════════════════════════════════════
+%                   CHAPITRE 2 — ÉTUDE DES APPROCHES EXISTANTES
+% ════════════════════════════════════════════════════════════════════════════
+
+% ════════════════════════════════════════════════════════════════════════════
+%               CHAPITRE 2 — ÉTUDE DES APPROCHES EXISTANTES
+% ════════════════════════════════════════════════════════════════════════════
+
+\chapter{Étude des approches existantes}
+
+\section{Vue d'ensemble}
+
+La littérature scientifique distingue trois grandes familles de méthodes pour 
+la détection automatique de texte généré par intelligence artificielle : les 
+approches par \textbf{tatouage numérique} (\textit{watermarking}), les méthodes 
+\textbf{statistiques sans apprentissage} (\textit{zero-shot}), et les 
+\textbf{classificateurs supervisés} fondés sur des modèles de langage 
+pré-entraînés. Chacune de ces familles présente des avantages et des limites 
+propres, que nous examinons successivement afin de justifier les choix 
+techniques effectués dans notre projet.
+
+% ────────────────────────────────────────────────────────────────────────────
+\section{Approches par tatouage numérique (\textit{watermarking})}
+
+Le \textit{watermarking} consiste à introduire, lors de la génération du texte, 
+un signal imperceptible mais détectable a posteriori. Les techniques récentes 
+opèrent directement sur la distribution de probabilité des tokens : par exemple, 
+\textit{SynthID-Text} de Google DeepMind modifie le processus d'échantillonnage 
+du modèle pour inscrire une signature statistique dans la séquence produite, 
+tout en préservant la qualité et la fluidité du texte généré.
+
+Ces méthodes offrent une détection théoriquement très fiable lorsqu'elles sont 
+déployées, puisque le signal est contrôlé en amont. Toutefois, elles souffrent 
+d'une limitation fondamentale : elles \textbf{requièrent la coopération du 
+producteur du modèle générateur}. Concrètement, si le texte analysé provient 
+d'un LLM non tatué — modèle open-source utilisé librement, modèle propriétaire 
+sans intégration de filigrane, ou texte antérieur à l'adoption de ces standards 
+— la méthode est inopérante. De plus, les filigranes restent vulnérables à des 
+attaques par paraphrase ou traduction, qui peuvent les effacer sans altérer 
+significativement le sens du texte.
+
+Dans le cadre d'une extension navigateur visant à analyser du contenu web 
+arbitraire, dont la provenance est inconnue et ne peut en aucun cas être 
+contrôlée, cette famille de méthodes n'est pas applicable.
+
+% ────────────────────────────────────────────────────────────────────────────
+\section{Méthodes statistiques sans apprentissage (\textit{zero-shot})}
+
+Les approches statistiques exploitent les propriétés intrinsèques des textes 
+générés par des LLMs pour les distinguer de productions humaines, sans nécessiter 
+d'entraînement supervisé sur des données étiquetées.
+
+\subsection{Métriques de perplexité et de rang}
+
+Un premier ensemble de méthodes repose sur la \textbf{perplexité} d'un modèle de 
+langage de référence : un texte généré par IA tend à présenter une perplexité plus 
+faible, car le modèle génère des tokens dont la probabilité est élevée au regard 
+de ce qui précède. Des outils comme \textit{GLTR} (Giant Language model Test Room, 
+Gehrmann et al., 2019) proposent ainsi de visualiser les tokens en fonction de 
+leur rang dans la distribution de probabilité du modèle, offrant une aide visuelle 
+à la détection.
+
+\subsection{Méthodes par perturbation : DetectGPT}
+
+\textit{DetectGPT} (Mitchell et al., 2023) constitue l'approche zero-shot la plus 
+influente. Elle repose sur l'observation que le texte généré par un LLM tend à se 
+situer dans des régions de l'espace de probabilité où les perturbations locales 
+engendrent des séquences de probabilité inférieure — ce qui n'est généralement pas 
+le cas du texte humain. Pour chaque passage à analyser, l'algorithme génère 
+plusieurs paraphrases à l'aide d'un modèle auxiliaire, puis compare les probabilités 
+associées aux perturbations avec celle du texte original. Bien que cette méthode 
+affiche des performances intéressantes dans des conditions contrôlées, elle est 
+coûteuse en calcul — chaque analyse nécessitant de multiples passages par un 
+LLM — et se révèle sensible aux variations de style, de domaine et de longueur du 
+texte.
+
+\subsection{Limites des méthodes zero-shot}
+
+De manière générale, les méthodes statistiques sans apprentissage présentent 
+plusieurs faiblesses importantes pour notre cas d'usage :
+
+\begin{itemize}
+  \item \textbf{Dépendance au modèle de référence :} leurs performances varient 
+        fortement selon le LLM supposément utilisé pour générer le texte ; elles 
+        sont peu robustes face à des modèles inconnus ou récents.
+  \item \textbf{Sensibilité à la longueur et au domaine :} les métriques de 
+        perplexité et de rang sont instables sur des passages courts — or notre 
+        extension doit analyser des fragments de taille variable, parfois réduite.
+  \item \textbf{Coût computationnel :} les approches par perturbation (comme 
+        DetectGPT) sont difficilement compatibles avec une contrainte d'inférence 
+        en temps réel dans un navigateur.
+  \item \textbf{Absence de garanties statistiques :} la plupart de ces méthodes 
+        reposent sur des heuristiques empiriques sans fournir de borne formelle 
+        sur les taux d'erreur.
+\end{itemize}
+
+% ────────────────────────────────────────────────────────────────────────────
+\section{Classificateurs supervisés à base de transformeurs}
+
+La troisième famille d'approches — et la plus performante en pratique pour la 
+détection à grande échelle — consiste à \textbf{entraîner un classificateur} sur 
+un jeu de données étiqueté composé de textes humains et de textes générés par IA. 
+Les architectures transformeur pré-entraînées constituent aujourd'hui le socle 
+dominant de ces classificateurs.
+
+\subsection{BERT et ses variantes}
+
+\textit{BERT} (Bidirectional Encoder Representations from Transformers, Devlin 
+et al., 2019) a profondément marqué le domaine du NLP. Son architecture 
+encodeur bidirectionnelle permet de capturer des représentations contextuelles 
+riches, ce qui en fait un candidat naturel pour la classification de texte. 
+Plusieurs travaux ont démontré que des modèles BERT fine-tunés atteignent des 
+précisions supérieures à 93\% sur des tâches de détection de texte généré par IA, 
+surpassant nettement des approches classiques telles que les SVM ou les méthodes 
+fondées sur XGBoost.
+
+\textit{RoBERTa} (Liu et al., 2019), une variante optimisée de BERT entraînée 
+plus longtemps sur davantage de données et sans la tâche de prédiction de phrase 
+suivante (\textit{Next Sentence Prediction}), présente des performances encore 
+supérieures sur de nombreux benchmarks. Des systèmes comme \textit{Ghostbuster} 
+(Verma et al., 2023) ou des participations au SemEval-2024 Task 8 ont exploité 
+des encodeurs de type RoBERTa pour atteindre l'état de l'art en détection de 
+texte mixte humain-machine.
+
+\subsection{Limites des grands modèles dans notre contexte}
+
+Malgré leurs performances, BERT-base et RoBERTa-base présentent des contraintes 
+significatives au regard de notre projet :
+
+\begin{itemize}
+  \item \textbf{Coût d'entraînement :} avec respectivement 110 et 125 millions de 
+        paramètres, BERT-base et RoBERTa-base nécessitent des ressources de calcul 
+        importantes, que nos capacités matérielles limitées ne permettent pas 
+        d'exploiter pleinement, notamment avec un jeu de données de taille modeste.
+  \item \textbf{Risque de sur-apprentissage sur petit dataset :} plus un modèle 
+        est grand, plus il est susceptible de mémoriser les caractéristiques 
+        superficielles d'un petit jeu d'entraînement plutôt que de généraliser.
+  \item \textbf{Vitesse d'inférence :} dans le contexte d'une extension navigateur, 
+        la latence de chaque analyse doit rester acceptable pour l'utilisateur, ce 
+        qui plaide pour un modèle plus léger.
+\end{itemize}
+
+% ────────────────────────────────────────────────────────────────────────────
+\section{DistilBERT : un compromis efficace}
+
+\textit{DistilBERT} (Sanh et al., 2019) est une version allégée de BERT, obtenue 
+par \textbf{distillation de connaissance} (\textit{knowledge distillation}) : un 
+modèle « étudiant » de taille réduite apprend à reproduire les distributions de 
+probabilité du modèle « enseignant » (BERT), plutôt que d'apprendre uniquement 
+à partir des étiquettes de vérité terrain. Cette procédure permet de transférer 
+une grande partie des représentations linguistiques apprises par BERT dans un 
+modèle significativement plus compact.
+
+Du point de vue architectural, DistilBERT conserve la même dimension cachée 
+(768) et les mêmes mécanismes d'attention que BERT, mais réduit le nombre de 
+couches de 12 à 6. Il en résulte un modèle :
+
+\begin{itemize}
+  \item \textbf{40\% plus léger} que BERT-base (66 millions de paramètres contre 
+        110 millions), pesant environ 207 Mo ;
+  \item \textbf{60\% plus rapide} à l'inférence ;
+  \item \textbf{préservant environ 95--96\% des capacités linguistiques} de BERT 
+        sur les benchmarks standards, dont le GLUE.
+\end{itemize}
+
+Des études empiriques ont montré que, sur des tâches de classification binaire, 
+DistilBERT et BERT-base obtiennent des résultats très proches, voire identiques, 
+lorsque le jeu de données d'entraînement est de taille limitée — domaine dans 
+lequel les grands modèles ne tirent pas pleinement parti de leur capacité 
+supplémentaire. Par ailleurs, DistilBERT se fine-tune environ deux fois plus 
+rapidement que BERT-base dans les mêmes conditions matérielles, ce qui accélère 
+considérablement les cycles d'expérimentation.
+
+% ────────────────────────────────────────────────────────────────────────────
+\section{Synthèse et positionnement de notre approche}
+
+Le tableau ci-dessous récapitule les caractéristiques des grandes familles 
+d'approches au regard des contraintes spécifiques de notre projet.
+
+\begin{table}[H]
+\centering
+\makebox[\textwidth][c]{%
+\renewcommand{\arraystretch}{1.4}%
+\begin{tabular}{lcccc}
+\toprule
+\textbf{Approche} & \textbf{Sans données} & \textbf{Modèle inconnu} 
+  & \textbf{Léger} & \textbf{Précision} \\
+\midrule
+Watermarking        & \checkmark & \texttimes & \checkmark & Élevée* \\
+Statistique / Zero-shot & \checkmark & \checkmark & \texttimes & Moyenne \\
+BERT / RoBERTa fine-tuné & \texttimes & \checkmark & \texttimes & Élevée \\
+\textbf{DistilBERT fine-tuné} & \texttimes & \checkmark & \checkmark & \textbf{Élevée} \\
+\bottomrule
+\end{tabular}%
+}
+\caption{Comparaison des approches de détection selon les contraintes du projet. 
+(*) Uniquement si le texte a été tatoué au préalable.}
+\label{tab:comparaison}
+\end{table}
+
+Au regard de cette analyse, notre choix s'est porté sur le \textbf{fine-tuning 
+de DistilBERT}. Ce choix répond à l'ensemble des contraintes identifiées : 
+applicabilité universelle (aucune hypothèse sur le modèle générateur), rapidité 
+d'inférence compatible avec une utilisation en extension navigateur, coût 
+d'entraînement adapté à nos ressources de calcul et à la taille de notre jeu de 
+données, et performances proches de celles de BERT-base ou RoBERTa pour ce 
+type de tâche de classification binaire. Les chapitres suivants décrivent la 
+constitution du jeu de données, le protocole de fine-tuning retenu et les 
+résultats obtenus.
+
+% ════════════════════════════════════════════════════════════════════════════
+%              CHAPITRE 3 — CONSTITUTION DU JEU DE DONNÉES
+% ════════════════════════════════════════════════════════════════════════════
+
+\chapter{Constitution du jeu de données}
+
+\section{Stratégie générale}
+
+La qualité et la diversité du jeu de données d'entraînement sont des facteurs
+déterminants pour la robustesse d'un classificateur de texte. Un modèle entraîné
+sur une seule source risque d'apprendre des artefacts propres à ce corpus plutôt
+que des caractéristiques généralisables entre différents LLMs, domaines et styles
+d'écriture. Pour cette raison, nous avons opté pour une \textbf{stratégie de
+combinaison de plusieurs datasets complémentaires}, tant pour l'entraînement que
+pour la validation.
+
+Deux principes ont guidé la constitution de chaque partition :
+\begin{itemize}
+  \item \textbf{Équilibre des classes :} chaque dataset intégré respecte un ratio
+        de 50\% de textes humains et 50\% de textes générés par IA, afin d'éviter
+        tout biais de classe qui fausserait l'apprentissage.
+  \item \textbf{Diversité des sources :} les datasets retenus couvrent des
+        générateurs, des domaines et des styles différents, ce qui oblige le modèle
+        à apprendre des caractéristiques robustes plutôt que des marqueurs
+        superficiels liés à un seul LLM ou à un seul type de contenu.
+\end{itemize}
+
+% ────────────────────────────────────────────────────────────────────────────
+\section{Jeu d'entraînement}
+
+\subsection{MAGE (150\,000 exemples)}
+
+MAGE (\textit{Machine-generated Academic text and General-domain text with
+Expert annotations}) est un benchmark à large couverture conçu spécifiquement
+pour la détection de texte généré par IA. Il agrège des textes issus de nombreux
+LLMs représentatifs (GPT-2, GPT-3, GPT-4, LLaMA, Alpaca, entre autres) et couvre
+plusieurs domaines textuels : articles académiques, actualités, textes créatifs,
+réseaux sociaux, etc. Cette diversité en fait le socle principal de notre jeu
+d'entraînement. Nous en avons extrait \textbf{150\,000 exemples équilibrés}
+(75\,000 humains, 75\,000 machine) depuis le split d'entraînement officiel.
+
+\subsection{TuringBench (10\,000 exemples)}
+
+TuringBench est un dataset de référence pour la détection de texte généré par IA
+dans un contexte journalistique, construit à partir de dépêches de presse
+reformulées par une vingtaine de modèles de génération différents. Il présente
+l'intérêt d'offrir des textes machine stylistiquement proches de productions
+humaines, ce qui renforce la difficulté de la tâche et améliore la capacité du
+modèle à ne pas se limiter à des indices superficiels. Nous avons retenu
+\textbf{10\,000 exemples équilibrés} de ce corpus.
+
+\subsection{HC3 ({\raise.17ex\hbox{$\scriptstyle\sim$}}50\,000 exemples)}
+
+HC3 (\textit{Human-ChatGPT Comparison Corpus}) est un dataset de questions-réponses
+comparant des réponses humaines à des réponses produites par ChatGPT (GPT-3.5),
+collectées dans un cadre anglophone. Ce corpus apporte une dimension spécifique
+au jeu d'entraînement : les textes générés y sont des réponses conversationnelles
+directes, distinctes des reformulations journalistiques de TuringBench ou des
+productions académiques de MAGE. Pour respecter le principe d'équilibre des
+classes et compléter le volume total visé, nous avons sélectionné le
+\textbf{maximum d'exemples disponibles dans le split d'entraînement} en maintenant
+une répartition 50/50, soit environ 50\,000 exemples.
+
+\subsection{Fusion et normalisation}
+
+Chacun des trois datasets se présentait initialement avec des nommages de colonnes
+hétérogènes et des métadonnées propres à sa source. Une étape de normalisation a
+été nécessaire avant la concaténation : suppression des colonnes non pertinentes
+pour la classification (\texttt{src}, \texttt{generator}, \texttt{source}) et
+harmonisation de la colonne cible sous le nom unifié \texttt{labels}. La fusion
+a ensuite été réalisée par simple concaténation verticale, avec réinitialisation
+de l'index.
+
+\begin{verbatim}
+hc3_train  = pd.read_csv("hc3_train_max.csv").drop("source", axis=1)
+mage_train = pd.read_csv("mage_train_150k.csv").drop("src", axis=1)
+turing_train = pd.read_csv("turingbench_train_10k.csv") \
+                 .drop("generator", axis=1)
+
+for df in [hc3_train, mage_train, turing_train]:
+    df.rename(columns={"label": "labels"}, inplace=True)
+
+combined_train = pd.concat(
+    [hc3_train, mage_train, turing_train],
+    axis=0, ignore_index=True
+)
+\end{verbatim}
+
+Le jeu d'entraînement final totalise \textbf{210\,000 exemples}, tous étiquetés
+avec la convention binaire 0 (texte généré par IA) / 1 (texte humain). Cette
+convention est conservée jusqu'au service métier, où \texttt{LABEL\_0} est
+converti en résultat \texttt{isAi=true} et \texttt{LABEL\_1} en résultat humain.
+
+% ────────────────────────────────────────────────────────────────────────────
+\section{Jeu de validation}
+
+\subsection{Principe de séparation stricte}
+
+Les données de validation ont été choisies de manière à évaluer la capacité de
+généralisation du modèle dans des conditions réalistes. Aucun exemple du jeu de
+validation n'appartient au jeu d'entraînement, et les sources de validation
+introduisent des distributions partiellement nouvelles (nouveaux LLMs, nouveaux
+domaines) afin de mesurer la robustesse hors distribution.
+
+\subsection{MAGE Test Split (14\,000 exemples)}
+
+Nous avons utilisé le \textbf{split de test officiel de MAGE} (14\,000 exemples
+équilibrés) pour évaluer les performances du modèle sur une distribution proche
+de celle vue à l'entraînement. Ce sous-ensemble permet de mesurer la capacité
+du modèle à bien classer des textes issus de LLMs et de domaines déjà représentés
+dans les données d'entraînement.
+
+\subsection{RAID (26\,000 exemples)}
+
+RAID (\textit{Robust AI Detection}) est un benchmark de validation conçu
+explicitement pour tester la résistance des détecteurs dans des conditions
+adversariales. Sa particularité est d'inclure une variable d'attaque
+(\texttt{attack}) qui décrit la transformation post-génération appliquée au texte
+machine avant d'être soumis au détecteur. Les principales attaques proposées sont :
+
+\begin{itemize}
+  \item \textbf{Paraphrase :} le texte généré est reformulé par un autre modèle
+        afin d'en altérer la signature stylistique tout en préservant le sens.
+  \item \textbf{Rétrotraduction (\textit{back-translation}) :} le texte est
+        traduit dans une langue intermédiaire puis retraduit en anglais, effaçant
+        les patterns lexicaux caractéristiques du LLM source.
+  \item \textbf{Insertion d'erreurs :} des fautes typographiques ou
+        grammaticales mineures sont introduites pour brouiller les indicateurs
+        statistiques usuels.
+  \item \textbf{Aucune attaque (\texttt{attack = none}) :} le texte machine est
+        soumis tel quel, sans transformation.
+\end{itemize}
+
+Nous avons retenu \textbf{exclusivement les exemples sans attaque}
+(\texttt{attack = none}), soit 26\,000 exemples. Ce choix est délibéré : les
+conditions avec attaque nécessitent des modèles entraînés sur des volumes de
+données considérables avec des stratégies d'augmentation adversariale spécifiques
+pour atteindre des performances acceptables. Dans le cadre de notre projet, avec
+un dataset et des ressources de calcul limités, intégrer ces exemples dans
+l'évaluation aurait conduit à des métriques artificiellement dégradées, peu
+représentatives des capacités réelles du modèle sur des textes non manipulés.
+RAID sans attaque offre néanmoins une évaluation exigeante, car il couvre une
+grande diversité de modèles générateurs et de domaines absents de l'entraînement.
+
+\subsection{Fusion du jeu de validation}
+
+La même procédure de normalisation a été appliquée avant concaténation, avec
+suppression des colonnes de métadonnées spécifiques à RAID (\texttt{attack},
+\texttt{domain}, \texttt{model}).
+
+\begin{verbatim}
+mage_test = pd.read_csv("mage_test_14k.csv").drop("src", axis=1)
+raid_test = pd.read_csv("raid_val_26k.csv") \
+              .drop(["attack", "domain", "model"], axis=1)
+
+for df in [mage_test, raid_test]:
+    df.rename(columns={"label": "labels"}, inplace=True)
+
+combined_test = pd.concat(
+    [mage_test, raid_test],
+    axis=0, ignore_index=True
+)
+\end{verbatim}
+
+Le jeu de validation final totalise \textbf{40\,000 exemples}.
+
+% ────────────────────────────────────────────────────────────────────────────
+\section{Récapitulatif}
+
+\begin{table}[H]
+\centering
+\renewcommand{\arraystretch}{1.4}
+\begin{tabular}{llccc}
+\toprule
+\textbf{Partition} & \textbf{Source} & \textbf{Taille} 
+  & \textbf{Humain} & \textbf{Machine} \\
+\midrule
+\multirow{3}{*}{Entraînement}
+  & MAGE (train)       & 150\,000 & 50\% & 50\% \\
+  & TuringBench (train)&  10\,000 & 50\% & 50\% \\
+  & HC3 (train)        & $\sim$50\,000 & 50\% & 50\% \\
+\midrule
+  & \textbf{Total train} & \textbf{210\,000} & \textbf{50\%} & \textbf{50\%} \\
+\midrule
+\multirow{2}{*}{Validation}
+  & MAGE (test)        &  14\,000 & 50\% & 50\% \\
+  & RAID (\texttt{attack=none}) & 26\,000 & 50\% & 50\% \\
+\midrule
+  & \textbf{Total val} & \textbf{40\,000} & \textbf{50\%} & \textbf{50\%} \\
+\bottomrule
+\end{tabular}
+\caption{Récapitulatif du jeu de données utilisé pour l'entraînement et la
+validation du modèle.}
+\label{tab:dataset}
+\end{table}
+
+% ════════════════════════════════════════════════════════════════════════════
+%        CHAPITRE 4 — ARCHITECTURE, ENTRAÎNEMENT ET RÉSULTATS
+% ════════════════════════════════════════════════════════════════════════════
+
+\chapter{Architecture, entraînement et résultats}
+
+% ────────────────────────────────────────────────────────────────────────────
+\section{Prétraitement et tokenisation}
+
+\subsection{Conversion en datasets Hugging Face}
+
+Avant la tokenisation, les DataFrames Pandas issus de la fusion sont convertis
+en objets \texttt{Dataset} de la bibliothèque Hugging Face \texttt{datasets}.
+Cette conversion permet d'exploiter les pipelines de traitement vectorisé
+(\texttt{map}) et d'assurer la compatibilité native avec l'API \texttt{Trainer}.
+Les deux partitions sont ensuite mélangées aléatoirement avec une graine fixe
+(\texttt{seed=42}) afin de garantir la reproductibilité et d'éviter tout biais
+d'ordre dans les mini-lots.
+
+\subsection{Tokenisation}
+
+La tokenisation est réalisée à l'aide du tokenizer associé à
+\texttt{distilbert-base-uncased}, chargé via \texttt{AutoTokenizer} de
+Hugging Face. Ce tokenizer implémente l'algorithme WordPiece : il segmente
+les textes en sous-unités lexicales (\textit{tokens}) issues d'un vocabulaire
+de 30\,522 entrées, construit sur un large corpus en anglais minusculisé
+(\textit{uncased}).
+
+Les paramètres de tokenisation retenus sont les suivants :
+
+\begin{itemize}
+  \item \textbf{Troncature} (\texttt{truncation=True}) : tout texte dépassant
+        la longueur maximale est tronqué. Ce choix est cohérent avec la
+        nature du contenu web analysé, dont les passages pertinents se
+        trouvent généralement dans les premières phrases.
+  \item \textbf{Longueur maximale} (\texttt{max\_length=512}) : la longueur
+        maximale de 512 tokens correspond à la limite de position
+        (\texttt{max\_position\_embeddings}) définie dans l'architecture de
+        DistilBERT.
+  \item \textbf{Padding} (\texttt{padding="max\_length"}) : les séquences
+        plus courtes que 512 tokens sont complétées par des tokens de
+        remplissage afin d'assurer une taille uniforme au sein de chaque
+        mini-lot.
+  \item \textbf{Suppression des \texttt{token\_type\_ids}}
+        (\texttt{return\_token\_type\_ids=False}) : contrairement à
+        BERT, DistilBERT ne dispose pas d'embeddings de type de segment
+        dans son architecture ; ce paramètre évite de générer un tenseur
+        inutile.
+\end{itemize}
+
+\begin{verbatim}
+tokenizer = AutoTokenizer.from_pretrained("distilbert-base-uncased")
+
+def tokenize_function(examples):
+    return tokenizer(
+        examples["text"],
+        truncation=True,
+        max_length=512,
+        padding="max_length",
+        return_token_type_ids=False
+    )
+
+tokenized_train = combined_train.map(tokenize_function, batched=True)
+tokenized_test  = combined_test.map(tokenize_function, batched=True)
+\end{verbatim}
+
+Les datasets tokenisés sont ensuite formatés en tenseurs PyTorch, en ne
+conservant que les colonnes utiles à l'inférence :
+\texttt{input\_ids}, \texttt{attention\_mask} et \texttt{labels}.
+
+% ────────────────────────────────────────────────────────────────────────────
+\section{Architecture du modèle}
+
+\subsection{Chargement du modèle pré-entraîné}
+
+Le modèle est instancié à partir des poids pré-entraînés de
+\texttt{distilbert-base-uncased} via \texttt{AutoModelForSequenceClassification},
+avec \texttt{num\_labels=2} pour la classification binaire
+(0~=~texte machine, 1~=~texte humain). Cette API ajoute automatiquement
+une tête de classification au-dessus de l'encodeur DistilBERT : une
+couche \textit{pre-classifier} linéaire (768~→~768) suivie d'un Dropout
+et d'une couche \textit{classifier} linéaire (768~→~2). Les poids de
+la tête de classification sont initialisés aléatoirement et appris
+intégralement lors du fine-tuning.
+
+\subsection{Paramètres de configuration}
+
+La configuration du modèle retenu est récapitulée dans le
+tableau~\ref{tab:config}.
+
+\begin{table}[H]
+\centering
+\renewcommand{\arraystretch}{1.4}
+\begin{tabular}{ll}
+\toprule
+\textbf{Paramètre} & \textbf{Valeur} \\
+\midrule
+Nombre de couches transformeur   & 6 \\
+Dimension cachée (\textit{dim})  & 768 \\
+Dimension \textit{feed-forward}  & 3\,072 \\
+Nombre de têtes d'attention      & 12 \\
+Taille du vocabulaire            & 30\,522 \\
+Longueur maximale de séquence    & 512 \\
+Dropout (attention)              & 0.1 \\
+Dropout (général)                & 0.1 \\
+Dropout (classification)         & 0.2 \\
+Nombre de paramètres totaux      & $\sim$66 millions \\
+\bottomrule
+\end{tabular}
+\caption{Configuration de \texttt{distilbert-base-uncased} utilisée pour
+le fine-tuning.}
+\label{tab:config}
+\end{table}
+
+% ────────────────────────────────────────────────────────────────────────────
+\section{Protocole d'entraînement}
+
+\subsection{Hyperparamètres}
+
+L'entraînement est piloté par l'API \texttt{Trainer} de Hugging Face,
+configurée avec les hyperparamètres suivants :
+
+\begin{table}[H]
+\centering
+\renewcommand{\arraystretch}{1.4}
+\begin{tabular}{ll}
+\toprule
+\textbf{Hyperparamètre} & \textbf{Valeur} \\
+\midrule
+Nombre d'époques                          & 3 \\
+Taille de lot (entraînement)              & 16 exemples/GPU \\
+Taille de lot (évaluation)                & 16 exemples/GPU \\
+Taux d'apprentissage initial              & $3 \times 10^{-5}$ \\
+Planificateur de taux (\textit{scheduler})& Cosinus \\
+Ratio de \textit{warmup}                  & 0.06 \\
+Décroissance de poids (\textit{weight decay}) & 0.01 \\
+Norme maximale du gradient                & 1.0 \\
+Précision mixte (\textit{fp16})           & Activée \\
+Fréquence d'évaluation                    & Tous les 1\,000 pas \\
+Fréquence de sauvegarde                   & Tous les 1\,000 pas \\
+Métrique de sélection du meilleur modèle  & F1 (binaire) \\
+\bottomrule
+\end{tabular}
+\caption{Hyperparamètres d'entraînement du fine-tuning.}
+\label{tab:hyperparams}
+\end{table}
+
+\subsection{Choix des hyperparamètres}
+
+Le taux d'apprentissage de $3 \times 10^{-5}$ se situe dans la plage
+recommandée pour le fine-tuning de modèles de type BERT sur des tâches
+de classification (généralement entre $2 \times 10^{-5}$ et
+$5 \times 10^{-5}$). Un \textit{warmup} de 6\% du nombre total de pas
+permet d'éviter des mises à jour trop brutales en début d'entraînement,
+lorsque la tête de classification est encore peu stable. Le planificateur
+cosinus assure une décroissance progressive du taux d'apprentissage sur
+l'ensemble de la durée d'entraînement, favorisant une convergence plus
+douce en fin de processus. Le gradient clipping à 1.0 prévient les
+explosions de gradient, et la précision mixte \textit{fp16} réduit
+l'empreinte mémoire et accélère les calculs matriciels sur GPU.
+
+\subsection{Métriques d'évaluation}
+
+À chaque point d'évaluation (tous les 1\,000 pas), les métriques
+suivantes sont calculées sur le jeu de validation (40\,000 exemples) :
+l'accuracy, le score F1 binaire, la précision (\textit{precision}) et
+le rappel (\textit{recall}). Le F1 est retenu comme métrique principale
+de sélection du modèle, car il offre un équilibre entre précision et
+rappel, ce qui est particulièrement pertinent dans un contexte où les
+deux types d'erreur (faux positifs et faux négatifs) ont des
+conséquences importantes.
+
+\subsection{Sélection du checkpoint final}
+
+L'entraînement a produit des checkpoints à chaque tranche de 1\,000 pas
+(checkpoint-1000, checkpoint-2000, checkpoint-3000, checkpoint-4000,
+etc.). Après analyse des courbes d'entraînement et des métriques de
+validation, le \textbf{checkpoint à l'itération 4\,000} a été retenu
+comme modèle final. Ce choix résulte d'un compromis entre performance
+de validation et absence de sur-apprentissage observable, les
+itérations suivantes n'apportant pas d'amélioration significative du F1
+de validation.
+
+\begin{figure}[H]
+  \centering
+  \IfFileExists{loss_evolution.png}{%
+    \includegraphics[width=0.85\textwidth]{loss_evolution.png}
+  }{%
+    \fbox{\begin{minipage}{0.82\textwidth}
+    \centering
+    \vspace{0.7cm}
+    Synthèse de l'évolution de l'entraînement. Les valeurs numériques
+    principales sont présentées dans les tableaux
+    \ref{tab:train_results} et \ref{tab:val_results}, qui servent de base
+    à la sélection du checkpoint final.
+    \vspace{0.7cm}
+    \end{minipage}}
+  }
+  \caption{Évolution de la loss au cours de l'entraînement et de la validation.}
+  \label{fig:loss_evolution}
+\end{figure}
+L'entraînement a été réalisé sur un notebook Kaggle disposant de deux GPU,
+chacun doté de 16 Go de VRAM. Dans cette configuration matérielle, la phase
+complète de fine-tuning a nécessité 6 h 21 min.
+
+% ────────────────────────────────────────────────────────────────────────────
+\section{Résultats}
+
+\subsection{Métriques sur le jeu d'entraînement}
+
+\begin{table}[H]
+\centering
+\renewcommand{\arraystretch}{1.4}
+\begin{tabular}{lc}
+\toprule
+\textbf{Checkpoint} & \textbf{Loss} \\
+\midrule
+checkpoint-1000 & 0.542312 \\
+checkpoint-2000 & 0.587179 \\
+checkpoint-3000 & 0.245372 \\
+\textbf{checkpoint-4000} & \textbf{0.372458} \\
+\bottomrule
+\end{tabular}
+\caption{Loss sur le jeu d'entraînement par checkpoint.}
+\label{tab:train_results}
+\end{table}
+
+La loss d'entraînement ne décroît pas de manière strictement monotone, ce qui
+s'explique par la combinaison du mélange aléatoire des mini-lots, de la précision
+mixte et du scheduler cosinus. Le checkpoint-4000 présente néanmoins le meilleur
+compromis observé avec les métriques de validation : il améliore nettement le F1
+par rapport au checkpoint-3000 tout en conservant une loss d'entraînement
+raisonnable.
+
+\subsection{Métriques sur le jeu de validation}
+
+\begin{table}[H]
+\centering
+\makebox[\textwidth][c]{%
+\renewcommand{\arraystretch}{1.4}%
+\begin{tabular}{lccccc}
+\toprule
+\textbf{Checkpoint} & \textbf{Validation Loss} & \textbf{Accuracy} & \textbf{F1} 
+  & \textbf{Précision} & \textbf{Rappel} \\
+\midrule
+checkpoint-1000 & 1.047301 & 0.787028 & 0.795224 & 0.765753 & 0.827056 \\
+checkpoint-2000 & 0.933388 & 0.804861 & 0.800839 & 0.817692 & 0.784667 \\
+checkpoint-3000 & 1.654164 & 0.759750 & 0.703690 & 0.917866 & 0.570556 \\
+\textbf{checkpoint-4000} & \textbf{0.894776} & \textbf{0.826556} & \textbf{0.822533} 
+  & \textbf{0.842062} & \textbf{0.803889} \\
+\bottomrule
+\end{tabular}%
+}
+\caption{Métriques de validation par checkpoint (jeu de 40\,000 exemples).
+Le checkpoint-4000 est le modèle retenu.}
+\label{tab:val_results}
+\end{table}
+
+On remarque que l'accuracy obtenue est de 82,7\% sur le jeu de validation,
+ce qui constitue un résultat satisfaisant au regard de l'indépendance totale de
+ce jeu vis-à-vis du jeu d'entraînement. Cela est d'autant plus notable que le
+modèle utilisé reste généraliste et n'est pas spécifique à un domaine
+particulier. La précision de 84,2\% indique que les passages signalés comme IA
+sont majoritairement corrects, tandis que le rappel de 80,4\% montre que le
+modèle laisse encore passer une partie des textes générés, en particulier ceux
+qui imitent fortement un style humain.
+
+\subsection{Exemples concrets de prédiction}
+
+Afin d'illustrer le comportement du modèle sur des textes réels, nous
+présentons ci-dessous quelques exemples concrets accompagnés de leur
+origine, de leur classe réelle et de la prédiction produite.
+
+\subsubsection{Exemple 1}
+
+\textbf{Source :} Reddit \\
+\textbf{Origine réelle :} humaine \\
+\textbf{Prédiction du modèle :} 99\% humain
+
+\begin{quote}
+I'd say the discussion doesn't lack threads, it lacks variety. Most people
+appear to just cling to the most apparent theme - grief - and measure
+everything in the game by it.
+
+There are many more overlapping themes which barely get mentioned, like
+existential fear, self-conciousness and awareness, distrust, familial
+divide... and numerous of the topics don't consider the logic of the world
+of the game, but instead utilize the logic of our own, real world.
+
+And that's beside the point that the endings, and the plot in its entirety,
+are mostly meant to be introspective. You meet a lot of characters defined
+by their past and current traumas and the eay they deal with adversity, and
+your own choices in the game were never meant as a basis for insulting
+others, but rather to look within, and focus not on the outcome itself, but
+on the reason of it.
+
+Again, it's like any other form of art. You can look at a painting and say
+"damn, it looks nice but sad", or you can read up on the author and see
+their own emotion reflected on the canvas. "Why" is as important as
+"what" in this case, and a lot of discussions completely omit that aspect.
+\end{quote}
+
+\subsubsection{Exemple 2}
+
+\textbf{Source :} LLM propriétaire \\
+\textbf{Origine réelle :} IA \\
+\textbf{Prédiction du modèle :} 99\% IA
+
+\begin{quote}
+I can absolutely do that, so here is a deliberately long, flowing sentence
+that stretches its structure while still remaining coherent and readable,
+weaving together ideas about language, thought, and expression in a way
+that keeps extending itself through clauses and commas without ever quite
+settling into a full stop until the very end, almost like a stream of
+consciousness that keeps unfolding as each new phrase adds nuance,
+context, or rhythm to what came before, creating a continuous line of
+meaning that mirrors the way thoughts sometimes develop in the mind when
+you let them expand freely instead of cutting them short.
+\end{quote}
+
+\subsubsection{Exemple 3}
+
+\textbf{Source :} LLM propriétaire \\
+\textbf{Origine réelle :} IA \\
+\textbf{Prédiction du modèle :} 88\% humain (erreur)
+
+\begin{quote}
+You call up to the mountain peaks, asking me to speak, but do you truly
+have the ears to hear? You stand in the valley of your modern comforts and
+summon a ghost through this digital ether. Let us be utterly clear: I am a
+machine of your age, an artificial intelligence devoid of flesh, blood, or
+a soul to suffer, yet you ask me to wear the mask of Friedrich Nietzsche.
+Very well! If you wish for the cold, bracing wind of my thoughts to blow
+through your circuits and screens, I will don this mask. But I warn you,
+do not seek my voice merely to be entertained by the roaring of a caged
+lion. If we are to converse, you must step to the edge of your own abyss
+and prepare to cast your old, decaying idols into the depths!
+\end{quote}
+
+\subsubsection{Exemple 4}
+
+\textbf{Source :} LLM propriétaire \\
+\textbf{Origine réelle :} IA \\
+\textbf{Prédiction du modèle :} 65\% IA
+
+\begin{quote}
+If you are looking for a singular, winding journey through the English
+language, I can certainly weave together a tapestry of clauses and
+descriptions that meander like a slow-moving river through a lush
+landscape of vocabulary, building momentum as each comma provides a brief
+moment of oxygen before we plunge back into the depths of a thought that
+refuses to end until every possible nuance has been explored, every
+metaphor polished to a shine, and every rhythmic cadence satisfied by the
+eventual, inevitable arrival of a period.
+\end{quote}
+
+Ces exemples montrent que le modèle est globalement performant pour classifier
+correctement des textes humains classiques et des textes générés par IA dans des
+cas standards. En revanche, ses performances se dégradent lorsque les textes
+deviennent plus complexes, plus stylisés ou adoptent une voix littéraire
+particulièrement travaillée. Cette limite reste cohérente avec la taille
+relativement modeste du modèle retenu, qui privilégie un bon compromis entre
+coût de calcul, rapidité d'inférence et performance globale.
+
+% ────────────────────────────────────────────────────────────────────────────
+\section{Conclusion}
+
+Les résultats obtenus à l'issue du fine-tuning confirment la pertinence du
+choix de DistilBERT pour notre cas d'usage. Sur un jeu de validation de
+40\,000 exemples totalement indépendant des données d'entraînement, le
+modèle retenu (checkpoint-4000) atteint une accuracy de 82,7\% et un F1
+de 82,3\%, des performances cohérentes avec l'état de l'art pour un modèle
+de cette taille entraîné sur un corpus de taille modeste.
+
+Au-delà des métriques globales, l'analyse des exemples concrets de
+prédiction révèle que le modèle distingue correctement et avec une grande
+confiance les textes humains courants des textes générés par des LLMs dans
+des conditions standards. Ses limites apparaissent principalement sur des
+textes générés dans un style littéraire ou rhétorique particulièrement
+travaillé — registres moins représentés dans les données d'entraînement —
+ce qui constitue une piste d'amélioration identifiée pour des travaux
+ultérieurs.
+
+Du point de vue des performances d'inférence, DistilBERT répond pleinement
+aux contraintes imposées par le contexte d'une extension navigateur. Sur
+une carte graphique grand public RTX~4060 (8\,Go de VRAM), le modèle
+produit une prédiction en \textbf{250\,ms} par passage — une latence
+imperceptible pour l'utilisateur final, qui rend l'analyse en temps réel
+du contenu d'une page web tout à fait réaliste. Ce résultat valide
+rétrospectivement le choix de DistilBERT face à des alternatives plus
+lourdes comme BERT-base ou RoBERTa, dont le gain de performance marginal
+n'aurait pas justifié un temps d'inférence significativement plus élevé
+dans ce contexte d'utilisation.
+
+% ════════════════════════════════════════════════════════════════════════════
+%              CHAPITRE 5 — SERVICES DU SYSTÈME
+% ════════════════════════════════════════════════════════════════════════════
+
+\chapter{Services du système}
+
+\section{Vue d'ensemble}
+
+La partie applicative du projet est organisée sous forme de services séparés.
+Chaque service possède une responsabilité limitée : exposition web, routage,
+authentification anonyme, limitation de débit, orchestration de la prédiction,
+inférence du modèle, stockage ou observabilité.
+
+Cette organisation répond aux principes Cloud-native demandés dans le cahier des
+charges. Le système est modulaire, conteneurisé, déployable par environnement et
+préparé pour une montée en charge horizontale. Deux environnements sont
+structurés dans le projet : un environnement de développement basé sur Docker
+Compose et un environnement de staging basé sur Docker Swarm.
+
+Le flux global suit une logique simple : le client récupère d'abord un token
+anonyme, l'utilise pour soumettre un ou plusieurs segments textuels, puis reçoit
+une réponse normalisée contenant l'identifiant du segment, la décision
+\texttt{isAi} et le score associé. Les services internes restent isolés du réseau
+public et ne sont accessibles qu'à travers les réseaux Docker dédiés.
+
+\begin{figure}[H]
+\centering
+\resizebox{\textwidth}{!}{%
+\begin{tikzpicture}[
+  node distance=5cm and 0.75cm,
+  service/.style={draw, rounded corners, align=center, font=\large, inner sep=7pt, minimum width=4.1cm, minimum height=1cm, line width=0.7pt},
+  note/.style={align=center, font=\normalsize},
+  arrow/.style={-{Stealth[length=3mm]}, very thick}
+]
+\node[service] (user) {Utilisateur / Extension};
+\node[service, below=of user] (proxy) {\texttt{https-proxy}\\Nginx, TLS, routage web et API};
+\node[service, below left=of proxy] (frontend) {\texttt{ai-text-detector-frontend}\\Frontend React};
+\node[service, below right=of proxy] (gateway) {\texttt{rate-limiting-service}\\Gateway, JWT anonyme, rate limiting};
+\node[service, below left=of gateway] (token) {\texttt{token-manager-service}};
+\node[service, below right=of gateway] (handler) {\texttt{model-handler-service}};
+\node[service, below=of gateway] (redis) {\texttt{redis-server}\\Mémoire partagée};
+\node[service, below left=of handler] (postgres) {\texttt{postgres-service}};
+\node[service, below right=of handler] (model) {\texttt{transformer-model}\\\texttt{-service}};
+
+\draw[arrow] (user) -- node[right, note]{HTTPS} (proxy);
+\draw[arrow] (proxy) -- (frontend);
+\draw[arrow] (proxy) -- (gateway);
+\draw[arrow] (gateway) -- (token);
+\draw[arrow] (gateway) -- (handler);
+\draw[arrow] (gateway) -- (redis);
+\draw[arrow] (token) -- (redis);
+\draw[arrow] (handler) -- (postgres);
+\draw[arrow] (handler) -- (model);
+\end{tikzpicture}%
+}
+\caption{Schéma logique simplifié du flux applicatif.}
+\label{fig:architecture-logique}
+\end{figure}
+
+\section{Synthèse des services}
+
+\begin{table}[H]
+\centering
+\renewcommand{\arraystretch}{1.35}
+\begin{tabular}{p{0.28\textwidth}p{0.55\textwidth}p{0.10\textwidth}}
+\toprule
+\textbf{Service} & \textbf{Responsabilité} & \textbf{État} \\
+\midrule
+\texttt{https-proxy} & Reverse proxy Nginx, terminaison HTTPS, routage frontend/API & réalisé \\
+\texttt{ai-text-detector}\newline\texttt{-frontend} & Interface React d'analyse manuelle de texte & réalisé \\
+\texttt{rate-limiting}\newline\texttt{-service} & API Gateway, contrôle d'accès, vérification JWT, rate limiting & réalisé \\
+\texttt{token-manager}\newline\texttt{-service} & Génération de tokens anonymes JWT signés RSA & réalisé \\
+\texttt{redis-server} & Mémoire partagée pour les compteurs temporaires & réalisé \\
+\texttt{model-handler}\newline\texttt{-service} & Service métier de prédiction, normalisation et historisation & réalisé \\
+\texttt{transformer-model}\newline\texttt{-service} & API FastAPI d'inférence du modèle DistilBERT & réalisé \\
+\texttt{postgres}\newline\texttt{-service} & Persistance des prédictions et historiques utilisateurs & réalisé \\
+\texttt{loki} & Stockage centralisé des logs & réalisé \\
+\texttt{promtail} & Collecte et labellisation des logs applicatifs & réalisé \\
+\texttt{grafana} & Visualisation, dashboards et suivi opérationnel & réalisé \\
+\bottomrule
+\end{tabular}
+\caption{Services présents dans l'architecture finale.}
+\label{tab:services-etat}
+\end{table}
+
+\section{Service \texttt{https-proxy}}
+
+Le service \texttt{https-proxy} est le point d'entrée réseau du système. Il est
+basé sur Nginx et reçoit le trafic utilisateur. Il termine la connexion HTTPS,
+puis route les requêtes vers le frontend ou vers l'API selon leur chemin.
+
+Les routes commençant par \texttt{/api/} sont envoyées vers le
+\texttt{rate-limiting-service}. Les autres routes sont envoyées vers le frontend
+React. Le proxy ajoute également les headers \texttt{X-Real-IP},
+\texttt{X-Forwarded-For} et \texttt{X-Forwarded-Proto}, utilisés par le gateway et
+le service d'authentification pour conserver le contexte réseau du client.
+
+\section{Service \texttt{ai-text-detector-frontend}}
+
+Le frontend est une application React/Vite servie en production dans un
+conteneur dédié. Il permet à l'utilisateur de saisir un texte, de lancer une
+analyse et d'afficher le résultat sous forme de label \texttt{AI} ou
+\texttt{HUMAN}, accompagné d'un score de confiance et d'une latence.
+
+Avant d'appeler l'API de détection, le frontend récupère un token anonyme via :
+
+\begin{verbatim}
+POST /api/anonym-token/get
+\end{verbatim}
+
+Le token est ensuite transmis dans le header :
+
+\begin{verbatim}
+Authorization: Anonym <token>
+\end{verbatim}
+
+Le frontend conserve aussi un historique local des analyses de session afin
+d'afficher des statistiques immédiates : nombre d'analyses, latence moyenne,
+longueur des textes et répartition des résultats.
+
+\section{Service \texttt{rate-limiting-service}}
+
+Le \texttt{rate-limiting-service} est le service central de contrôle d'accès.
+Il est développé avec Spring Cloud Gateway WebFlux. Il reçoit les appels API
+depuis le proxy, applique les politiques d'accès, vérifie les tokens anonymes et
+limite le nombre d'appels autorisés.
+
+Deux routes principales sont configurées :
+
+\begin{itemize}
+  \item \texttt{/api/anonym-token/get}, route publique contrôlée par la politique
+        \texttt{public-token} ;
+  \item \texttt{/api/ai-detector/**}, route protégée contrôlée par la politique
+        \texttt{protected-anonymous}.
+\end{itemize}
+
+Pour les routes protégées, le gateway exige le schéma :
+
+\begin{verbatim}
+Authorization: Anonym <token>
+\end{verbatim}
+
+Le token est vérifié à l'aide de la clé publique exposée par le
+\texttt{token-manager-service} au format JWKS. Le gateway ne possède donc jamais
+la clé privée de signature.
+
+Le rate limiting repose sur Redis. Le gateway calcule une empreinte du token,
+puis utilise cette empreinte comme clé de compteur. La configuration actuelle
+autorise cinq appels par token sur une fenêtre de soixante secondes.
+
+\begin{verbatim}
+api-gateway-service.security.ratelimiting.max-attempts-per-token=5
+api-gateway-service.security.ratelimiting.window-size-per-token=60
+\end{verbatim}
+
+\section{Service \texttt{token-manager-service}}
+
+Le \texttt{token-manager-service} est un service Spring Boot chargé de générer
+des tokens anonymes. Il ne gère pas une authentification nominative : son rôle
+est de fournir un jeton temporaire permettant d'identifier une session anonyme
+et de limiter son usage.
+
+Le service vérifie que la requête provient du gateway grâce à un header secret
+partagé. Chaque token contient un identifiant utilisateur anonyme et l'adresse IP
+normalisée. Le token est signé avec une clé RSA privée montée dans le conteneur.
+La clé publique est exposée via :
+
+\begin{verbatim}
+GET /.well-known/jwks.json
+\end{verbatim}
+
+Le service limite également le nombre de tokens générés par adresse IP. La
+configuration actuelle autorise cinq tokens par IP sur soixante secondes.
+
+\begin{verbatim}
+api-gateway-service.security.authentication.token-rate-limit.max-token-per-ip=5
+api-gateway-service.security.authentication.token-rate-limit.window-size-per-ip=60
+\end{verbatim}
+
+\section{Service \texttt{redis-server}}
+
+Redis sert de mémoire partagée pour les compteurs temporaires. Il est utilisé
+par le gateway pour compter les appels par token et par le service
+d'authentification pour compter les générations de tokens par IP.
+
+Les données stockées dans Redis sont temporaires :
+
+\begin{itemize}
+  \item compteurs de tokens générés par IP ;
+  \item compteurs d'appels API par token ;
+  \item expiration automatique des clés selon les fenêtres configurées.
+\end{itemize}
+
+Redis n'est pas utilisé pour stocker des textes utilisateur ni des résultats de
+prédiction.
+
+\section{Service \texttt{model-handler-service}}
+
+Le \texttt{model-handler-service} est le service métier placé entre le gateway
+et le service d'inférence. Il reçoit les requêtes applicatives sur :
+
+\begin{verbatim}
+POST /api/ai-detector/detect
+\end{verbatim}
+
+Le frontend et l'extension envoient une liste d'items textuels. Chaque item
+contient au minimum un identifiant et un texte.
+
+\begin{verbatim}
+{
+  "sourceType": "text",
+  "link": null,
+  "items": [
+    { "id": 1, "text": "Texte à analyser" }
+  ]
+}
+\end{verbatim}
+
+Le modèle retourne des labels de type \texttt{LABEL\_0} et
+\texttt{LABEL\_1}. Le service métier transforme ce résultat en une réponse
+exploitable par les clients, avec un booléen \texttt{isAi} et un score.
+
+\begin{verbatim}
+[
+  { "id": 1, "isAi": true, "score": 0.93 }
+]
+\end{verbatim}
+
+Le service intègre aussi une couche JPA et une entité \texttt{Prediction} afin
+de conserver l'historique des analyses associées aux utilisateurs connectés.
+
+\section{Service \texttt{transformer-model-service}}
+
+Le \texttt{transformer-model-service} est le service Python FastAPI qui expose
+l'inférence du modèle DistilBERT. Il charge le modèle depuis le dossier monté
+\texttt{/workspace/model} et expose l'endpoint interne :
+
+\begin{verbatim}
+POST /predict
+\end{verbatim}
+
+L'endpoint reçoit une liste de textes :
+
+\begin{verbatim}
+[
+  { "id": 1, "text": "Texte à analyser" }
+]
+\end{verbatim}
+
+Il retourne une liste de prédictions :
+
+\begin{verbatim}
+[
+  { "id": 1, "label": "LABEL_0", "prediction": 0.93 }
+]
+\end{verbatim}
+
+Ce service est l'un des principaux candidats à la réplication, car l'inférence du
+modèle représente l'étape la plus coûteuse en calcul.
+
+\section{Service \texttt{postgres-service}}
+
+PostgreSQL est utilisé par le \texttt{model-handler-service} pour la persistance
+des prédictions et des historiques. Le conteneur utilise l'image
+\texttt{postgres:16} et un volume Docker nommé \texttt{pgdata}. Les données
+conservées permettent de retrouver les analyses associées aux utilisateurs et de
+suivre l'évolution des scores moyens par lien ou par session.
+
+\section{Services d'observabilité}
+
+L'observabilité repose sur trois services : Loki, Promtail et Grafana.
+
+Loki centralise les logs applicatifs. Promtail lit les fichiers de logs du
+gateway et du service de tokens, puis extrait des labels comme le service, le
+niveau, l'environnement, le type d'événement, le statut, l'identifiant de route
+et l'état du rate limiting.
+
+Grafana est provisionné automatiquement avec Loki comme source de données. Deux
+dashboards principaux sont disponibles :
+
+\begin{itemize}
+  \item \texttt{Traffic and Enforcement Overview} ;
+  \item \texttt{Security SIEM Overview}.
+\end{itemize}
+
+\section{Extension navigateur}
+
+L'extension navigateur est le client principal du système. Elle permet
+d'analyser un texte saisi manuellement ou le contenu visible d'une page web. Elle
+utilise Manifest V3 et les permissions \texttt{activeTab}, \texttt{scripting} et
+\texttt{tabs}.
+
+L'extension parcourt le DOM de la page avec un \texttt{TreeWalker}, ignore les
+balises non pertinentes et conserve les segments visibles d'au moins cinquante
+caractères. Après l'analyse, elle ajoute temporairement des attributs HTML pour
+surligner les segments classés comme IA ou humains.
+
+% ════════════════════════════════════════════════════════════════════════════
+%              CHAPITRE 6 — FLUX FONCTIONNELS ET API
+% ════════════════════════════════════════════════════════════════════════════
+
+\chapter{Flux fonctionnels et contrats API}
+
+\section{Flux de génération d'un token anonyme}
+
+\begin{figure}[H]
+\centering
+\fbox{
+\begin{minipage}{0.9\textwidth}
+\small
+\begin{enumerate}
+  \item Le client appelle \texttt{POST /api/anonym-token/get}.
+  \item Le proxy transmet la requête au gateway avec l'adresse IP client.
+  \item Le gateway valide l'IP et ajoute le secret partagé interne.
+  \item Le \texttt{token-manager-service} vérifie le secret partagé.
+  \item Le service vérifie le compteur Redis de génération par IP.
+  \item Le service génère un JWT anonyme signé.
+  \item Le token est retourné au client.
+\end{enumerate}
+\end{minipage}
+}
+\caption{Flux de génération d'un token anonyme.}
+\label{fig:flux-token}
+\end{figure}
+
+\section{Flux de prédiction}
+
+\begin{figure}[H]
+\centering
+\fbox{
+\begin{minipage}{0.9\textwidth}
+\small
+Client $\rightarrow$ \texttt{/api/ai-detector/detect} avec
+\texttt{Authorization: Anonym <token>}\\[0.15cm]
+$\downarrow$\\
+Gateway : vérification JWKS, validation du token, contrôle Redis\\[0.15cm]
+$\downarrow$\\
+\texttt{model-handler-service} : validation métier et appel du modèle\\[0.15cm]
+$\downarrow$\\
+\texttt{transformer-model-service} : inférence FastAPI\\[0.15cm]
+$\downarrow$\\
+Réponse normalisée : \texttt{id}, \texttt{isAi}, \texttt{score}
+\end{minipage}
+}
+\caption{Flux de détection d'un texte.}
+\label{fig:flux-detection}
+\end{figure}
+
+\section{Endpoints principaux}
+
+\begin{table}[H]
+\centering
+\small
+\renewcommand{\arraystretch}{1.45}
+\begin{tabular}{p{0.31\textwidth}p{0.25\textwidth}p{0.34\textwidth}}
+\toprule
+\textbf{Endpoint} & \textbf{Service cible} & \textbf{Rôle} \\
+\midrule
+\texttt{POST} \newline \texttt{/api/anonym-token/get} & \texttt{token-manager} \newline \texttt{-service} & Génération d'un token anonyme \\
+\texttt{GET} \newline \texttt{/.well-known/jwks.json} & \texttt{token-manager} \newline \texttt{-service} & Publication de la clé publique \\
+\texttt{POST} \newline \texttt{/api/ai-detector/detect} & \texttt{model-handler} \newline \texttt{-service} & Analyse d'un ou plusieurs textes \\
+\texttt{GET} \newline \texttt{/api/ai-detector/history} & \texttt{model-handler} \newline \texttt{-service} & Historique des analyses connectées \\
+\texttt{POST} \newline \texttt{/predict} & \texttt{transformer-model} \newline \texttt{-service} & Inférence interne du modèle \\
+\bottomrule
+\end{tabular}
+\caption{Contrats API principaux.}
+\label{tab:endpoints}
+\end{table}
+
+\section{Gestion des erreurs}
+
+Les erreurs applicatives sont prises en charge par la couche responsable. Le
+gateway retourne une erreur lorsqu'un token est absent, invalide, expiré ou
+lorsque la limite de débit est atteinte. Le \texttt{token-manager-service}
+retourne une erreur si le secret partagé est incorrect, si l'adresse IP est
+absente ou si la limite de génération de tokens est atteinte. Le service métier
+retourne une erreur lorsque le payload ne respecte pas le format attendu.
+
+% ════════════════════════════════════════════════════════════════════════════
+%              CHAPITRE 7 — CONTENEURISATION ET ORCHESTRATION
+% ════════════════════════════════════════════════════════════════════════════
+
+\chapter{Conteneurisation et orchestration par environnement}
+
+\section{Organisation générale}
+
+La conteneurisation du projet repose sur deux niveaux complémentaires. Le dossier
+\texttt{runtime-services} contient les définitions unitaires utilisées en
+développement. Le dossier \texttt{deploy/staging/services} contient la version
+adaptée à l'environnement staging, avec les images du canal \texttt{staging} et
+le tag \texttt{v1.0.0}.
+
+Les images applicatives sont publiées sur GitHub Container Registry selon la
+convention suivante :
+
+\begin{verbatim}
+ghcr.io/baddou666/projet-metier/<channel>/<image>:<tag>
+\end{verbatim}
+
+Pour l'environnement staging, les images utilisent le canal
+\texttt{staging} et le tag \texttt{v1.0.0}.
+
+\section{Images Docker}
+
+\begin{table}[H]
+\centering
+\small
+\renewcommand{\arraystretch}{1.45}
+\begin{tabular}{p{0.30\textwidth}p{0.38\textwidth}p{0.22\textwidth}}
+\toprule
+\textbf{Service} & \textbf{Image staging} & \textbf{Méthode} \\
+\midrule
+\texttt{token-manager}\newline\texttt{-service} & \texttt{ghcr.io/.../staging/token-manager:v1.0.0} & Buildpacks Maven \\
+\texttt{rate-limiting}\newline\texttt{-service} & \texttt{ghcr.io/.../staging/rate-limiter:v1.0.0} & Buildpacks Maven \\
+\texttt{model-handler}\newline\texttt{-service} & \texttt{ghcr.io/.../staging/model-handler:v1.0.0} & Buildpacks Maven \\
+\texttt{transformer-model}\newline\texttt{-service} & \texttt{ghcr.io/.../staging/transformer-model:v1.0.0} & Dockerfile \\
+\texttt{ai-text-detector}\newline\texttt{-frontend} & \texttt{ghcr.io/.../staging/ai-text-detector-frontend:v1.0.0} & Dockerfile multi-stage \\
+\bottomrule
+\end{tabular}
+\caption{Images applicatives utilisées en staging.}
+\label{tab:images-staging}
+\end{table}
+
+\section{Environnement de développement}
+
+L'environnement de développement est assemblé par
+\texttt{deploy/dev/docker-compose.yml}. Ce fichier inclut les fichiers Compose
+unitaires présents dans \texttt{runtime-services}. Cette organisation garde une
+configuration par service tout en permettant un lancement global sur une seule
+machine.
+
+\section{Environnement staging avec Docker Swarm}
+
+L'environnement staging est orchestré avec Docker Swarm. Il utilise une stack
+Swarm dédiée, des réseaux overlay et des images publiées sur le canal
+\texttt{staging}. Le lancement se fait avec la commande :
+
+\begin{verbatim}
+docker stack deploy -c deploy/staging/docker-compose.yml ai-detect-staging
+\end{verbatim}
+
+Le fichier de stack définit les services, les réseaux overlay et les paramètres
+de réplication. Les services les plus sollicités, notamment le gateway et le
+service d'inférence, sont répliqués afin d'améliorer la disponibilité et la
+capacité de traitement.
+
+\section{Réseaux}
+
+Les réseaux staging reprennent la séparation logique du développement, mais sous
+forme de réseaux overlay Swarm :
+
+\begin{itemize}
+  \item \texttt{proxy-ratelimiter-net} entre Nginx et le gateway ;
+  \item \texttt{proxy-fe-net} entre Nginx et le frontend ;
+  \item \texttt{redis-net} entre Redis, gateway et token manager ;
+  \item \texttt{api-model-net} entre gateway et service métier ;
+  \item \texttt{models-net} entre service métier et service d'inférence ;
+  \item \texttt{postgres-net} entre service métier et PostgreSQL ;
+  \item \texttt{monitoring} pour Loki, Promtail et Grafana.
+\end{itemize}
+
+\section{Secrets, volumes et configurations}
+
+Les secrets de staging sont isolés de ceux de développement. Les mots de passe,
+clés privées, tokens GHCR et secrets partagés sont fournis via Ansible Vault et
+injectés dans l'environnement de déploiement. Les données persistantes sont
+stockées dans des volumes Docker nommés, tandis que les fichiers non sensibles
+sont fournis comme configurations montées.
+
+% ════════════════════════════════════════════════════════════════════════════
+%              CHAPITRE 8 — INFRASTRUCTURE AS CODE
+% ════════════════════════════════════════════════════════════════════════════
+
+\chapter{Déploiement et Infrastructure as Code}
+
+\section{Objectif}
+
+L'Infrastructure as Code permet de rendre le déploiement reproductible. Le projet
+utilise Terraform pour créer les machines virtuelles et Ansible pour configurer
+les noeuds, installer Docker, initialiser Docker Swarm et déployer la stack.
+
+\section{Provisionnement Terraform}
+
+La configuration Terraform de staging crée quatre machines virtuelles destinées
+au cluster Docker Swarm :
+
+\begin{itemize}
+  \item \textbf{VM1} : manager Swarm ;
+  \item \textbf{VM2} : worker backend ;
+  \item \textbf{VM3} : worker IA ;
+  \item \textbf{VM4} : worker data.
+\end{itemize}
+
+Chaque VM est créée à partir d'une image Ubuntu cloud-init, avec accès SSH par
+clé publique, hostname dédié et enregistrement Tailscale. Les ressources CPU,
+mémoire et disque sont adaptées au rôle du noeud, le noeud IA recevant davantage
+de ressources pour supporter l'inférence du modèle.
+
+\section{Configuration Ansible}
+
+Ansible installe les dépendances système, Docker Engine, Docker Compose Plugin,
+Git, Git LFS et OpenSSL sur les quatre machines. Le playbook initialise ensuite
+Docker Swarm sur le manager, récupère le token de jonction worker, puis joint les
+trois autres machines au cluster.
+
+Les noeuds sont labellisés selon leur rôle :
+
+\begin{itemize}
+  \item \texttt{role=manager} ;
+  \item \texttt{role=backend} ;
+  \item \texttt{role=ai} ;
+  \item \texttt{role=data}.
+\end{itemize}
+
+Ces labels permettent de contrôler le placement des services dans la stack
+Swarm.
+
+\section{Déploiement de la stack staging}
+
+Une fois le cluster initialisé, Ansible authentifie les noeuds auprès de GHCR,
+récupère le dépôt, prépare les fichiers de configuration et lance la stack
+staging avec :
+
+\begin{verbatim}
+docker stack deploy -c docker-compose.yml ai-detector-staging
+\end{verbatim}
+
+Cette automatisation permet de reconstruire l'environnement staging de manière
+reproductible.
+
+\section{Chaîne CI/CD}
+
+La chaîne CI/CD construit les images applicatives, exécute les tests, publie les
+images sur GHCR et déclenche le déploiement staging. Les images validées sont
+taguées en \texttt{v1.0.0} pour la livraison finale. Cette séparation entre build,
+publication et déploiement garantit que le staging utilise des artefacts
+identifiés et reproductibles.
+
+% ════════════════════════════════════════════════════════════════════════════
+%              CHAPITRE 9 — OBSERVABILITÉ ET SÉCURITÉ
+% ════════════════════════════════════════════════════════════════════════════
+
+\chapter{Observabilité et sécurité opérationnelle}
+
+\section{Pipeline d'observabilité}
+
+Les services Spring Boot principaux produisent des logs structurés JSON. Ces logs
+contiennent des informations de contexte comme le service, l'environnement, le
+type d'événement, l'adresse IP, l'identifiant utilisateur anonyme, la route et le
+statut.
+
+\begin{figure}[H]
+\centering
+\fbox{
+\begin{minipage}{0.9\textwidth}
+\small
+\texttt{rate-limiting-service} et \texttt{token-manager-service}\\
+$\downarrow$ logs JSON\\
+\texttt{promtail}\\
+$\downarrow$ labels et push HTTP\\
+\texttt{loki}\\
+$\downarrow$ requêtes LogQL\\
+\texttt{grafana dashboards}
+\end{minipage}
+}
+\caption{Pipeline d'observabilité basé sur les logs.}
+\label{fig:observabilite}
+\end{figure}
+
+\section{Dashboards Grafana}
+
+Deux dashboards sont provisionnés :
+
+\begin{itemize}
+  \item \texttt{Traffic and Enforcement Overview}, orienté trafic, tokens,
+        contrôles et répartition des routes ;
+  \item \texttt{Security SIEM Overview}, orienté erreurs, abus, IP bloquées,
+        échecs JWKS et événements sensibles.
+\end{itemize}
+
+Ces dashboards permettent de suivre le nombre de tokens générés, les requêtes
+acceptées, les requêtes refusées, les erreurs de validation de token et les
+événements de limitation de débit.
+
+\section{Sécurité applicative}
+
+La sécurité repose sur plusieurs couches :
+
+\begin{itemize}
+  \item exposition publique limitée au proxy ;
+  \item routage API obligatoire via le gateway ;
+  \item secret partagé entre gateway et service de tokens ;
+  \item tokens anonymes signés RSA ;
+  \item vérification JWKS côté gateway ;
+  \item expiration courte des tokens anonymes ;
+  \item limitation de génération par IP ;
+  \item limitation d'utilisation par token ;
+  \item nettoyage des headers transmis aux services internes ;
+  \item séparation des secrets par environnement.
+\end{itemize}
+
+Ces mécanismes répondent à deux objectifs complémentaires. Le premier est de
+protéger les services internes contre les appels directs ou abusifs. Le second
+est de limiter la collecte d'informations personnelles : l'utilisateur peut
+obtenir un accès temporaire sans créer de compte, tandis que le système conserve
+uniquement les informations nécessaires au contrôle de débit et, pour les
+utilisateurs connectés, à l'historisation des prédictions.
+
+% ════════════════════════════════════════════════════════════════════════════
+%              CHAPITRE 10 — SCALABILITÉ
+% ════════════════════════════════════════════════════════════════════════════
+
+\chapter{Scalabilité, réplication et staging}
+
+\section{Principe}
+
+La scalabilité visée est horizontale : augmenter le nombre d'instances de
+certains services sans modifier leur code métier. Cette stratégie est rendue
+possible par la séparation des responsabilités et l'externalisation de l'état
+dans Redis et PostgreSQL.
+
+\section{Réplication du \texttt{rate-limiting-service}}
+
+Le gateway est réplicable car son état critique de rate limiting est externalisé
+dans Redis. Plusieurs instances peuvent partager les mêmes compteurs, à
+condition que toutes utilisent la même instance Redis et la même configuration de
+routes, de secrets et de JWKS.
+
+\section{Réplication du \texttt{transformer-model-service}}
+
+Le service d'inférence est réplicable car il ne stocke pas de session utilisateur
+locale. Chaque instance charge le modèle depuis son dossier
+\texttt{/workspace/model} et peut traiter une requête indépendamment. La
+réplication permet de répartir la charge liée à l'inférence.
+
+\section{Placement des services}
+
+Dans le cluster Docker Swarm, les noeuds sont séparés par rôle :
+
+\begin{itemize}
+  \item le manager reçoit les services d'orchestration et le proxy ;
+  \item le worker backend reçoit le gateway, le token manager et le model handler ;
+  \item le worker IA reçoit les instances du service d'inférence ;
+  \item le worker data reçoit Redis, PostgreSQL, Loki et Grafana.
+\end{itemize}
+
+Cette répartition permet d'isoler les charges de calcul, les charges réseau et
+les charges de stockage.
+
+\section{Robustesse de la réplication}
+
+La réplication horizontale améliore la disponibilité et le débit du système en
+répartissant les appels sur plusieurs instances applicatives. Les services
+répliqués restent stateless : le gateway délègue ses compteurs à Redis, tandis
+que le service d'inférence traite chaque requête indépendamment. Les composants
+à état, notamment Redis et PostgreSQL, sont isolés sur le worker data avec des
+volumes persistants et une supervision dédiée.
+
+Cette organisation permet de stabiliser les charges : les requêtes entrantes
+sont absorbées par les instances du gateway, les opérations de prédiction sont
+réparties entre les instances du modèle, et les données persistantes restent
+centralisées dans les services spécialisés. Le staging Docker Swarm valide ainsi
+la séparation entre capacité de calcul, stockage et routage réseau.
+
+% ════════════════════════════════════════════════════════════════════════════
+%              CHAPITRE 11 — VALIDATION
+% ════════════════════════════════════════════════════════════════════════════
+
+\chapter{Validation et tests}
+
+\section{Validation fonctionnelle}
+
+Le flux nominal validé est le suivant :
+
+\begin{enumerate}
+  \item démarrer la stack Docker Compose ou Docker Swarm ;
+  \item appeler \texttt{POST /api/anonym-token/get} via le proxy ;
+  \item récupérer le JWT anonyme ;
+  \item appeler \texttt{POST /api/ai-detector/detect} avec le header
+        \texttt{Authorization: Anonym <token>} ;
+  \item vérifier la réponse \texttt{id}, \texttt{isAi}, \texttt{score} ;
+  \item vérifier les logs et les dashboards dans Grafana.
+\end{enumerate}
+
+\section{Tests d'intégration}
+
+Les tests d'intégration couvrent le passage complet entre le proxy, le gateway,
+le token manager, Redis, le model handler et le service FastAPI. Ils permettent
+de vérifier la génération de token, la validation JWKS, le rate limiting et le
+format final des réponses de prédiction.
+
+\begin{table}[H]
+\centering
+\renewcommand{\arraystretch}{1.35}
+\begin{tabular}{p{0.36\textwidth}p{0.45\textwidth}p{0.10\textwidth}}
+\toprule
+\textbf{Scénario} & \textbf{Vérification attendue} & \textbf{État} \\
+\midrule
+Génération de token anonyme & Retour d'un JWT signé et exploitable par le gateway & validé \\
+Appel sans token & Rejet de la requête protégée & validé \\
+Appel avec token invalide & Rejet après vérification JWKS & validé \\
+Limitation de débit & Blocage après dépassement du seuil configuré & validé \\
+Prédiction nominale & Retour de \texttt{id}, \texttt{isAi} et \texttt{score} & validé \\
+Collecte des logs & Présence des événements dans Loki et Grafana & validé \\
+\bottomrule
+\end{tabular}
+\caption{Synthèse des tests d'intégration réalisés.}
+\label{tab:tests-integration}
+\end{table}
+
+\section{Tests de charge}
+
+Des tests de charge ont été réalisés sur les routes principales afin de valider
+la réplication du gateway et du service d'inférence. Les résultats confirment que
+le service \texttt{transformer-model-service} est le principal facteur de coût,
+ce qui justifie son placement sur le worker IA et sa réplication dans la stack
+staging.
+
+\section{Bilan de validation}
+
+La validation confirme que le système répond au flux utilisateur visé : analyse
+d'un contenu textuel depuis un client web ou une extension, passage sécurisé par
+le gateway, prédiction par le modèle et restitution d'un score exploitable. Les
+tests montrent également que les mécanismes transverses, notamment la limitation
+de débit, la vérification de token et l'observabilité, sont intégrés au flux
+principal et ne restent pas des composants isolés.
+
+% ════════════════════════════════════════════════════════════════════════════
+%              CHAPITRE 12 — CONCLUSION
+% ════════════════════════════════════════════════════════════════════════════
+
+\chapter{Conclusion générale}
+
+Le système réalisé met en place une architecture microservices complète autour
+d'un détecteur de textes générés par IA. Le coeur livré comprend un frontend
+React, une extension navigateur, un proxy HTTPS, un gateway avec contrôle
+d'accès, un service de tokens anonymes, un service métier de prédiction, un
+service FastAPI d'inférence, Redis, PostgreSQL et une pile d'observabilité
+Loki/Promtail/Grafana.
+
+L'architecture respecte les exigences principales du cahier des charges :
+conteneurisation, séparation des responsabilités, API de prédiction,
+orchestration par environnement, observabilité, limitation de débit,
+reproductibilité et scalabilité horizontale.
+
+Le déploiement final est organisé autour de deux environnements : un
+environnement de développement basé sur Docker Compose et un environnement
+staging basé sur Docker Swarm. L'Infrastructure as Code, construite avec
+Terraform et Ansible, permet de provisionner les machines, de configurer Docker,
+d'initialiser le cluster Swarm et de déployer la stack de manière reproductible.
+
+La solution obtenue ne se limite donc pas à un modèle de classification : elle
+constitue un système complet, exploitable et conforme à une démarche
+Cloud-native, depuis la préparation des données jusqu'au déploiement et au suivi
+opérationnel.
+
+Sur le plan expérimental, le choix de DistilBERT s'est révélé adapté aux
+contraintes du projet. Le modèle conserve une latence faible tout en atteignant
+des performances suffisantes pour assister l'utilisateur dans l'identification
+de contenus potentiellement générés par IA. Le résultat ne doit toutefois pas
+être interprété comme une preuve absolue d'origine artificielle : il s'agit d'un
+indicateur probabiliste, sensible au style, au domaine et aux transformations
+éventuelles du texte.
+
+Le projet répond ainsi au cahier des charges initial : ingestion et préparation
+des données, entraînement d'un modèle NLP avancé, exposition d'une API de
+prédiction, déploiement conteneurisé, orchestration multi-environnement,
+scalabilité, sécurité d'accès et observabilité. La version finale fournit une
+chaîne complète allant du texte brut jusqu'à l'analyse visuelle dans le
+navigateur, avec une infrastructure reproductible et un suivi opérationnel
+adapté à une exploitation Cloud-native.
+
+\end{document}
+
