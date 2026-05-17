@@ -207,11 +207,11 @@
     - name: Authenticate Docker to GHCR when a token is provided
       command: docker login "{{ ghcr_registry | default('ghcr.io') }}" --username "{{ ghcr_username | default('baddou666') }}" --password-stdin
       args:
-        stdin: "{{ vault_ghcr_api_key }}"
+        stdin: "{{ registry-api-key }}"
       become_user: "{{ ansible_user | default('ubuntu') }}"
       changed_when: false
       no_log: true
-      when: vault_ghcr_api_key is defined
+      when: registry-api-key is defined
 
     - name: Create staging project parent directory
       file:

@@ -4,7 +4,7 @@
 deployment_environment: staging
 ghcr_registry: ghcr.io
 ghcr_username: baddou666
-vault_ghcr_api_key: "ghp_change_me"
+vault_ghcr_api_key: "{{ registry-api-key }}"
 project_repo_url: "https://github.com/Baddou666/project-metier.git"
 project_parent_dir: "/opt/projet-metier-staging"
 project_repo_dir: "/opt/projet-metier-staging/project-metier"
