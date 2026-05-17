@@ -1,0 +1,242 @@
+---
+- name: Prepare Docker Swarm staging nodes
+  hosts: swarm_nodes
+  become: true
+  gather_facts: false
+
+  pre_tasks:
+    - name: Wait for SSH to become available
+      wait_for_connection:
+        timeout: 180
+
+    - name: Ensure Python is installed for Ansible modules
+      raw: test -e /usr/bin/python3 || (apt-get update && apt-get install -y python3)
+      changed_when: false
+
+    - name: Gather facts
+      setup:
+
+  tasks:
+    - name: Update apt repository cache
+      apt:
+        update_cache: true
+        cache_valid_time: 3600
+
+    - name: Install base packages
+      apt:
+        name:
+          - ca-certificates
+          - curl
+          - git
+          - git-lfs
+          - gnupg
+          - lsb-release
+          - openssl
+          - python3
+          - rsync
+        state: present
+
+    - name: Create apt keyrings directory
+      file:
+        path: /etc/apt/keyrings
+        state: directory
+        mode: '0755'
+
+    - name: Add Docker GPG key
+      apt_key:
+        url: https://download.docker.com/linux/ubuntu/gpg
+        keyring: /etc/apt/keyrings/docker.gpg
+        state: present
+
+    - name: Add Docker apt repository
+      apt_repository:
+        repo: "deb [arch={{ ansible_architecture | regex_replace('x86_64', 'amd64') }} signed-by=/etc/apt/keyrings/docker.gpg] https://download.docker.com/linux/ubuntu {{ ansible_distribution_release }} stable"
+        filename: docker
+        state: present
+        update_cache: true
+
+    - name: Install Docker packages
+      apt:
+        name:
+          - docker-ce
+          - docker-ce-cli
+          - containerd.io
+          - docker-buildx-plugin
+          - docker-compose-plugin
+        state: present
+
+    - name: Ensure Docker service is started and enabled
+      service:
+        name: docker
+        state: started
+        enabled: true
+
+    - name: Add ubuntu user to docker group
+      user:
+        name: "{{ ansible_user | default('ubuntu') }}"
+        groups: docker
+        append: true
+
+    - name: Allow Docker Swarm firewall ports with ufw when present
+      ufw:
+        rule: allow
+        port: "{{ item.port }}"
+        proto: "{{ item.proto }}"
+      loop:
+        - { port: "2377", proto: "tcp" }
+        - { port: "7946", proto: "tcp" }
+        - { port: "7946", proto: "udp" }
+        - { port: "4789", proto: "udp" }
+      when: ansible_facts.packages.ufw is defined
+
+- name: Initialize Docker Swarm manager
+  hosts: swarm_managers
+  become: true
+  gather_facts: true
+
+  tasks:
+    - name: Read current Docker Swarm state
+      command:
+        argv:
+          - docker
+          - info
+          - --format
+          - "{{ '{{' }}.Swarm.LocalNodeState{{ '}}' }}"
+      register: swarm_state
+      changed_when: false
+
+    - name: Select manager advertise address
+      set_fact:
+        swarm_advertise_addr: "{{ ansible_default_ipv4.address }}"
+
+    - name: Initialize Docker Swarm
+      command:
+        argv:
+          - docker
+          - swarm
+          - init
+          - --advertise-addr
+          - "{{ swarm_advertise_addr }}"
+      when: swarm_state.stdout != "active"
+
+    - name: Get Docker Swarm worker join token
+      command:
+        argv:
+          - docker
+          - swarm
+          - join-token
+          - -q
+          - worker
+      register: worker_join_token
+      changed_when: false
+
+    - name: Store worker join command facts
+      set_fact:
+        swarm_manager_addr: "{{ swarm_advertise_addr }}"
+        swarm_worker_join_token: "{{ worker_join_token.stdout }}"
+
+- name: Join Docker Swarm workers
+  hosts: swarm_workers
+  become: true
+  gather_facts: true
+
+  tasks:
+    - name: Read current Docker Swarm state
+      command:
+        argv:
+          - docker
+          - info
+          - --format
+          - "{{ '{{' }}.Swarm.LocalNodeState{{ '}}' }}"
+      register: swarm_state
+      changed_when: false
+
+    - name: Join worker to Docker Swarm
+      command:
+        argv:
+          - docker
+          - swarm
+          - join
+          - --token
+          - "{{ hostvars[groups['swarm_managers'][0]].swarm_worker_join_token }}"
+          - "{{ hostvars[groups['swarm_managers'][0]].swarm_manager_addr }}:2377"
+      when: swarm_state.stdout != "active"
+
+- name: Label Docker Swarm nodes
+  hosts: swarm_managers
+  become: true
+  gather_facts: false
+
+  tasks:
+    - name: Wait until all expected nodes are visible
+      command:
+        argv:
+          - docker
+          - node
+          - ls
+          - --format
+          - "{{ '{{' }}.Hostname{{ '}}' }}"
+      register: swarm_node_names
+      changed_when: false
+      retries: 20
+      delay: 3
+      until: swarm_node_names.stdout_lines | length >= groups['swarm_nodes'] | length
+
+    - name: Apply role labels to Swarm nodes
+      command:
+        argv:
+          - docker
+          - node
+          - update
+          - --label-add
+          - "role={{ hostvars[item].node_label }}"
+          - "{{ hostvars[item].ansible_hostname }}"
+      loop: "{{ groups['swarm_nodes'] }}"
+      changed_when: true
+
+- name: Optional staging stack deployment
+  hosts: swarm_managers
+  become: true
+  gather_facts: false
+
+  tasks:
+    - name: Stop when stack deployment is disabled
+      meta: end_play
+      when: not (deploy_stack | default(false) | bool)
+
+    - name: Authenticate Docker to GHCR when a token is provided
+      command: docker login "{{ ghcr_registry | default('ghcr.io') }}" --username "{{ ghcr_username | default('baddou666') }}" --password-stdin
+      args:
+        stdin: "{{ vault_ghcr_api_key }}"
+      become_user: "{{ ansible_user | default('ubuntu') }}"
+      changed_when: false
+      no_log: true
+      when: vault_ghcr_api_key is defined
+
+    - name: Create staging project parent directory
+      file:
+        path: "{{ project_parent_dir | default('/opt/projet-metier-staging') }}"
+        state: directory
+        owner: "{{ ansible_user | default('ubuntu') }}"
+        group: "{{ ansible_user | default('ubuntu') }}"
+        mode: '0755'
+
+    - name: Clone or update project repository
+      git:
+        repo: "{{ project_repo_url | default('https://github.com/Baddou666/project-metier.git') }}"
+        dest: "{{ project_repo_dir | default('/opt/projet-metier-staging/project-metier') }}"
+        version: main
+        update: true
+        force: true
+      become_user: "{{ ansible_user | default('ubuntu') }}"
+
+    - name: Deploy staging Docker stack
+      command:
+        argv:
+          - docker
+          - stack
+          - deploy
+          - -c
+          - docker-compose.yml
+          - "{{ stack_name | default('ai-detector-staging') }}"
+        chdir: "{{ staging_deploy_dir | default('/opt/projet-metier-staging/project-metier/deploy/staging') }}"

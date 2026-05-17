@@ -1,0 +1,23 @@
+proxmox_endpoint    = "https://pve.tail2c3ac8.ts.net:8006/api2/json"
+proxmox_ssh_address = "pve.tail2c3ac8.ts.net"
+target_node         = "pve"
+ubuntu_image_file_id = "local:iso/ubuntu-server.img"
+
+api_token = "PVEAPIToken=user@pam!token=secret"
+pmx_root_password = "change-me"
+tskey_auth = "tskey-auth-change-me"
+
+staging_ssh_pubkey_path = "/root/.ssh/id_ed25519.pub"
+additional_ssh_pubkeys = [
+  "ssh-ed25519 AAAA... user@example"
+]
+
+vm_name_prefix = "ai-detect-staging"
+
+# Optional override:
+# vm_specs = {
+#   manager = { role = "manager", description = "Docker Swarm manager", cores = 2, memory_mb = 4096, disk_gb = 50 }
+#   backend = { role = "backend", description = "Docker Swarm backend worker", cores = 4, memory_mb = 6144, disk_gb = 80 }
+#   ai = { role = "ai", description = "Docker Swarm AI inference worker", cores = 6, memory_mb = 12288, disk_gb = 120 }
+#   data = { role = "data", description = "Docker Swarm data worker", cores = 4, memory_mb = 8192, disk_gb = 120 }
+# }

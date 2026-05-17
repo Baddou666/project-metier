@@ -1,0 +1,117 @@
+version: "3.8"
+
+services:
+
+  https-proxy:
+    image: nginx:alpine
+    networks:
+      - proxy-ratelimiter-net
+      - proxy-fe-net
+    ports:
+      - target: 80
+        published: 80
+        protocol: tcp
+        mode: host
+      - target: 443
+        published: 443
+        protocol: tcp
+        mode: host
+    deploy:
+      replicas: 1
+
+  ai-text-detector-frontend:
+    image:  ghcr.io/baddou666/projet-metier/staging/ai-text-detector-frontend:v1.0.0
+    networks:
+      - proxy-fe-net
+    deploy:
+      replicas: 2
+
+  rate-limiting-service:
+    image:  ghcr.io/baddou666/projet-metier/staging/rate-limiter:v1.0.0
+    networks:
+      - proxy-ratelimiter-net
+      - redis-net
+      - api-model-net
+    deploy:
+      replicas: 3
+
+  token-manager-service:
+    image:  ghcr.io/baddou666/projet-metier/staging/token-manager:v1.0.0
+    networks:
+      - redis-net
+    deploy:
+      replicas: 1
+
+  redis-server:
+    image: redis:7-alpine
+    networks:
+      - redis-net
+    deploy:
+      replicas: 1
+
+  postgres-service:
+    image: postgres:16
+    networks:
+      - postgres-net
+    deploy:
+      replicas: 1
+
+  model-handler-service:
+    image:  ghcr.io/baddou666/projet-metier/staging/model-handler:v1.0.0
+    networks:
+      - models-net
+      - postgres-net
+      - api-model-net
+    deploy:
+      replicas: 2
+
+  transformer-model-service:
+    image:  ghcr.io/baddou666/projet-metier/staging/transformer-model:v1.0.0
+    networks:
+      - models-net
+    deploy:
+      replicas: 3
+
+  loki:
+    image: grafana/loki:2.9.0
+    networks:
+      - monitoring
+    deploy:
+      replicas: 1
+
+  promtail:
+    image: grafana/promtail:2.9.0
+    networks:
+      - monitoring
+    deploy:
+      replicas: 1
+
+  grafana:
+    image: grafana/grafana:latest
+    networks:
+      - monitoring
+    deploy:
+      replicas: 1
+
+
+networks:
+  proxy-ratelimiter-net:
+    driver: overlay
+
+  redis-net:
+    driver: overlay
+
+  proxy-fe-net:
+    driver: overlay
+
+  postgres-net:
+    driver: overlay
+
+  models-net:
+    driver: overlay
+
+  api-model-net:
+    driver: overlay
+
+  monitoring:
+    driver: overlay

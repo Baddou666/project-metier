@@ -1,0 +1,13 @@
+# Copy this file to group_vars/all.yml if you want to deploy the staging stack
+# from Ansible after the Swarm cluster is initialized.
+---
+deployment_environment: staging
+ghcr_registry: ghcr.io
+ghcr_username: baddou666
+vault_ghcr_api_key: "ghp_change_me"
+project_repo_url: "https://github.com/Baddou666/project-metier.git"
+project_parent_dir: "/opt/projet-metier-staging"
+project_repo_dir: "/opt/projet-metier-staging/project-metier"
+staging_deploy_dir: "/opt/projet-metier-staging/project-metier/deploy/staging"
+deploy_stack: false
+stack_name: "ai-detector-staging"
