@@ -18,6 +18,11 @@ services:
         mode: host
     deploy:
       replicas: 1
+      placement:
+        constraints:
+          - node.role == ai-detect-staging-backend
+      restart_policy:
+        condition: on-failure
 
   ai-text-detector-frontend:
     image:  ghcr.io/baddou666/projet-metier/staging/ai-text-detector-frontend:v1.0.0
@@ -25,6 +30,11 @@ services:
       - proxy-fe-net
     deploy:
       replicas: 2
+      placement:
+        constraints:
+          - node.role == manager
+      restart_policy:
+        condition: on-failure
 
   rate-limiting-service:
     image:  ghcr.io/baddou666/projet-metier/staging/rate-limiter:v1.0.0
@@ -34,6 +44,11 @@ services:
       - api-model-net
     deploy:
       replicas: 3
+      placement:
+        constraints:
+          - node.role == ai-detect-staging-backend
+      restart_policy:
+        condition: on-failure
 
   token-manager-service:
     image:  ghcr.io/baddou666/projet-metier/staging/token-manager:v1.0.0
@@ -41,6 +56,11 @@ services:
       - redis-net
     deploy:
       replicas: 1
+      placement:
+        constraints:
+          - node.role == ai-detect-staging-backend
+      restart_policy:
+        condition: on-failure
 
   redis-server:
     image: redis:7-alpine
@@ -48,6 +68,11 @@ services:
       - redis-net
     deploy:
       replicas: 1
+      placement:
+        constraints:
+          - node.role == ai-detect-staging-backend
+      restart_policy:
+        condition: on-failure
 
   postgres-service:
     image: postgres:16
@@ -55,6 +80,11 @@ services:
       - postgres-net
     deploy:
       replicas: 1
+      placement:
+        constraints:
+          - node.role == ai-detect-staging-backend
+      restart_policy:
+        condition: on-failure
 
   model-handler-service:
     image:  ghcr.io/baddou666/projet-metier/staging/model-handler:v1.0.0
@@ -64,6 +94,11 @@ services:
       - api-model-net
     deploy:
       replicas: 2
+      placement:
+        constraints:
+          - node.role == ai-detect-staging-ai
+      restart_policy:
+        condition: on-failure
 
   transformer-model-service:
     image:  ghcr.io/baddou666/projet-metier/staging/transformer-model:v1.0.0
@@ -71,6 +106,11 @@ services:
       - models-net
     deploy:
       replicas: 3
+      placement:
+        constraints:
+          - node.role == ai-detect-staging-ai
+      restart_policy:
+        condition: on-failure
 
   loki:
     image: grafana/loki:2.9.0
@@ -78,6 +118,11 @@ services:
       - monitoring
     deploy:
       replicas: 1
+      placement:
+        constraints:
+          - node.role == ai-detect-staging-monitoring
+      restart_policy:
+        condition: on-failure
 
   promtail:
     image: grafana/promtail:2.9.0
@@ -85,6 +130,11 @@ services:
       - monitoring
     deploy:
       replicas: 1
+      placement:
+        constraints:
+          - node.role == ai-detect-staging-monitoring
+      restart_policy:
+        condition: on-failure
 
   grafana:
     image: grafana/grafana:latest
@@ -92,6 +142,11 @@ services:
       - monitoring
     deploy:
       replicas: 1
+      placement:
+        constraints:
+          - node.role == ai-detect-staging-monitoring
+      restart_policy:
+        condition: on-failure
 
 
 networks:
