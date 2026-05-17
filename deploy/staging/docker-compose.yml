@@ -150,21 +150,42 @@ services:
 networks:
   proxy-ratelimiter-net:
     driver: overlay
+    ipam:
+      config:
+        - subnet: 10.42.10.0/24
 
   redis-net:
     driver: overlay
+    ipam:
+      config:
+        - subnet: 10.42.11.0/24
 
   proxy-fe-net:
     driver: overlay
+    ipam:
+      config:
+        - subnet: 10.42.12.0/24
 
   postgres-net:
     driver: overlay
+    ipam:
+      config:
+        - subnet: 10.42.13.0/24
 
   models-net:
     driver: overlay
+    ipam:
+      config:
+        - subnet: 10.42.14.0/24
 
   api-model-net:
     driver: overlay
+    ipam:
+      config:
+        - subnet: 10.42.15.0/24
 
   monitoring:
     driver: overlay
+    ipam:
+      config:
+        - subnet: 10.42.16.0/24
