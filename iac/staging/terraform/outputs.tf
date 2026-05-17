@@ -12,9 +12,9 @@ output "swarm_nodes" {
 output "ansible_inventory_hint" {
   description = "Inventory hostnames when Tailscale DNS is enabled."
   value = {
-    manager = "${var.vm_name_prefix}-manager"
-    backend = "${var.vm_name_prefix}-backend"
-    ai      = "${var.vm_name_prefix}-ai"
-    data    = "${var.vm_name_prefix}-data"
+    manager    = "${var.vm_name_prefix}-manager"
+    backend    = "${var.vm_name_prefix}-backend"
+    ai         = "${var.vm_name_prefix}-ai"
+    monitoring = "${var.vm_name_prefix}-monitoring"
   }
 }

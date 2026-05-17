@@ -78,9 +78,9 @@ variable "vm_specs" {
       memory_mb   = 12288
       disk_gb     = 120
     }
-    data = {
-      role        = "data"
-      description = "Docker Swarm data worker"
+    monitoring = {
+      role        = "monitoring"
+      description = "Docker Swarm monitoring worker"
       cores       = 4
       memory_mb   = 8192
       disk_gb     = 120
