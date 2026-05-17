@@ -1,7 +1,6 @@
 services:
   promtail:
     image: grafana/promtail:2.9.0
-    container_name: promtail
     expose:
       - 9080
     environment:

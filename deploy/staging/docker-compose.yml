@@ -1,9 +1,18 @@
-version: "3.8"
+include:
+  - path: ./services/https-proxy-service/docker-compose.yml
+  - path: ./services/frontend-service/docker-compose.yml
+  - path: ./services/rate-limiting-service/docker-compose.yml
+  - path: ./services/redis-shared-memory-service/docker-compose.yml
+  - path: ./services/token-manager/docker-compose.yml
+  - path: ./services/postgre-db-service/docker-compose.yml
+  - path: ./services/model-handler-service/docker-compose.yml
+  - path: ./services/transformer-model-service/docker-compose.yml
+  - path: ./services/loki-service/docker-compose.yml
+  - path: ./services/promtail-service/docker-compose.yml
+  - path: ./services/grafana-service/docker-compose.yml
 
 services:
-
   https-proxy:
-    image: nginx:alpine
     networks:
       - proxy-ratelimiter-net
       - proxy-fe-net
@@ -20,24 +29,22 @@ services:
       replicas: 1
       placement:
         constraints:
-          - node.role == ai-detect-staging-backend
+          - node.labels.role == backend
       restart_policy:
         condition: on-failure
 
   ai-text-detector-frontend:
-    image:  ghcr.io/baddou666/projet-metier/staging/ai-text-detector-frontend:v1.0.0
     networks:
       - proxy-fe-net
     deploy:
       replicas: 2
       placement:
         constraints:
-          - node.role == manager
+          - node.labels.role == backend
       restart_policy:
         condition: on-failure
 
   rate-limiting-service:
-    image:  ghcr.io/baddou666/projet-metier/staging/rate-limiter:v1.0.0
     networks:
       - proxy-ratelimiter-net
       - redis-net
@@ -46,48 +53,44 @@ services:
       replicas: 3
       placement:
         constraints:
-          - node.role == ai-detect-staging-backend
+          - node.labels.role == backend
       restart_policy:
         condition: on-failure
 
   token-manager-service:
-    image:  ghcr.io/baddou666/projet-metier/staging/token-manager:v1.0.0
     networks:
       - redis-net
     deploy:
       replicas: 1
       placement:
         constraints:
-          - node.role == ai-detect-staging-backend
+          - node.labels.role == backend
       restart_policy:
         condition: on-failure
 
   redis-server:
-    image: redis:7-alpine
     networks:
       - redis-net
     deploy:
       replicas: 1
       placement:
         constraints:
-          - node.role == ai-detect-staging-backend
+          - node.labels.role == backend
       restart_policy:
         condition: on-failure
 
   postgres-service:
-    image: postgres:16
     networks:
       - postgres-net
     deploy:
       replicas: 1
       placement:
         constraints:
-          - node.role == ai-detect-staging-backend
+          - node.labels.role == backend
       restart_policy:
         condition: on-failure
 
   model-handler-service:
-    image:  ghcr.io/baddou666/projet-metier/staging/model-handler:v1.0.0
     networks:
       - models-net
       - postgres-net
@@ -96,58 +99,53 @@ services:
       replicas: 2
       placement:
         constraints:
-          - node.role == ai-detect-staging-ai
+          - node.labels.role == backend
       restart_policy:
         condition: on-failure
 
   transformer-model-service:
-    image:  ghcr.io/baddou666/projet-metier/staging/transformer-model:v1.0.0
     networks:
       - models-net
     deploy:
       replicas: 3
       placement:
         constraints:
-          - node.role == ai-detect-staging-ai
+          - node.labels.role == ai
       restart_policy:
         condition: on-failure
 
   loki:
-    image: grafana/loki:2.9.0
     networks:
       - monitoring
     deploy:
       replicas: 1
       placement:
         constraints:
-          - node.role == ai-detect-staging-monitoring
+          - node.labels.role == monitoring
       restart_policy:
         condition: on-failure
 
   promtail:
-    image: grafana/promtail:2.9.0
     networks:
       - monitoring
     deploy:
-      replicas: 1
+      mode: global
       placement:
         constraints:
-          - node.role == ai-detect-staging-monitoring
+          - node.labels.role == backend
       restart_policy:
         condition: on-failure
 
   grafana:
-    image: grafana/grafana:latest
     networks:
       - monitoring
     deploy:
       replicas: 1
       placement:
         constraints:
-          - node.role == ai-detect-staging-monitoring
+          - node.labels.role == monitoring
       restart_policy:
         condition: on-failure
-
 
 networks:
   proxy-ratelimiter-net:

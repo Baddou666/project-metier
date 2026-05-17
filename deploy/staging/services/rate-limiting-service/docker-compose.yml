@@ -2,7 +2,6 @@ services:
   # Votre application Spring Boot
   rate-limiting-service:
     image: ghcr.io/baddou666/projet-metier/staging/rate-limiter:v1.0.0
-    container_name: rate-limiting-service
     environment:
       - REDIS_HOST=${REDIS_HOST}
       - REDIS_PORT=${REDIS_INTERNAL_PORT}

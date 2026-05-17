@@ -2,7 +2,6 @@ services:
   # Votre application Spring Boot
   token-manager-service:
     image: ghcr.io/baddou666/projet-metier/staging/token-manager:v1.0.0
-    container_name: token-manager
     environment:
       - REDIS_HOST=${REDIS_HOST}
       - REDIS_PORT=${REDIS_INTERNAL_PORT}
