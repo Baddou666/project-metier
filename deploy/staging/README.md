@@ -4,8 +4,8 @@ Ce dossier assemble la stack Docker Swarm de staging a partir des compose unitai
 
 ## Placement Swarm
 
-- `backend` : proxy HTTPS, frontend, rate limiter, token manager, Redis, PostgreSQL, model handler et Promtail.
-- `ai` : transformer model service et fichiers du modele.
+- `backend` : proxy HTTPS, frontend, rate limiter, token manager, Redis et Promtail.
+- `ai` : PostgreSQL, model handler, transformer model service et fichiers du modele.
 - `monitoring` : Loki et Grafana.
 - `manager` : orchestration Swarm et rendu du compose final, sans service applicatif impose.
 
