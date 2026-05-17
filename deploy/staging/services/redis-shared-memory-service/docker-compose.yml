@@ -1,0 +1,10 @@
+services:
+  redis-server:
+    image: redis:7-alpine
+    container_name: redis-shared-memory
+    command: >
+      redis-server 
+      --port ${REDIS_INTERNAL_PORT}
+      --requirepass ${REDIS_PASSWORD}
+      --save "" 
+      --appendonly no

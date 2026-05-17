@@ -1,0 +1,10 @@
+services:
+  transformer-model-service:
+    image: ghcr.io/baddou666/projet-metier/staging/transformer-model:v1.0.0
+    working_dir: /workspace
+    environment:
+      - PYTHONUNBUFFERED=${PYTHONUNBUFFERED}
+    expose:
+      - 8000
+    volumes:
+      - ./model:/workspace/model
