@@ -194,6 +194,255 @@
       loop: "{{ groups['swarm_nodes'] }}"
       changed_when: true
 
+- name: Prepare staging deployment files per node
+  hosts: swarm_nodes
+  become: true
+  gather_facts: false
+  vars:
+    staging_checkout_paths_by_role:
+      manager:
+        - deploy/staging/docker-compose.yml
+        - deploy/staging/.env.example
+        - deploy/staging/services/https-proxy-service/**
+        - deploy/staging/services/frontend-service/**
+        - deploy/staging/services/rate-limiting-service/**
+        - deploy/staging/services/redis-shared-memory-service/**
+        - deploy/staging/services/token-manager/**
+        - deploy/staging/services/postgre-db-service/**
+        - deploy/staging/services/model-handler-service/**
+        - deploy/staging/services/transformer-model-service/**
+        - deploy/staging/services/loki-service/**
+        - deploy/staging/services/promtail-service/**
+        - deploy/staging/services/grafana-service/**
+      backend:
+        - deploy/staging/services/https-proxy-service/**
+        - deploy/staging/services/frontend-service/**
+        - deploy/staging/services/rate-limiting-service/**
+        - deploy/staging/services/redis-shared-memory-service/**
+        - deploy/staging/services/token-manager/**
+        - deploy/staging/services/promtail-service/**
+      ai:
+        - deploy/staging/services/postgre-db-service/**
+        - deploy/staging/services/model-handler-service/**
+        - deploy/staging/services/transformer-model-service/**
+      monitoring:
+        - deploy/staging/services/loki-service/**
+        - deploy/staging/services/grafana-service/**
+    staging_runtime_dirs_by_role:
+      backend:
+        - services/https-proxy-service/certs
+        - services/rate-limiting-service/logs
+        - services/token-manager/certs
+        - services/token-manager/logs
+      ai:
+        - services/transformer-model-service/model
+      monitoring: []
+      manager: []
+    staging_images_by_role:
+      backend:
+        - nginx:alpine
+        - ghcr.io/baddou666/projet-metier/staging/ai-text-detector-frontend:v1.0.0
+        - ghcr.io/baddou666/projet-metier/staging/rate-limiter:v1.0.0
+        - ghcr.io/baddou666/projet-metier/staging/token-manager:v1.0.0
+        - redis:7-alpine
+        - grafana/promtail:2.9.0
+      ai:
+        - postgres:16
+        - ghcr.io/baddou666/projet-metier/staging/model-handler:v1.0.0
+        - ghcr.io/baddou666/projet-metier/staging/transformer-model:v1.0.0
+      monitoring:
+        - grafana/loki:2.9.0
+        - grafana/grafana:latest
+      manager: []
+
+  tasks:
+    - name: Stop when stack deployment is disabled
+      meta: end_play
+      when: not (deploy_stack | default(false) | bool)
+
+    - name: Resolve staging checkout paths for this node
+      set_fact:
+        staging_node_role: "{{ node_label | default('manager') }}"
+        staging_node_checkout_paths: "{{ staging_checkout_paths_by_role[node_label | default('manager')] | default([]) }}"
+        staging_node_runtime_dirs: "{{ staging_runtime_dirs_by_role[node_label | default('manager')] | default([]) }}"
+        staging_node_images: "{{ staging_images_by_role[node_label | default('manager')] | default([]) }}"
+
+    - name: Stop when node role has no staging checkout mapping
+      fail:
+        msg: "No staging checkout mapping found for node role {{ staging_node_role }}"
+      when: staging_node_checkout_paths | length == 0
+
+    - name: Create staging project parent directory
+      file:
+        path: "{{ project_parent_dir | default('/opt/projet-metier-staging') }}"
+        state: directory
+        owner: "{{ ansible_user | default('ubuntu') }}"
+        group: "{{ ansible_user | default('ubuntu') }}"
+        mode: '0755'
+
+    - name: Initialize sparse staging repository
+      command:
+        argv:
+          - git
+          - init
+          - "{{ project_repo_dir | default('/opt/projet-metier-staging/project-metier') }}"
+        creates: "{{ project_repo_dir | default('/opt/projet-metier-staging/project-metier') }}/.git"
+      become_user: "{{ ansible_user | default('ubuntu') }}"
+
+    - name: Configure sparse checkout remote and mode
+      shell: |
+        set -euo pipefail
+        if git remote get-url origin >/dev/null 2>&1; then
+          git remote set-url origin "{{ project_repo_url | default('https://github.com/Baddou666/project-metier.git') }}"
+        else
+          git remote add origin "{{ project_repo_url | default('https://github.com/Baddou666/project-metier.git') }}"
+        fi
+        git config core.sparseCheckout true
+        git config core.sparseCheckoutCone false
+        git config remote.origin.promisor true
+        git config remote.origin.partialclonefilter blob:none
+      args:
+        chdir: "{{ project_repo_dir | default('/opt/projet-metier-staging/project-metier') }}"
+        executable: /bin/bash
+      become_user: "{{ ansible_user | default('ubuntu') }}"
+      changed_when: false
+
+    - name: Write role-specific sparse checkout paths
+      copy:
+        dest: "{{ project_repo_dir | default('/opt/projet-metier-staging/project-metier') }}/.git/info/sparse-checkout"
+        content: "{{ staging_node_checkout_paths | join('\n') }}\n"
+        owner: "{{ ansible_user | default('ubuntu') }}"
+        group: "{{ ansible_user | default('ubuntu') }}"
+        mode: '0644'
+
+    - name: Fetch and checkout staging-only files
+      shell: |
+        set -euo pipefail
+        git fetch --depth 1 --filter=blob:none origin "{{ project_repo_version | default('main') }}"
+        git checkout -f FETCH_HEAD
+      args:
+        chdir: "{{ project_repo_dir | default('/opt/projet-metier-staging/project-metier') }}"
+        executable: /bin/bash
+      become_user: "{{ ansible_user | default('ubuntu') }}"
+
+    - name: Create runtime directories required on this node
+      file:
+        path: "{{ staging_deploy_dir | default('/opt/projet-metier-staging/project-metier/deploy/staging') }}/{{ item }}"
+        state: directory
+        owner: "{{ ansible_user | default('ubuntu') }}"
+        group: "{{ ansible_user | default('ubuntu') }}"
+        mode: '0755'
+      loop: "{{ staging_node_runtime_dirs }}"
+
+    - name: Ensure backend service log directories are writable
+      file:
+        path: "{{ staging_deploy_dir | default('/opt/projet-metier-staging/project-metier/deploy/staging') }}/{{ item }}"
+        state: directory
+        mode: '0777'
+      loop:
+        - services/token-manager/logs
+        - services/rate-limiting-service/logs
+      when: staging_node_role == "backend"
+
+    - name: Find token manager scripts on backend nodes
+      find:
+        paths: "{{ staging_deploy_dir | default('/opt/projet-metier-staging/project-metier/deploy/staging') }}/services/token-manager"
+        patterns: "*.sh"
+        file_type: file
+      register: token_manager_scripts
+      when: staging_node_role == "backend"
+
+    - name: Find HTTPS proxy service scripts on backend nodes
+      find:
+        paths: "{{ staging_deploy_dir | default('/opt/projet-metier-staging/project-metier/deploy/staging') }}/services/https-proxy-service"
+        patterns: "*.sh"
+        file_type: file
+      register: https_proxy_service_scripts
+      when: staging_node_role == "backend"
+
+    - name: Run token manager scripts on backend nodes
+      command:
+        argv:
+          - sh
+          - "{{ item.path }}"
+      args:
+        chdir: "{{ staging_deploy_dir | default('/opt/projet-metier-staging/project-metier/deploy/staging') }}/services/token-manager"
+      loop: "{{ token_manager_scripts.files | default([]) | sort(attribute='path') }}"
+      become_user: "{{ ansible_user | default('ubuntu') }}"
+      when: staging_node_role == "backend"
+
+    - name: Run HTTPS proxy service scripts on backend nodes
+      command:
+        argv:
+          - sh
+          - "{{ item.path }}"
+      args:
+        chdir: "{{ staging_deploy_dir | default('/opt/projet-metier-staging/project-metier/deploy/staging') }}/services/https-proxy-service"
+      loop: "{{ https_proxy_service_scripts.files | default([]) | sort(attribute='path') }}"
+      become_user: "{{ ansible_user | default('ubuntu') }}"
+      when: staging_node_role == "backend"
+
+    - name: Configure Git LFS on AI nodes
+      command:
+        argv:
+          - git
+          - lfs
+          - install
+          - --skip-repo
+      become_user: "{{ ansible_user | default('ubuntu') }}"
+      changed_when: false
+      when: staging_node_role == "ai"
+
+    - name: Initialize Hugging Face model checkout on AI nodes
+      command:
+        argv:
+          - git
+          - init
+          - "{{ staging_deploy_dir | default('/opt/projet-metier-staging/project-metier/deploy/staging') }}/services/transformer-model-service/model"
+        creates: "{{ staging_deploy_dir | default('/opt/projet-metier-staging/project-metier/deploy/staging') }}/services/transformer-model-service/model/.git"
+      become_user: "{{ ansible_user | default('ubuntu') }}"
+      when: staging_node_role == "ai"
+
+    - name: Download Hugging Face model files on AI nodes
+      shell: |
+        set -euo pipefail
+        if git remote get-url origin >/dev/null 2>&1; then
+          git remote set-url origin "{{ hf_model_repo_url | default('https://huggingface.co/Mitsuman/distilbert') }}"
+        else
+          git remote add origin "{{ hf_model_repo_url | default('https://huggingface.co/Mitsuman/distilbert') }}"
+        fi
+        git fetch --depth 1 origin "{{ hf_model_repo_version | default('main') }}"
+        git -c advice.detachedHead=false checkout -f FETCH_HEAD
+        git lfs pull
+      args:
+        chdir: "{{ staging_deploy_dir | default('/opt/projet-metier-staging/project-metier/deploy/staging') }}/services/transformer-model-service/model"
+        executable: /bin/bash
+      become_user: "{{ ansible_user | default('ubuntu') }}"
+      when: staging_node_role == "ai"
+
+    - name: Load staging vault variables for image pulls
+      include_vars:
+        file: vault.yml
+      no_log: true
+
+    - name: Authenticate Docker to GHCR on staging nodes
+      command: docker login "{{ ghcr_registry | default('ghcr.io') }}" --username "{{ ghcr_username | default('baddou666') }}" --password-stdin
+      args:
+        stdin: "{{ vault_ghcr_api_key }}"
+      register: node_ghcr_login_result
+      changed_when: false
+      failed_when: node_ghcr_login_result.rc != 0
+      no_log: true
+      when: staging_node_images | select('search', '^ghcr\\.io/') | list | length > 0
+
+    - name: Pull Docker images required on this node
+      command:
+        argv:
+          - docker
+          - pull
+          - "{{ item }}"
+      loop: "{{ staging_node_images }}"
+
 - name: Optional staging stack deployment
   hosts: swarm_managers
   become: true
@@ -204,31 +453,71 @@
       meta: end_play
       when: not (deploy_stack | default(false) | bool)
 
-    - name: Authenticate Docker to GHCR when a token is provided
+    - name: Load staging vault variables
+      include_vars:
+        file: vault.yml
+      no_log: true
+
+    - name: Stop when required staging vault variables are missing
+      assert:
+        that:
+          - vars.get(item, '') is not none
+          - vars.get(item, '') | string | trim | length > 0
+        fail_msg: "Missing or empty required vault variable: {{ item }}"
+      loop:
+        - vault_ghcr_api_key
+        - vault_redis_password
+        - vault_auth_gateway_shared_secret
+        - vault_postgresdb_password
+        - vault_jwt_secret_key
+        - vault_grafana_admin_password
+
+    - name: Authenticate Docker to GHCR for Swarm deployment
       command: docker login "{{ ghcr_registry | default('ghcr.io') }}" --username "{{ ghcr_username | default('baddou666') }}" --password-stdin
       args:
-        stdin: "{{ registry-api-key }}"
-      become_user: "{{ ansible_user | default('ubuntu') }}"
+        stdin: "{{ vault_ghcr_api_key }}"
+      register: ghcr_login_result
       changed_when: false
+      failed_when: ghcr_login_result.rc != 0
       no_log: true
-      when: registry-api-key is defined
 
-    - name: Create staging project parent directory
-      file:
-        path: "{{ project_parent_dir | default('/opt/projet-metier-staging') }}"
-        state: directory
+    - name: Stop when GHCR authentication failed
+      fail:
+        msg: "Docker login to {{ ghcr_registry | default('ghcr.io') }} failed. Check vault_ghcr_api_key, ghcr_username, and GHCR package permissions."
+      when: ghcr_login_result is failed
+
+    - name: Render staging environment file
+      template:
+        src: templates/deploy.staging.env.j2
+        dest: "{{ staging_deploy_dir | default('/opt/projet-metier-staging/project-metier/deploy/staging') }}/{{ staging_env_file | default('.env') }}"
         owner: "{{ ansible_user | default('ubuntu') }}"
         group: "{{ ansible_user | default('ubuntu') }}"
-        mode: '0755'
+        mode: '0600'
+      no_log: true
+      when: render_staging_env | default(true) | bool
 
-    - name: Clone or update project repository
-      git:
-        repo: "{{ project_repo_url | default('https://github.com/Baddou666/project-metier.git') }}"
-        dest: "{{ project_repo_dir | default('/opt/projet-metier-staging/project-metier') }}"
-        version: main
-        update: true
-        force: true
-      become_user: "{{ ansible_user | default('ubuntu') }}"
+    - name: Check staging environment file exists
+      stat:
+        path: "{{ staging_deploy_dir | default('/opt/projet-metier-staging/project-metier/deploy/staging') }}/{{ staging_env_file | default('.env') }}"
+      register: staging_env_file_stat
+
+    - name: Stop when staging environment file is missing
+      fail:
+        msg: "Missing staging env file: {{ staging_deploy_dir | default('/opt/projet-metier-staging/project-metier/deploy/staging') }}/{{ staging_env_file | default('.env') }}"
+      when: not staging_env_file_stat.stat.exists
+
+    - name: Render staging Docker Compose stack
+      shell: |
+        set -euo pipefail
+        umask 077
+        docker compose --env-file "{{ staging_env_file | default('.env') }}" -f docker-compose.yml config \
+          | sed -E '/^name: /d; s/published: "([0-9]+)"/published: \1/' \
+          > "{{ staging_rendered_stack_file | default('/tmp/ai-detector-staging-compose.yml') }}"
+      args:
+        chdir: "{{ staging_deploy_dir | default('/opt/projet-metier-staging/project-metier/deploy/staging') }}"
+        executable: /bin/bash
+      changed_when: false
+      no_log: true
 
     - name: Deploy staging Docker stack
       command:
@@ -237,6 +526,6 @@
           - stack
           - deploy
           - -c
-          - docker-compose.yml
+          - "{{ staging_rendered_stack_file | default('/tmp/ai-detector-staging-compose.yml') }}"
+          - --with-registry-auth
           - "{{ stack_name | default('ai-detector-staging') }}"
-        chdir: "{{ staging_deploy_dir | default('/opt/projet-metier-staging/project-metier/deploy/staging') }}"
