@@ -1,6 +1,3 @@
-# Copy this file to group_vars/all.yml if you want to deploy the staging stack
-# from Ansible after the Swarm cluster is initialized.
----
 deployment_environment: staging
 ghcr_registry: ghcr.io
 ghcr_username: baddou666
@@ -9,7 +6,7 @@ project_repo_version: main
 project_parent_dir: "/opt/projet-metier-staging"
 project_repo_dir: "/opt/projet-metier-staging/project-metier"
 staging_deploy_dir: "/opt/projet-metier-staging/project-metier/deploy/staging"
-deploy_stack: false
+deploy_stack: true
 stack_name: "ai-detector-staging"
 staging_env_file: ".env"
 staging_rendered_stack_file: "/tmp/ai-detector-staging-compose.yml"
@@ -17,7 +14,5 @@ render_staging_env: true
 staging_backend_api_url: "https://ai-detect-staging"
 staging_frontend_env: production
 staging_grafana_root_url: "http://localhost:3000"
-staging_bpl_jvm_thread_count: 32
-staging_java_tool_options: "-Xmx128m -XX:ReservedCodeCacheSize=32M -XX:MaxMetaspaceSize=96M -Xss512k"
 hf_model_repo_url: "https://huggingface.co/Mitsuman/distilbert"
 hf_model_repo_version: main

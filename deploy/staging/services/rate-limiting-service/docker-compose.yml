@@ -2,7 +2,6 @@ services:
   # Votre application Spring Boot
   rate-limiting-service:
     image: ghcr.io/baddou666/projet-metier/staging/rate-limiter:v1.0.0
-    container_name: rate-limiting-service
     environment:
       - REDIS_HOST=${REDIS_HOST}
       - REDIS_PORT=${REDIS_INTERNAL_PORT}
@@ -17,6 +16,8 @@ services:
       - AUTH_GATEWAY_SHARED_SECRET_HEADER=${AUTH_GATEWAY_SHARED_SECRET_HEADER}
       - AUTH_GATEWAY_SHARED_SECRET=${AUTH_GATEWAY_SHARED_SECRET}
       - IS_ANONYM_USER_HEADER=${IS_ANONYM_USER_HEADER}
+      - BPL_JVM_THREAD_COUNT=${BPL_JVM_THREAD_COUNT}
+      - JAVA_TOOL_OPTIONS=${JAVA_TOOL_OPTIONS}
     expose:
       - 8080
     volumes:

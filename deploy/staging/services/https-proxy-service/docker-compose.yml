@@ -1,7 +1,6 @@
 services:
   https-proxy:
     image: nginx:alpine
-    container_name: https-proxy
     environment:
       - PROXY_API_HOST=${PROXY_API_HOST}
       - PROXY_API_PORT=${PROXY_API_PORT}

@@ -2,7 +2,6 @@ services:
   # Votre application Spring Boot
   token-manager-service:
     image: ghcr.io/baddou666/projet-metier/staging/token-manager:v1.0.0
-    container_name: token-manager
     environment:
       - REDIS_HOST=${REDIS_HOST}
       - REDIS_PORT=${REDIS_INTERNAL_PORT}
@@ -10,6 +9,8 @@ services:
       - FORWARDED_CLIENT_IP_HEADER=${FORWARDED_CLIENT_IP_HEADER}
       - AUTH_GATEWAY_SHARED_SECRET_HEADER=${AUTH_GATEWAY_SHARED_SECRET_HEADER}
       - AUTH_GATEWAY_SHARED_SECRET=${AUTH_GATEWAY_SHARED_SECRET}
+      - BPL_JVM_THREAD_COUNT=${BPL_JVM_THREAD_COUNT}
+      - JAVA_TOOL_OPTIONS=${JAVA_TOOL_OPTIONS}
     expose:
       - 8080
     volumes:
